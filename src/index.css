@@ -1,0 +1,113 @@
+@import '@fontsource-variable/bricolage-grotesque';
+@import '@fontsource-variable/instrument-sans';
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+  LeadFlow design tokens.
+  Palette "segnale": carta fredda + inchiostro blu-ardesia, accento verde-flusso
+  per le azioni e ambra-segnale riservata a punteggi e stati che chiedono attenzione.
+*/
+:root {
+  --lf-bg: #f4f5f1;
+  --lf-surface: #ffffff;
+  --lf-surface-2: #eceee8;
+  --lf-ink: #172131;
+  --lf-muted: #5a6476;
+  --lf-line: #dce0d8;
+  --lf-flow: #0b7a75;
+  --lf-flow-ink: #ffffff;
+  --lf-flow-soft: #d9efec;
+  --lf-signal: #a86a00;
+  --lf-signal-soft: #fbefd6;
+  --lf-danger: #b42318;
+  --lf-danger-soft: #fde8e6;
+  --lf-ok: #1f7a3d;
+  --lf-ok-soft: #e1f3e6;
+}
+
+.dark {
+  --lf-bg: #0d141c;
+  --lf-surface: #141d27;
+  --lf-surface-2: #1a2531;
+  --lf-ink: #e7ecef;
+  --lf-muted: #95a2b0;
+  --lf-line: #263341;
+  --lf-flow: #3cc8be;
+  --lf-flow-ink: #062724;
+  --lf-flow-soft: #12312f;
+  --lf-signal: #f2b33d;
+  --lf-signal-soft: #352a13;
+  --lf-danger: #ff8a7f;
+  --lf-danger-soft: #3a1b19;
+  --lf-ok: #6fd68f;
+  --lf-ok-soft: #15301f;
+}
+
+@theme inline {
+  --color-bg: var(--lf-bg);
+  --color-surface: var(--lf-surface);
+  --color-surface-2: var(--lf-surface-2);
+  --color-ink: var(--lf-ink);
+  --color-muted: var(--lf-muted);
+  --color-line: var(--lf-line);
+  --color-flow: var(--lf-flow);
+  --color-flow-ink: var(--lf-flow-ink);
+  --color-flow-soft: var(--lf-flow-soft);
+  --color-signal: var(--lf-signal);
+  --color-signal-soft: var(--lf-signal-soft);
+  --color-danger: var(--lf-danger);
+  --color-danger-soft: var(--lf-danger-soft);
+  --color-ok: var(--lf-ok);
+  --color-ok-soft: var(--lf-ok-soft);
+
+  --font-display: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Instrument Sans Variable', ui-sans-serif, system-ui, sans-serif;
+
+  --radius-control: 8px;
+  --radius-panel: 14px;
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    -webkit-text-size-adjust: 100%;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  body {
+    background: var(--lf-bg);
+    color: var(--lf-ink);
+    font-family: var(--font-sans);
+    font-feature-settings: 'ss01', 'tnum' 0;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.015em;
+    line-height: 1.15;
+  }
+  :focus-visible {
+    outline: 2px solid var(--lf-flow);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
