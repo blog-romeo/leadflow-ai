@@ -19,6 +19,8 @@ interface DashboardData {
   activeCampaigns: number
   upcomingAppointments: number
   activities: Pick<ActivityRow, 'id' | 'type' | 'subject' | 'occurred_at'>[]
+  sources: number
+  candidates: number
 }
 
 function useDashboardData(orgId: string | undefined) {
@@ -34,7 +36,9 @@ function useDashboardData(orgId: string | undefined) {
     const statusCounts = PIPELINE.map((s) =>
       db.from('leads').select('id', { count: 'exact', head: true }).eq('organization_id', orgId).is('deleted_at', null).eq('status', s),
     )
-    const [campaigns, appointments, activities, ...statuses] = await Promise.all([
+    const [sources, candidates, campaigns, appointments, activities, ...statuses] = await Promise.all([
+      db.from('lead_sources').select('id', { count: 'exact', head: true }).eq('organization_id', orgId),
+      db.from('lead_candidates').select('id', { count: 'exact', head: true }).eq('organization_id', orgId).neq('status', 'excluded'),
       db.from('campaigns').select('id', { count: 'exact', head: true }).eq('organization_id', orgId).eq('status', 'active'),
       db
         .from('appointments')
@@ -45,7 +49,7 @@ function useDashboardData(orgId: string | undefined) {
       db.from('activities').select('id, type, subject, occurred_at').eq('organization_id', orgId).order('occurred_at', { ascending: false }).limit(5),
       ...statusCounts,
     ])
-    const failed = [campaigns, appointments, activities, ...statuses].some((r) => r.error)
+    const failed = [sources, candidates, campaigns, appointments, activities, ...statuses].some((r) => r.error)
     if (failed) {
       setError(true)
       setLoading(false)
@@ -57,6 +61,8 @@ function useDashboardData(orgId: string | undefined) {
       activeCampaigns: campaigns.count ?? 0,
       upcomingAppointments: appointments.count ?? 0,
       activities: (activities.data ?? []) as DashboardData['activities'],
+      sources: sources.count ?? 0,
+      candidates: candidates.count ?? 0,
     })
     setLoading(false)
   }, [orgId])
@@ -119,11 +125,12 @@ export default function Dashboard() {
   const totalLeads = data ? PIPELINE.reduce((a, s) => a + data.byStatus[s], 0) : undefined
   const aiModules = MODULES.filter((m) => m.group === 'ai')
 
-  const steps = [
+  const steps: { label: string; done: boolean; to?: string; soon?: boolean }[] = [
     { label: t('dashboard.stepOrg'), done: true },
-    { label: t('dashboard.stepSource'), done: false },
-    { label: t('dashboard.stepLeads'), done: (totalLeads ?? 0) > 0 },
-    { label: t('dashboard.stepTeam'), done: false },
+    { label: t('dashboard.stepProfile'), done: false, to: '/app/lead-scoring' },
+    { label: t('dashboard.stepFind'), done: (data?.candidates ?? 0) > 0 || (data?.sources ?? 0) > 0, to: '/app/lead-finder' },
+    { label: t('dashboard.stepLeads'), done: (totalLeads ?? 0) > 0, to: '/app/lead-finder' },
+    { label: t('dashboard.stepTeam'), done: false, soon: true },
   ]
 
   return (
@@ -180,8 +187,14 @@ export default function Dashboard() {
                       <CircleDashed className="mt-0.5 size-5 shrink-0 text-muted" aria-hidden />
                     )}
                     <span>
-                      <span className={cn(s.done && 'text-muted line-through decoration-line')}>{s.label}</span>
-                      {!s.done && <span className="block text-xs text-muted">{t('dashboard.stepSoon')}</span>}
+                      {s.to && !s.done ? (
+                        <Link to={s.to} className="text-flow hover:underline">
+                          {s.label}
+                        </Link>
+                      ) : (
+                        <span className={cn(s.done && 'text-muted line-through decoration-line')}>{s.label}</span>
+                      )}
+                      {s.soon && <span className="block text-xs text-muted">{t('dashboard.stepSoon')}</span>}
                     </span>
                   </li>
                 ))}
@@ -192,12 +205,12 @@ export default function Dashboard() {
           <Panel title={t('dashboard.aiTitle')}>
             <p className="mb-4 max-w-2xl text-sm text-muted">{t('dashboard.aiBody')}</p>
             <ul className="grid gap-2 sm:grid-cols-2">
-              {aiModules.map(({ key, path, labelKey, icon: Icon }) => (
+              {aiModules.map(({ key, path, labelKey, icon: Icon, status }) => (
                 <li key={key}>
                   <Link to={path} className="flex items-center gap-3 rounded-[var(--radius-control)] border border-line px-3 py-2.5 text-sm hover:bg-surface-2">
                     <Icon className="size-4 text-flow" aria-hidden />
                     <span className="flex-1">{t(labelKey)}</span>
-                    <Badge tone="signal">{t('common.inPreparation')}</Badge>
+                    {status === 'available' ? <Badge tone="ok">{t('common.available')}</Badge> : <Badge tone="signal">{t('common.inPreparation')}</Badge>}
                   </Link>
                 </li>
               ))}

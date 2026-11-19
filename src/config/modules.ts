@@ -26,8 +26,10 @@ export interface ModuleDef {
   group: NavGroup
   status: ModuleStatus
   access: ModuleAccess
-  /** Chiave i18n del modulo "in preparazione" (modules.<key>). */
+  /** Chiave i18n della pagina descrittiva (modules.<key>). */
   previewKey?: string
+  /** Pagina in cui la funzione è realmente utilizzabile, se diversa. */
+  usedIn?: string
 }
 
 /**
@@ -36,9 +38,9 @@ export interface ModuleDef {
  */
 export const MODULES: ModuleDef[] = [
   { key: 'dashboard', path: '/app', labelKey: 'nav.dashboard', icon: LayoutDashboard, group: 'overview', status: 'available', access: 'member' },
-  { key: 'leadFinder', path: '/app/lead-finder', labelKey: 'nav.leadFinder', icon: Radar, group: 'ai', status: 'preparation', access: 'member', previewKey: 'leadFinder' },
-  { key: 'analyzer', path: '/app/business-analyzer', labelKey: 'nav.analyzer', icon: ScanSearch, group: 'ai', status: 'preparation', access: 'member', previewKey: 'analyzer' },
-  { key: 'scoring', path: '/app/lead-scoring', labelKey: 'nav.scoring', icon: Gauge, group: 'ai', status: 'preparation', access: 'member', previewKey: 'scoring' },
+  { key: 'leadFinder', path: '/app/lead-finder', labelKey: 'nav.leadFinder', icon: Radar, group: 'ai', status: 'available', access: 'member' },
+  { key: 'analyzer', path: '/app/business-analyzer', labelKey: 'nav.analyzer', icon: ScanSearch, group: 'ai', status: 'available', access: 'member', previewKey: 'analyzer', usedIn: '/app/lead-finder' },
+  { key: 'scoring', path: '/app/lead-scoring', labelKey: 'nav.scoring', icon: Gauge, group: 'ai', status: 'available', access: 'member' },
   { key: 'salesAgent', path: '/app/sales-agent', labelKey: 'nav.salesAgent', icon: Bot, group: 'ai', status: 'preparation', access: 'member', previewKey: 'salesAgent' },
   { key: 'crm', path: '/app/crm', labelKey: 'nav.crm', icon: Kanban, group: 'sales', status: 'available', access: 'member' },
   { key: 'campaigns', path: '/app/campaigns', labelKey: 'nav.campaigns', icon: Megaphone, group: 'sales', status: 'preparation', access: 'member', previewKey: 'campaigns' },

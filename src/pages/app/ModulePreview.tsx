@@ -1,4 +1,6 @@
 import { Check } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { buttonClasses } from '../../components/ui/Button'
 import { useI18n } from '../../i18n'
 import { MODULES } from '../../config/modules'
 import { PageHeader } from '../../components/ui/PageHeader'
@@ -17,7 +19,10 @@ export default function ModulePreview({ moduleKey, children }: { moduleKey: stri
   const Icon = mod.icon
   return (
     <>
-      <PageHeader title={t(`${base}.title`)} actions={<Badge tone="signal">{t('common.inPreparation')}</Badge>} />
+      <PageHeader
+        title={t(`${base}.title`)}
+        actions={mod.status === 'available' ? <Badge tone="ok">{t('common.available')}</Badge> : <Badge tone="signal">{t('common.inPreparation')}</Badge>}
+      />
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
         <Panel>
           <div className="flex gap-4">
@@ -26,11 +31,16 @@ export default function ModulePreview({ moduleKey, children }: { moduleKey: stri
             </span>
             <div>
               <p className="max-w-prose">{t(`${base}.body`)}</p>
-              <p className="mt-4 text-sm text-muted">{t('modules.notice')}</p>
+              {mod.status === 'preparation' && <p className="mt-4 text-sm text-muted">{t('modules.notice')}</p>}
+              {mod.usedIn && (
+                <Link to={mod.usedIn} className={buttonClasses('primary', 'md', 'mt-4')}>
+                  {t('modules.openLeadFinder')}
+                </Link>
+              )}
             </div>
           </div>
         </Panel>
-        <Panel title={t('modules.plannedTitle')}>
+        <Panel title={mod.status === 'available' ? t('modules.featuresTitle') : t('modules.plannedTitle')}>
           <ul className="space-y-2.5 text-sm">
             {list(`${base}.points`).map((p) => (
               <li key={p} className="flex gap-2.5">

@@ -24,5 +24,7 @@ for f in "$ROOT"/supabase/migrations/*.sql; do
   echo "→ migrazione $(basename "$f")"
   "${PSQL[@]}" -f "$f"
 done
-echo "→ test RLS"
-"${PSQL[@]}" -f "$ROOT/supabase/tests/rls_tests.sql"
+for t in "$ROOT"/supabase/tests/rls_tests*.sql; do
+  echo "→ $(basename "$t")"
+  "${PSQL[@]}" -f "$t"
+done

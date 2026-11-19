@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { PublicOnly, RequireAuth, RequireOrganization } from './routes/guards'
 import { FullPageLoader, LoadingState } from './components/ui/States'
 import { AppShell } from './components/layout/AppShell'
@@ -15,6 +15,8 @@ const Onboarding = lazy(() => import('./pages/Onboarding'))
 const Dashboard = lazy(() => import('./pages/app/Dashboard'))
 const Crm = lazy(() => import('./pages/app/Crm'))
 const ModulePreview = lazy(() => import('./pages/app/ModulePreview'))
+const LeadFinder = lazy(() => import('./pages/app/LeadFinder'))
+const LeadScoring = lazy(() => import('./pages/app/LeadScoring'))
 const Billing = lazy(() => import('./pages/app/Billing'))
 const Settings = lazy(() => import('./pages/app/Settings'))
 const SuperAdmin = lazy(() => import('./pages/app/SuperAdmin'))
@@ -22,14 +24,18 @@ const NotFound = lazy(() => import('./pages/NotFound'))
 
 /** Moduli "in preparazione": path relativo sotto /app → chiave del registro moduli. */
 const PREVIEW_ROUTES: [string, string][] = [
-  ['lead-finder', 'leadFinder'],
   ['business-analyzer', 'analyzer'],
-  ['lead-scoring', 'scoring'],
   ['sales-agent', 'salesAgent'],
   ['campaigns', 'campaigns'],
   ['follow-up', 'followUp'],
   ['analytics', 'analytics'],
 ]
+
+/** Alias /dashboard/* → /app/* (es. /dashboard/lead-finder). */
+function DashboardAlias() {
+  const params = useParams()
+  return <Navigate to={`/app/${params['*'] ?? ''}`} replace />
+}
 
 export function AppRoutes() {
   return (
@@ -57,6 +63,8 @@ export function AppRoutes() {
               }
             />
             <Route path="crm" element={<Suspense fallback={<LoadingState />}><Crm /></Suspense>} />
+            <Route path="lead-finder" element={<Suspense fallback={<LoadingState />}><LeadFinder /></Suspense>} />
+            <Route path="lead-scoring" element={<Suspense fallback={<LoadingState />}><LeadScoring /></Suspense>} />
             {PREVIEW_ROUTES.map(([path, key]) => (
               <Route key={path} path={path} element={<Suspense fallback={<LoadingState />}><ModulePreview moduleKey={key} /></Suspense>} />
             ))}
@@ -68,6 +76,7 @@ export function AppRoutes() {
         </Route>
       </Route>
 
+      <Route path="/dashboard/*" element={<DashboardAlias />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   )

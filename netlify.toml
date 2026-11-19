@@ -9,11 +9,7 @@
 [functions]
   node_bundler = "esbuild"
 
-# Le API serverless sono raggiungibili sotto /api/*
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
+# Le API serverless dichiarano il proprio percorso /api/... (config.path nelle functions).
 
 # Fallback SPA per React Router
 [[redirects]]

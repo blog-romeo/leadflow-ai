@@ -2,10 +2,12 @@
 
 Piattaforma SaaS multi-tenant per trovare, analizzare, qualificare e gestire opportunità commerciali B2B.
 
-**Stato: Fase 1 (fondamenta).** Sono operativi: pagina pubblica, registrazione/accesso, creazione
-dell'organizzazione, dashboard con dati reali, CRM in sola lettura, impostazioni, Super Admin, schema
-dati con RLS. I moduli AI, Campagne, Follow-up, Analytics e Billing sono **dichiaratamente "in
-preparazione"**: non simulano funzioni né mostrano dati di esempio.
+**Stato: Fase 2 (AI Lead Finder).** Oltre alle fondamenta della fase 1 (auth, organizzazioni, dashboard,
+CRM, RLS) sono operativi: **AI Lead Finder** (ricerca su fonti autorizzate, importazione CSV,
+deduplicazione, salvataggio nel CRM, esclusione, export dove consentito), **AI Business Analyzer**
+(analisi del sito con OpenAI, lato server) e **AI Lead Scoring** (criteri e pesi configurabili).
+Sales Agent, Campagne, Follow-up, Analytics e Billing restano **dichiaratamente "in preparazione"**.
+Nessun dato simulato viene mostrato come reale: i mock esistono solo nei test.
 
 ## Stack
 
@@ -55,8 +57,11 @@ mostrano un avviso "Supabase non è configurato" con i form disabilitati.
 | `VITE_SUPABASE_ANON_KEY` | browser | chiave pubblica; la protezione dei dati è data da RLS |
 | `VITE_APP_URL` | browser | URL pubblico, per i redirect delle email di Auth |
 | `SUPABASE_URL`, `SUPABASE_ANON_KEY` | solo Netlify Functions | verifica dei JWT lato server |
-| `SUPABASE_SERVICE_ROLE_KEY` | solo Netlify Functions | **fasi successive** (job AI, webhook). Mai nel browser |
-| `OPENAI_API_KEY`, `OPENAI_MODEL` | solo Netlify Functions | fasi successive |
+| `SUPABASE_SERVICE_ROLE_KEY` | solo Netlify Functions | scritture server del Lead Finder dopo i controlli. Mai nel browser |
+| `OVERPASS_API_URL`, `OVERPASS_CONTACT`, `OVERPASS_API_KEY` | solo Netlify Functions | fonte OpenStreetMap (endpoint HTTPS a pagamento o self-hosted) |
+| `GOOGLE_PLACES_API_KEY` | solo Netlify Functions | fonte Google Places (solo sessione) |
+| `OPENAI_API_KEY`, `OPENAI_MODEL` | solo Netlify Functions | AI Business Analyzer |
+| `LEADFLOW_INTERNAL_SECRET` | solo Netlify Functions | ≥ 32 caratteri, autentica l'avvio dei job AI in background |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | solo Netlify Functions | fasi successive |
 
 Le variabili server **non** devono mai avere il prefisso `VITE_`, altrimenti Vite le inserisce nel bundle.
@@ -76,6 +81,7 @@ In alternativa, nel SQL Editor di Supabase esegui nell'ordine:
 
 1. `supabase/migrations/20261119000001_initial_schema.sql`
 2. `supabase/migrations/20261119000002_security_rls.sql`
+3. `supabase/migrations/20261119000003_lead_finder.sql`
 
 ### Configurazione Auth
 
@@ -139,7 +145,7 @@ update public.profiles set platform_role = 'super_admin' where email = 'operator
 ```bash
 npm run typecheck   # TypeScript su app, config e functions
 npm test            # unit test (validazione, i18n, guard delle rotte, DataTable, CSP)
-npm run test:rls    # migrazioni + 49 test di isolamento su un Postgres temporaneo locale
+npm run test:rls    # migrazioni + 78 test SQL (isolamento, dedup, licenze, quote) su Postgres temporaneo
 npm run build       # build di produzione
 ```
 
@@ -166,11 +172,72 @@ aggiorna l'hash (un test lo verifica).
 | Endpoint | Auth | Descrizione |
 | --- | --- | --- |
 | `GET /api/health` | no | liveness |
-| `GET /api/ai-status?organization_id=` | Bearer JWT, membro dell'org | stato reale dei moduli AI. Modello di autorizzazione per i futuri endpoint AI |
+| `GET /api/ai-status?organization_id=` | Bearer JWT, membro | stato dei moduli AI |
+| `GET /api/lead-finder/providers?organization_id=` | Bearer JWT, membro | fonti configurate, diritti di licenza, stato AI |
+| `POST /api/lead-finder/search` | Bearer JWT, membro | ricerca su una fonte (rate limit + quote) |
+| `POST /api/lead-finder/import` | Bearer JWT, membro | import CSV (max 1000 righe, base giuridica obbligatoria) |
+| `POST /api/lead-finder/analyze` | Bearer JWT, membro | avvia un job di analisi AI (202) |
+| `POST /api/lead-finder/analyze-run` | segreto interno | background function che esegue il job |
+| `POST /api/lead-finder/save` | Bearer JWT, membro | salva nel CRM i candidati consentiti |
+| `POST /api/lead-finder/exclude` | Bearer JWT, membro | esclude/ripristina candidati |
+| `GET /api/lead-finder/export` | Bearer JWT, membro | CSV dei soli dati esportabili per licenza |
+
+Le pagine `/dashboard/*` reindirizzano a `/app/*` (es. `/dashboard/lead-finder`).
+
+## AI Lead Finder
+
+### Architettura (`netlify/functions/_shared/lead-finder/`)
+
+| Servizio | File | Ruolo |
+| --- | --- | --- |
+| Lead Search Service | `services.ts` → `runSearch` | quote, rate limit, avanzamento reale su `lead_searches` |
+| Provider Adapter | `providers/*.ts`, `registry.ts` | OpenStreetMap/Overpass, Google Places; licenza dichiarata per provider |
+| Lead Normalization | `normalize.ts`, `sectors.ts` | testo, URL sicuri, telefoni, catalogo settori IT/EN ↔ tag OSM |
+| Lead Deduplication | `dedup.ts` + vincoli DB | per (org, provider, id esterno) e per dominio o nome+città |
+| AI Analysis Service | `analysis/*`, `analysisService.ts` | sito (anti-SSRF, robots.txt), OpenAI Structured Outputs, verifica citazioni |
+| Lead Scoring Service | `scoring.ts` | 5 criteri, pesi da `organization_profiles` |
+| CRM Persistence | `services.ts` → `saveToCrm`, `supabaseStore.ts` | lead con fonte, punteggio e analisi |
+
+Ogni endpoint verifica il JWT e l'appartenenza all'organizzazione **prima** di usare la service role; ogni
+query server filtra per `organization_id`. I log sono JSON senza dati personali né segreti.
+
+### Fonti integrate e limiti di licenza
+
+| Fonte | Memorizzazione | Export CSV | CRM | Note |
+| --- | --- | --- | --- | --- |
+| OpenStreetMap (Overpass) | sì | sì, con attribuzione | sì | ODbL. L'istanza pubblica `overpass-api.de` chiede server propri o a pagamento per l'uso commerciale e sconsiglia app su netlify.app: serve `OVERPASS_API_URL`. Copertura di siti/telefoni variabile. |
+| Google Places (New) | solo `place_id` | no | no | Per clienti SEE gli usi consentiti sono un elenco chiuso che non copre esplicitamente le liste lead; solo place_id memorizzabile. Risultati mostrati in sessione; il vincolo è anche nel DB (`lead_candidates_license_storage`). |
+| Import CSV | sì | sì | sì | Dati acquisiti legittimamente, base giuridica e conferma obbligatorie. |
+
+Per aggiungere un provider B2B con licenza: implementare `ProviderAdapter`, dichiarare i diritti in
+`license` dopo aver letto i termini, registrarlo in `registry.ts`.
+
+### Scoring
+
+Compatibilità settore 30 · geografica 20 · cliente ideale 25 · segnali verificabili 15 · completezza 10
+(pesi modificabili in *AI Lead Scoring*, somma 100). Priorità: alta ≥ 80, media ≥ 50, bassa < 50.
+Senza analisi AI il punteggio è marcato **preliminare** (cliente ideale e segnali a 0). I segnali contano
+solo se la citazione compare davvero nel testo del sito.
+
+### Analisi AI
+
+Il sito viene letto solo se `robots.txt` lo consente, tramite fetch con DNS verificato alla connessione
+(blocco IP privati/metadata), porte 80/443, max 3 redirect, 600 KB, timeout. Le email vengono rimosse
+prima dell'invio a OpenAI (`store: false`). Ogni citazione non trovata nel testo viene declassata a
+ipotesi; le esigenze digitali sono sempre ipotesi. Il credito si consuma solo ad analisi riuscita.
+
+### Costi da configurare
+
+- **Google Places**: la ricerca richiede sito e telefono, quindi ogni pagina (max 20 risultati, fino a 3
+  pagine per ricerca) è fatturata con lo SKU *Text Search Enterprise*. Imposta budget e quote nel Google Cloud Console.
+- **Overpass**: dipende dal provider scelto (abbonamento) o dai costi del server self-hosted.
+- **OpenAI**: una chiamata per analisi (≈ 2–5k token in ingresso, ≤ 4k in uscita); consumo registrato in `ai_jobs`.
+- **Quote interne** (`organization_quotas`, default per mese): 50 ricerche, 1000 risultati, 100 analisi AI,
+  20 richieste/minuto per utente. Si modificano via SQL (service role).
 
 ## Roadmap
 
-- **Fase 2**: fonti e import lead (manuale/CSV) con provenienza, scheda lead, attività, opposizione/soppressione da UI, inviti al team via function.
-- **Fase 3**: AI Business Analyzer e Lead Scoring via OpenAI lato server, con `ai_jobs` e `usage_events`.
+- **Fase 2 (completata)**: AI Lead Finder, Business Analyzer, Lead Scoring.
+- **Prossimo**: scheda lead nel CRM con attività, opposizione/soppressione da UI, inviti al team via function.
 - **Fase 4**: Stripe (checkout, portale, webhook → `subscriptions`), limiti per piano.
 - **Fase 5**: Campaign Manager, AI Follow-up, Sales Agent (solo bozze con approvazione umana), Analytics.

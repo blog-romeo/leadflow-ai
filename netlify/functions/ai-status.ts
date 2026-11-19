@@ -23,3 +23,4 @@ export default async (req: Request): Promise<Response> => {
     return handleError(err)
   }
 }
+export const config = { path: '/api/ai-status' }

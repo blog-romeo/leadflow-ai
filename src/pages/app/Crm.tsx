@@ -11,7 +11,7 @@ import { Select } from '../../components/ui/Field'
 import { Badge } from '../../components/ui/Badge'
 import { EmptyState } from '../../components/ui/States'
 
-type LeadListRow = Pick<LeadRow, 'id' | 'company_name' | 'city' | 'status' | 'contact_status' | 'score' | 'created_at'>
+type LeadListRow = Pick<LeadRow, 'id' | 'company_name' | 'city' | 'status' | 'contact_status' | 'score' | 'priority' | 'score_basis' | 'created_at'>
 const STATUSES: LeadStatus[] = ['new', 'contacted', 'qualified', 'proposal', 'won', 'lost']
 const PAGE_SIZE = 20
 
@@ -37,9 +37,10 @@ export default function Crm() {
     setError(null)
     let query = supabase
       .from('leads')
-      .select('id, company_name, city, status, contact_status, score, created_at', { count: 'exact' })
+      .select('id, company_name, city, status, contact_status, score, priority, score_basis, created_at', { count: 'exact' })
       .eq('organization_id', currentOrg.id)
       .is('deleted_at', null)
+      .order('score', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false })
       .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1)
     if (q) query = query.ilike('company_name', `%${escapeLike(q)}%`)
@@ -70,7 +71,21 @@ export default function Crm() {
     },
     { key: 'status', header: t('crm.colStatus'), render: (r) => <Badge tone="flow">{t(`status.${r.status}`)}</Badge> },
     { key: 'contact', header: t('crm.colContact'), hideOnMobile: true, render: (r) => <Badge tone={contactTone[r.contact_status]}>{t(`status.${r.contact_status}`)}</Badge> },
-    { key: 'score', header: t('crm.colScore'), align: 'right', hideOnMobile: true, render: (r) => (r.score === null ? <span className="text-muted">{t('crm.noScore')}</span> : r.score) },
+    {
+      key: 'score',
+      header: t('crm.colScore'),
+      align: 'right',
+      hideOnMobile: true,
+      render: (r) =>
+        r.score === null ? (
+          <span className="text-muted">{t('crm.noScore')}</span>
+        ) : (
+          <span className="inline-flex items-center gap-2">
+            {r.priority && <Badge tone={r.priority === 'high' ? 'ok' : r.priority === 'medium' ? 'signal' : 'neutral'}>{t(`leadFinder.priority.${r.priority}`)}</Badge>}
+            <span className="tabular font-semibold">{r.score}</span>
+          </span>
+        ),
+    },
     { key: 'created', header: t('crm.colCreated'), hideOnMobile: true, render: (r) => <time dateTime={r.created_at}>{formatDate(r.created_at)}</time> },
   ]
 

@@ -62,6 +62,14 @@ export type LeadRow = {
   opted_out_at: string | null
   suppressed_at: string | null
   score: number | null
+  priority: 'high' | 'medium' | 'low' | null
+  score_basis: 'rules' | 'ai' | null
+  score_breakdown: Json | null
+  score_explanation: string | null
+  provider: 'osm_overpass' | 'google_places' | 'csv_import' | null
+  external_id: string | null
+  acquired_at: string | null
+  last_analyzed_at: string | null
   owner_id: string | null
   notes: string | null
   last_activity_at: string | null
@@ -127,10 +135,79 @@ export type AiJobRow = {
   model: string | null
   tokens_input: number | null
   tokens_output: number | null
+  candidate_id: string | null
   created_by: string | null
   created_at: string
   started_at: string | null
   completed_at: string | null
+}
+export type LeadCandidateRow = {
+  id: string
+  organization_id: string
+  provider: 'osm_overpass' | 'google_places' | 'csv_import'
+  external_id: string
+  search_id: string | null
+  source_id: string | null
+  company_name: string | null
+  sector: string | null
+  category_tags: string[]
+  address: string | null
+  city: string | null
+  region: string | null
+  postal_code: string | null
+  country: string | null
+  website: string | null
+  phone: string | null
+  source_url: string | null
+  attribution: string | null
+  can_store_content: boolean
+  can_export: boolean
+  can_save_to_crm: boolean
+  dedup_key: string | null
+  status: 'new' | 'saved' | 'excluded'
+  excluded_reason: string | null
+  lead_id: string | null
+  score: number | null
+  priority: 'high' | 'medium' | 'low' | null
+  score_basis: 'rules' | 'ai' | null
+  score_breakdown: Json | null
+  analysis: Json | null
+  last_analyzed_at: string | null
+  acquired_at: string
+  last_seen_at: string
+  created_at: string
+  updated_at: string
+}
+export type LeadSearchRow = {
+  id: string
+  organization_id: string
+  provider: 'osm_overpass' | 'google_places' | 'csv_import'
+  params: Json
+  status: 'running' | 'completed' | 'failed'
+  stage: 'querying_provider' | 'normalizing' | 'deduplicating' | 'scoring' | 'saving' | 'done' | 'failed'
+  results_count: number
+  new_count: number
+  duplicate_count: number
+  excluded_count: number
+  error_code: string | null
+  created_by: string | null
+  created_at: string
+  completed_at: string | null
+}
+export type OrganizationProfileRow = {
+  organization_id: string
+  services_description: string | null
+  ideal_customer: string | null
+  target_sectors: string[]
+  target_regions: string[]
+  target_countries: string[]
+  weight_sector: number
+  weight_geography: number
+  weight_icp: number
+  weight_signals: number
+  weight_completeness: number
+  updated_by: string | null
+  updated_at: string
 }
 export type SubscriptionRow = {
   id: string
@@ -188,12 +265,19 @@ export type Database = {
       ai_jobs: Table<AiJobRow>
       subscriptions: Table<SubscriptionRow>
       audit_logs: Table<AuditLogRow>
+      lead_candidates: Table<LeadCandidateRow>
+      lead_searches: Table<LeadSearchRow>
+      organization_profiles: Table<OrganizationProfileRow>
     }
     Views: { [_ in never]: never }
     Functions: {
       create_organization: {
         Args: { p_name: string; p_vat_number?: string | null; p_country?: string }
         Returns: OrganizationRow
+      }
+      usage_summary: {
+        Args: { p_org: string }
+        Returns: Json
       }
       suppress_lead: {
         Args: { p_lead_id: string; p_reason?: string }
