@@ -6,7 +6,7 @@ import type { Warning } from './postcheck'
  * Persistenza del Sales Agent. Implementazione Supabase (service role) in produzione,
  * in memoria nei test. Ogni metodo riceve l'organizzazione: nessuna query senza tenant.
  */
-export type SalesTask = 'intelligence' | 'messages' | 'proposal' | 'follow_up_suggestion' | 'copilot'
+export type SalesTask = 'intelligence' | 'messages' | 'proposal' | 'follow_up_suggestion' | 'copilot' | 'campaign_content' | 'inbound_analysis'
 
 export interface SalesJob {
   id: string
@@ -106,4 +106,24 @@ export interface SalesStore {
   setFollowUpSuggestion(org: string, taskId: string, suggestion: Record<string, unknown>): Promise<void>
   insertAssistantMessage(org: string, conversationId: string, row: { content: string; structured: unknown; jobId: string; model: string; tokensInput: number; tokensOutput: number }): Promise<string>
   logActivity(org: string, leadId: string, actor: string | null, subject: string, metadata: Record<string, unknown>): Promise<void>
+  getCampaignForContent(org: string, campaignId: string, position: number): Promise<CampaignContentContext | null>
+  saveStepVariants(org: string, stepId: string, variants: unknown[], warnings: Warning[], jobId: string): Promise<void>
+  getInbound(org: string, id: string): Promise<InboundRow | null>
+  saveInboundAnalysis(org: string, id: string, a: { classification: string; summary: string; suggested_reply: string | null; needs_human: boolean; jobId: string }): Promise<void>
+}
+
+export interface CampaignContentContext {
+  campaign: { id: string; name: string; status: string; goal: string; service_name: string | null; language: 'it' | 'en'; channel: string; call_to_action: string | null; description: string | null }
+  step: { id: string; position: number; kind: string; day_offset: number }
+  audience: { recipients: number; with_contact_name: number; industries: { name: string; count: number }[]; countries: { name: string; count: number }[]; cities: { name: string; count: number }[] }
+}
+
+export interface InboundRow {
+  id: string
+  lead_id: string | null
+  from_email: string
+  subject: string | null
+  body_text: string | null
+  received_at: string
+  original: { subject: string; body_text: string } | null
 }

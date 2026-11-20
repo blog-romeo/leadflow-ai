@@ -3,7 +3,7 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { LogOut, Menu, X } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useI18n } from '../../i18n'
-import { NAV_GROUPS, visibleModules } from '../../config/modules'
+import { NAV_GROUPS, navItems } from '../../config/modules'
 import { cn } from '../../lib/cn'
 import { Logo } from '../ui/Logo'
 import { LanguageSwitch, ThemeToggle } from '../ui/Preferences'
@@ -23,7 +23,7 @@ function initials(name: string): string {
 function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const { isSuperAdmin } = useAuth()
   const { t } = useI18n()
-  const modules = visibleModules(isSuperAdmin)
+  const modules = navItems(isSuperAdmin)
   return (
     <nav aria-label={t('common.appName')} className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
       {NAV_GROUPS.map((group) => {

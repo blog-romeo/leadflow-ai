@@ -39,7 +39,7 @@ export default function SalesProfile() {
   const { t } = useI18n()
   const { currentOrg, isOrgAdmin, user } = useAuth()
   const [row, setRow] = useState<SalesProfileRow | null | undefined>(undefined)
-  const [f, setF] = useState({ commercial_name: '', sector: '', website: '', offer_description: '', price_range: '', currency: 'EUR', served_areas: '', ideal_customer: '', differentiators: '', language: 'it', tone: 'consultative' as SalesTone, call_to_action: '', booking_url: '', commercial_terms: '', follow_up_days: '3, 7, 14' })
+  const [f, setF] = useState({ commercial_name: '', sector: '', website: '', offer_description: '', price_range: '', currency: 'EUR', served_areas: '', ideal_customer: '', differentiators: '', language: 'it', tone: 'consultative' as SalesTone, call_to_action: '', booking_url: '', commercial_terms: '', follow_up_days: '3, 7, 14', sender_legal_name: '', sender_address: '', privacy_policy_url: '', email_signature: '' })
   const [services, setServices] = useState<ServiceForm[]>([])
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null)
@@ -74,6 +74,10 @@ export default function SalesProfile() {
           booking_url: p.booking_url ?? '',
           commercial_terms: p.commercial_terms ?? '',
           follow_up_days: p.follow_up_days.join(', '),
+          sender_legal_name: p.sender_legal_name ?? '',
+          sender_address: p.sender_address ?? '',
+          privacy_policy_url: p.privacy_policy_url ?? '',
+          email_signature: p.email_signature ?? '',
         })
         setServices(p.services.map((s) => ({ id: s.id, name: s.name, description: s.description ?? '', price_from: s.price_from?.toString() ?? '', price_to: s.price_to?.toString() ?? '', price_unit: s.price_unit ?? '' })))
       })
@@ -87,6 +91,7 @@ export default function SalesProfile() {
     const err: Record<string, string> = {}
     if (f.website && !/^https?:\/\/\S+$/i.test(f.website.trim())) err.website = t('sales.profile.invalidUrl')
     if (f.booking_url && !/^https:\/\/\S+$/i.test(f.booking_url.trim())) err.booking_url = t('sales.profile.invalidUrl')
+    if (f.privacy_policy_url && !/^https:\/\/\S+$/i.test(f.privacy_policy_url.trim())) err.privacy_policy_url = t('sales.profile.invalidUrl')
     const days = f.follow_up_days.split(',').map((x) => Number(x.trim())).filter((x) => !Number.isNaN(x))
     if (!days.length || days.length > 6 || days.some((d, i) => !Number.isInteger(d) || d < 1 || d > 90 || (i > 0 && d <= days[i - 1]!))) err.follow_up_days = t('sales.profile.invalidDays')
     const used = new Set<string>()
@@ -124,6 +129,10 @@ export default function SalesProfile() {
         booking_url: f.booking_url.trim() || null,
         commercial_terms: f.commercial_terms.trim() || null,
         follow_up_days: days,
+        sender_legal_name: f.sender_legal_name.trim() || null,
+        sender_address: f.sender_address.trim() || null,
+        privacy_policy_url: f.privacy_policy_url.trim() || null,
+        email_signature: f.email_signature.trim() || null,
         updated_by: user?.id ?? null,
       })
       .eq('organization_id', currentOrg.id)
@@ -230,6 +239,15 @@ export default function SalesProfile() {
           <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
             <Area id="terms" label={t('sales.profile.commercialTerms')} value={f.commercial_terms} onChange={set('commercial_terms')} disabled={ro} hint={t('sales.profile.commercialTermsHint')} />
             <Field label={t('sales.profile.followUpDays')} value={f.follow_up_days} onChange={(e) => set('follow_up_days')(e.target.value)} disabled={ro} error={errors.follow_up_days} hint={t('sales.profile.followUpDaysHint')} />
+          </div>
+        </Panel>
+        <Panel title={t('senderProfile.title')}>
+          <p className="mb-4 text-sm text-muted">{t('senderProfile.intro')}</p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label={t('senderProfile.legalName')} value={f.sender_legal_name} onChange={(e) => set('sender_legal_name')(e.target.value)} disabled={ro} maxLength={200} />
+            <Field label={t('senderProfile.address')} value={f.sender_address} onChange={(e) => set('sender_address')(e.target.value)} disabled={ro} maxLength={300} />
+            <Field label={t('senderProfile.privacyUrl')} type="url" placeholder="https://" value={f.privacy_policy_url} onChange={(e) => set('privacy_policy_url')(e.target.value)} disabled={ro} error={errors.privacy_policy_url} />
+            <Area id="signature" label={t('senderProfile.signature')} value={f.email_signature} onChange={set('email_signature')} disabled={ro} rows={3} />
           </div>
         </Panel>
         {!ro && (

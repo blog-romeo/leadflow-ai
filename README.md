@@ -2,13 +2,18 @@
 
 Piattaforma SaaS multi-tenant per trovare, analizzare, qualificare e gestire opportunità commerciali B2B.
 
-**Stato: Fase 3 (AI Sales Agent).** Oltre alle fondamenta (auth, organizzazioni, dashboard, CRM, RLS) e
-all'**AI Lead Finder** (ricerca su fonti autorizzate, import CSV, Business Analyzer, Lead Scoring) sono
-operativi: **AI Sales Agent** (profilo commerciale, Lead Intelligence, generatore di bozze messaggi,
-proposte commerciali, follow-up intelligente, Copilot), **pipeline a 12 fasi** con drag-and-drop e
-storico, **calendario follow-up**. Il Sales Agent **non invia nulla**: produce solo bozze; l'approvazione
-di una bozza non autorizza l'invio. Campagne, Analytics e Billing restano **"in preparazione"**.
-Nessun dato simulato viene mostrato come reale: i mock esistono solo nei test.
+**Stato: Fase 4 (Campaign Manager & Automation Engine).** Oltre a fondamenta, **AI Lead Finder** e
+**AI Sales Agent** sono operativi nel codice: **Campaign Manager** (builder in 6 passi, verifica di idoneità per
+paese/canale/base giuridica, contenuti AI con segnaposto, approvazione e attivazione esplicita), **motore di
+automazione** (job con lease, retry con backoff, dead-letter, idempotenza), **provider email Resend** (API key
+cifrata, verifica dominio SPF/DKIM/DMARC, webhook firmati, disiscrizione one-click), **Comunicazioni** (risposte
+ricevute con analisi AI), **Analytics** con denominatori espliciti e **Automazioni** a regole. Nessun invio avviene
+senza provider collegato, dominio verificato e conferma esplicita di un amministratore. Billing resta
+**"in preparazione"**. Nessun dato simulato viene mostrato come reale: i mock esistono solo nei test.
+
+> Gli invii reali, i webhook e il motore pianificato **non sono stati verificati contro servizi live**
+> (Resend, Supabase e Netlify di produzione): sono coperti da test automatici con provider simulato
+> a livello HTTP e da test SQL. Vedi "Limiti e verifiche" più sotto.
 
 ## Stack
 
@@ -29,14 +34,17 @@ src/
   contexts/        AuthContext (sessione, profilo, membership, org corrente), ThemeContext
   i18n/            it.ts (predefinita), en.ts, provider
   lib/             supabase client (solo anon key), env, validation, errors, tipi DB
-  features/        lead-finder/, sales/ (generatore, proposte, follow-up, pipeline, Copilot, grafici)
+  features/        lead-finder/, sales/ (generatore, proposte, follow-up, pipeline, Copilot, grafici),
+                   campaigns/ (builder, idoneità, contenuti, monitoraggio, consensi)
   pages/           Landing, auth/*, Onboarding, app/* (Dashboard, Crm, Pipeline, FollowUps, LeadFinder,
                    SalesDashboard, SalesProfile, SalesLead, Settings, Billing, SuperAdmin, ModulePreview)
   routes/guards    RequireAuth, RequireOrganization, RequireSuperAdmin, PublicOnly
-netlify/functions  health, ai-status, lead-finder-*, sales-agent-*, _shared (auth, http, dispatch,
-                   lead-finder/, sales-agent/)
+netlify/functions  health, ai-status, lead-finder-*, sales-agent-*, communication-*, campaigns-*, inbox-*,
+                   webhooks-resend, unsubscribe, automation-tick (pianificata), automation-worker (background),
+                   _shared (auth, http, dispatch, lead-finder/, sales-agent/, campaigns/)
 supabase/
   migrations/      0001 schema · 0002 sicurezza/RLS · 0003 Lead Finder · 0004 tipi attività · 0005 Sales Agent
+                   · 0006 Campaign Manager
   tests/           test RLS eseguibili su Postgres locale
 ```
 
@@ -67,6 +75,8 @@ mostrano un avviso "Supabase non è configurato" con i form disabilitati.
 | `OPENAI_API_KEY`, `OPENAI_MODEL` | solo Netlify Functions | Business Analyzer e Sales Agent |
 | `LEADFLOW_INTERNAL_SECRET` | solo Netlify Functions | ≥ 32 caratteri, autentica l'avvio dei job AI in background (Lead Finder e Sales Agent) |
 | `OPENAI_PRICE_INPUT_PER_MTOK`, `OPENAI_PRICE_OUTPUT_PER_MTOK` | solo Netlify Functions | facoltative: USD per 1M token, per stimare `ai_jobs.cost_usd` |
+| `LEADFLOW_CREDENTIALS_KEY` | solo Netlify Functions | 32 byte base64: cifra le credenziali dei provider (AES-256-GCM) e firma i link di disiscrizione |
+| `URL` | impostata da Netlify | URL del sito, usata per link di disiscrizione e invocazione del worker |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | solo Netlify Functions | fasi successive |
 
 Le variabili server **non** devono mai avere il prefisso `VITE_`, altrimenti Vite le inserisce nel bundle.
@@ -90,10 +100,15 @@ In alternativa, nel SQL Editor di Supabase esegui nell'ordine:
 4. `supabase/migrations/20261120000004_activity_types.sql` (da eseguire **da sola**: `ALTER TYPE … ADD VALUE`
    non può essere usato nella stessa transazione che usa i nuovi valori)
 5. `supabase/migrations/20261120000005_sales_agent.sql`
+6. `supabase/migrations/20261121000006_campaign_manager.sql`
 
 La migrazione 0005 sostituisce l'enum `lead_status` con le 12 fasi della pipeline: i lead esistenti in
 `proposal` passano a `proposal_sent`; nessun dato viene cancellato. Le organizzazioni esistenti ricevono
 un profilo commerciale vuoto.
+
+La migrazione 0006 **rinomina senza perdere dati** `contact_suppressions` → `suppression_entries` (resta una vista
+di compatibilità in sola lettura) e `campaign_leads` → `campaign_recipients`; gli stati delle campagne esistenti
+vengono convertiti (`active` → `running`, `archived` → `completed`).
 
 ### Configurazione Auth
 
@@ -159,7 +174,7 @@ update public.profiles set platform_role = 'super_admin' where email = 'operator
 ```bash
 npm run typecheck   # TypeScript su app, config e functions
 npm test            # unit test (validazione, i18n, guard delle rotte, DataTable, CSP)
-npm run test:rls    # migrazioni + 134 test SQL (isolamento, dedup, licenze, quote, Sales Agent) su Postgres temporaneo
+npm run test:rls    # migrazioni + 217 test SQL (isolamento, dedup, licenze, quote, Sales Agent, campagne) su Postgres temporaneo
 npm run build       # build di produzione
 ```
 
@@ -199,6 +214,15 @@ aggiorna l'hash (un test lo verifica).
 | `POST /api/sales-agent/generate` | Bearer JWT, membro | avvia un job: `intelligence`, `messages`, `proposal`, `follow_up_suggestion` (202) |
 | `POST /api/sales-agent/copilot` | Bearer JWT, membro | domanda al Copilot; crea/continua una conversazione privata (202) |
 | `POST /api/sales-agent/run` | segreto interno | background function che esegue i job del Sales Agent |
+| `GET /api/communication/providers?organization_id=` | Bearer JWT, membro | provider, prerequisiti del server, account (mai credenziali) |
+| `POST /api/communication/accounts` | Bearer JWT, admin | `create`, `refresh`, `webhook_secret`, `limits`, `revoke` |
+| `POST /api/communication/test-send` | Bearer JWT, admin | invio di prova verso sandbox Resend o membri dell'organizzazione |
+| `POST /api/campaigns/generate-content` | Bearer JWT, membro | 3 varianti AI per uno step email (202) |
+| `POST /api/inbox/actions` | Bearer JWT, membro | `reply` (con conferma esplicita) o `analyze` di una risposta ricevuta |
+| `POST /api/webhooks/resend/:accountId` | firma Svix | eventi di consegna e risposte ricevute |
+| `GET/POST /api/unsubscribe?t=` | token HMAC | pagina di conferma (GET) e disiscrizione one-click (POST, RFC 8058) |
+| `POST /api/automation/worker` | segreto interno | background function che esegue i job di automazione |
+| `automation-tick` | pianificata (ogni minuto) | step in scadenza, eventi → workflow, avvio del worker |
 
 Le pagine `/dashboard/*` reindirizzano a `/app/*` (es. `/dashboard/lead-finder`).
 
@@ -302,8 +326,8 @@ Flusso: l'endpoint verifica JWT, appartenenza, configurazione AI, rate limit e q
 
 ### Pipeline
 
-12 fasi: `new`, `qualified`, `to_contact`, `contacted`, `replied`, `meeting_scheduled`,
-`proposal_sent`, `negotiation`, `won`, `lost`, `follow_up`, `not_contactable`. Ogni cambio di fase è
+12 fasi: `new`, `to_qualify`, `qualified`, `to_contact`, `contacted`, `in_conversation`,
+`meeting_scheduled`, `proposal_sent`, `negotiation`, `won`, `lost`, `not_contactable`. Ogni cambio di fase è
 registrato da trigger in `activities` (da/a, utente responsabile). Alternativa accessibile al
 drag-and-drop: un menu "Sposta in" su ogni scheda, utilizzabile da tastiera e screen reader.
 
@@ -324,9 +348,87 @@ di contatto non si possono creare o completare per lead non contattabili.
   (`OPENAI_PRICE_*_PER_MTOK`), il costo stimato in `ai_jobs.cost_usd`. I prezzi variano per modello:
   consulta il listino OpenAI e imposta budget e limiti anche nella dashboard OpenAI.
 
+## Campaign Manager & Automation Engine
+
+Pagine: `/app/campaigns` (alias `/dashboard/campaigns`: KPI e filtri per data, campagna, canale, stato),
+`/app/campaigns/new` e `/app/campaigns/:id` (builder in 6 passi o monitoraggio), `/app/inbox` (alias
+`/dashboard/inbox`), `/app/analytics`, `/app/automations`, `/app/settings/channels`. Nella scheda del lead:
+registro consensi/opposizioni per canale e tag.
+
+### Flusso di una campagna
+
+1. **Informazioni**: obiettivo, servizio, lingua, canale, data, finestra di invio (fuso orario, giorni feriali).
+2. **Destinatari**: filtri su settore, paese, città, punteggio, fase, tag, origine (eseguiti in SQL, max 2000, deduplicati).
+3. **Idoneità** (`private.lead_eligibility`, unica fonte di verità): provenienza, base giuridica per paese e
+   canale, consensi, opposizioni, preferenze di canale, suppression list. Regole prudenziali (non parere legale):
+   email promozionale con consenso registrato ovunque; soft opt-in per clienti esistenti; legittimo interesse
+   solo FR e GB (indirizzi professionali); altrove (IT, DE, ES, resto) serve il consenso. LinkedIn e telefono solo
+   manuali, WhatsApp solo con opt-in. Un "consenso" dichiarato sulla fonte senza prova registrata non basta.
+4. **Contenuti**: modello con segnaposto `{{azienda}}`, `{{citta}}`, `{{settore}}`, `{{nome}}`; 3 varianti AI
+   (al modello vanno solo dati aggregati del pubblico). Il server segnala testimonianze, urgenza artificiale,
+   finti rapporti pregressi, promesse, importi e link non verificati, segnaposto non ammessi.
+5. **Revisione** (`campaign_readiness`): idonei, esclusi con motivi, messaggi previsti, canale, quota, avvisi.
+6. **Attivazione**: solo `organization_admin`, con presa visione degli avvisi e conferma del numero di
+   destinatari visto in revisione; contenuti e impostazioni restano bloccati e salvati nell'istantanea.
+
+Sequenza predefinita: giorno 0 email, 3 verifica + suggerimento AI (promemoria, nessun invio), 7 follow-up se
+ancora consentito, 14 revisione dell'opportunità (giorni dal profilo commerciale).
+
+### Invio e motore dei job
+
+- `automation-tick` (scheduled function, max 30 s) crea job idempotenti per gli step in scadenza e smista gli
+  eventi; `automation-worker` (background function, fino a 15 min) li esegue con lease (`FOR UPDATE SKIP LOCKED`).
+- Prima di **ogni** invio `public.begin_send` ripete nel database idoneità, stato di campagna e destinatario,
+  suppression list, connessione del provider, limiti giornalieri/al minuto e quota mensile.
+- Idempotenza: un messaggio per destinatario e step; chiave `Idempotency-Key` di Resend (24 h) sul messaggio,
+  quindi un retry dopo un timeout non produce un doppio invio. Oltre 23 h un esito incerto diventa `unknown`.
+- Retry con backoff esponenziale (60 s, 120 s… max 1 h, jitter), 5 tentativi, poi dead-letter visibile in
+  Automazioni e nel monitoraggio. Finestra di invio e limiti rinviano senza consumare tentativi.
+- Arresto immediato (trigger): opposizione, disiscrizione, bounce permanente, reclamo, risposta, appuntamento
+  (se previsto), lead non contattabile, revoca o errore della connessione (campagne in pausa), pausa e annullamento.
+- Nessun server SMTP: solo API del provider. Nessun tracciamento di aperture o clic.
+
+### Provider email
+
+Implementato: **Resend** (API key per organizzazione, cifrata AES-256-GCM con `LEADFLOW_CREDENTIALS_KEY` in una
+tabella senza privilegi client). Il collegamento verifica la chiave registrando il dominio mittente presso
+Resend e mostra i record DNS; lo stato diventa "collegato" solo a dominio verificato. DMARC è letto via DNS.
+Webhook: URL per account, firma Svix verificata con tolleranza 5 minuti e idempotenza per id evento.
+Risposte ricevute: richiedono la ricezione (Inbound) configurata su Resend e l'evento `email.received`.
+**Gmail e Microsoft 365 (OAuth)** sono previsti nell'interfaccia ma **non implementati**: richiedono un'app
+OAuth verificata da Google/Microsoft.
+
+Ogni email include firma, ragione sociale e indirizzo, motivo del contatto e origine dei dati (art. 14 GDPR),
+link all'informativa e link di disiscrizione, più gli header `List-Unsubscribe` e `List-Unsubscribe-Post`.
+
+### Automazioni
+
+Regole evento → azioni: trigger lead qualificato, bozza approvata, campagna attivata, messaggio consegnato,
+risposta ricevuta, appuntamento fissato, opportunità aggiornata, opposizione registrata; azioni attività CRM,
+notifica interna, bozza AI (da approvare), aggiornamento stato, promemoria, follow-up con suggerimento AI.
+**L'invio non è un'azione dei workflow** (vincolo nel database): avviene solo negli step delle campagne attivate.
+Stati: bozza → in approvazione → attiva (solo admin) → in pausa/disattivata; modificare una regola attiva la
+riporta in bozza.
+
+### Analytics
+
+Reply rate = risposte / consegnati; Appointment rate = appuntamenti / consegnati; Conversion rate = clienti /
+lead contattati (+ bounce rate). Ogni tasso mostra numeratore e denominatore. Attribuzione entro 90 giorni dal
+primo invio. Le risposte positive contano solo se confermate da una persona (quelle solo AI sono mostrate a parte).
+Ricavi solo da opportunità vinte con importo. Invii di prova esclusi; aperture non misurate.
+
+### Limiti e verifiche
+
+- Quote: 1000 email/mese per organizzazione (`organization_quotas.monthly_emails`), limiti per account
+  (default 100/giorno, 10/minuto), max 2000 destinatari per campagna.
+- Le scheduled function non girano su Deploy Preview/branch deploy; latenza di avvio ≤ 1 minuto.
+- Non verificati dal vivo: chiamate reali a Resend, webhook reali, esecuzione pianificata su Netlify, Supabase reale.
+  Per il primo collaudo usare gli indirizzi sandbox `delivered@resend.dev`, `bounced@resend.dev`,
+  `complained@resend.dev` dall'invio di prova.
+
 ## Roadmap
 
 - **Fase 2 (completata)**: AI Lead Finder, Business Analyzer, Lead Scoring.
 - **Fase 3 (completata)**: AI Sales Agent, pipeline a 12 fasi, follow-up, Copilot.
-- **In preparazione**: export PDF delle proposte; integrazioni di invio (email/LinkedIn/WhatsApp) con
-  consenso verificato e doppia conferma; Campaign Manager; Analytics; Stripe (checkout, portale, webhook).
+- **Fase 4 (codice completato, collaudo live da eseguire)**: Campaign Manager, provider Resend, motore di automazione, Comunicazioni, Analytics.
+- **In preparazione**: provider OAuth (Gmail, Microsoft 365), export PDF delle proposte, Stripe (checkout, portale, webhook).

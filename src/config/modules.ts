@@ -4,6 +4,9 @@ import {
   ChartLine,
   CreditCard,
   Gauge,
+  Inbox,
+  Send,
+  Workflow,
   Kanban,
   LayoutDashboard,
   Megaphone,
@@ -43,9 +46,9 @@ export const MODULES: ModuleDef[] = [
   { key: 'scoring', path: '/app/lead-scoring', labelKey: 'nav.scoring', icon: Gauge, group: 'ai', status: 'available', access: 'member' },
   { key: 'salesAgent', path: '/app/sales-agent', labelKey: 'nav.salesAgent', icon: Bot, group: 'ai', status: 'available', access: 'member' },
   { key: 'crm', path: '/app/crm', labelKey: 'nav.crm', icon: Kanban, group: 'sales', status: 'available', access: 'member' },
-  { key: 'campaigns', path: '/app/campaigns', labelKey: 'nav.campaigns', icon: Megaphone, group: 'sales', status: 'preparation', access: 'member', previewKey: 'campaigns' },
+  { key: 'campaigns', path: '/app/campaigns', labelKey: 'nav.campaigns', icon: Megaphone, group: 'sales', status: 'available', access: 'member' },
   { key: 'followUp', path: '/app/follow-up', labelKey: 'nav.followUp', icon: Repeat, group: 'sales', status: 'available', access: 'member' },
-  { key: 'analytics', path: '/app/analytics', labelKey: 'nav.analytics', icon: ChartLine, group: 'sales', status: 'preparation', access: 'member', previewKey: 'analytics' },
+  { key: 'analytics', path: '/app/analytics', labelKey: 'nav.analytics', icon: ChartLine, group: 'sales', status: 'available', access: 'member' },
   { key: 'billing', path: '/app/billing', labelKey: 'nav.billing', icon: CreditCard, group: 'account', status: 'preparation', access: 'member', previewKey: 'billing' },
   { key: 'settings', path: '/app/settings', labelKey: 'nav.settings', icon: Building2, group: 'account', status: 'available', access: 'member' },
   { key: 'admin', path: '/app/admin', labelKey: 'nav.admin', icon: ShieldCheck, group: 'account', status: 'available', access: 'super_admin' },
@@ -60,4 +63,21 @@ export const NAV_GROUPS: { id: NavGroup; labelKey: string }[] = [
 
 export function visibleModules(isSuperAdmin: boolean): ModuleDef[] {
   return MODULES.filter((m) => m.access !== 'super_admin' || isSuperAdmin)
+}
+
+/**
+ * Pagine operative collegate ai moduli (non sono moduli di prodotto a sé):
+ * Comunicazioni e Automazioni del Campaign Manager, Canali email nelle impostazioni.
+ */
+export const NAV_EXTRAS: ModuleDef[] = [
+  { key: 'inbox', path: '/app/inbox', labelKey: 'nav.inbox', icon: Inbox, group: 'sales', status: 'available', access: 'member' },
+  { key: 'automations', path: '/app/automations', labelKey: 'nav.automations', icon: Workflow, group: 'sales', status: 'available', access: 'member' },
+  { key: 'channels', path: '/app/settings/channels', labelKey: 'nav.channels', icon: Send, group: 'account', status: 'available', access: 'member' },
+]
+
+const NAV_ORDER = ['dashboard', 'leadFinder', 'analyzer', 'scoring', 'salesAgent', 'crm', 'campaigns', 'inbox', 'followUp', 'automations', 'analytics', 'billing', 'settings', 'channels', 'admin']
+
+/** Voci della barra laterale: moduli visibili + pagine operative, in ordine di lavoro. */
+export function navItems(isSuperAdmin: boolean): ModuleDef[] {
+  return [...visibleModules(isSuperAdmin), ...NAV_EXTRAS].sort((a, b) => NAV_ORDER.indexOf(a.key) - NAV_ORDER.indexOf(b.key))
 }

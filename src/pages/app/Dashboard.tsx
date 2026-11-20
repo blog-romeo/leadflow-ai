@@ -39,7 +39,7 @@ function useDashboardData(orgId: string | undefined) {
     const [sources, candidates, campaigns, appointments, activities, ...statuses] = await Promise.all([
       db.from('lead_sources').select('id', { count: 'exact', head: true }).eq('organization_id', orgId),
       db.from('lead_candidates').select('id', { count: 'exact', head: true }).eq('organization_id', orgId).neq('status', 'excluded'),
-      db.from('campaigns').select('id', { count: 'exact', head: true }).eq('organization_id', orgId).eq('status', 'active'),
+      db.from('campaigns').select('id', { count: 'exact', head: true }).eq('organization_id', orgId).in('status', ['running', 'scheduled']),
       db
         .from('appointments')
         .select('id', { count: 'exact', head: true })

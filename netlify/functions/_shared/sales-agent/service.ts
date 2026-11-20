@@ -4,13 +4,17 @@ import { log } from '../log'
 import { aiMissingConfig } from '../lead-finder/analysisService'
 import { AiError, callStructured, type AiCallResult } from '../lead-finder/analysis/openai'
 import { allowedValues, isContactable, leadForModel, profileForModel, profileMissing, type LeadRaw, type SalesProfile } from './context'
-import { checkText, dedupeWarnings, factSupported, type Warning } from './postcheck'
+import { campaignChecks, checkText, dedupeWarnings, factSupported, type Warning } from './postcheck'
 import { buildSystemPrompt, buildUserPrompt, TASK_PROMPTS } from './prompts'
 import { sanitizeDeep, sanitizeUntrusted, type SanitizeStats } from './sanitize'
 import { estimateCostUsd, MAX_OUTPUT_TOKENS } from './costs'
 import {
+  campaignContentJsonSchema,
+  campaignContentSchema,
   copilotJsonSchema,
   copilotSchema,
+  inboundAnalysisJsonSchema,
+  inboundAnalysisSchema,
   followUpJsonSchema,
   followUpSchema,
   intelligenceJsonSchema,
@@ -36,6 +40,8 @@ export type SalesTaskInput =
   | { task: 'messages'; lead_id: string; channel: Channel; instructions?: string }
   | { task: 'proposal'; lead_id: string; variant: Variant; instructions?: string }
   | { task: 'follow_up_suggestion'; follow_up_task_id: string }
+  | { task: 'campaign_content'; campaign_id: string; position: number; instructions?: string }
+  | { task: 'inbound_analysis'; inbound_id: string }
 
 export type AiCaller = (p: { system: string; user: string; schemaName: string; schema: unknown; maxOutputTokens: number }) => Promise<AiCallResult>
 
@@ -68,6 +74,29 @@ export async function requestSalesJob(deps: { store: SalesStore; env?: NodeJS.Pr
   const { store } = deps
   const env = deps.env ?? process.env
   await guardAi(store, ctx, env)
+
+  if (input.task === 'campaign_content') {
+    const c = await store.getCampaignForContent(ctx.orgId, input.campaign_id, input.position)
+    if (!c) throw new HttpError(404, 'campaign_step_not_found')
+    if (!['draft', 'pending_approval'].includes(c.campaign.status)) throw new HttpError(409, 'campaign_locked')
+    if (!['email', 'follow_up_email'].includes(c.step.kind)) throw new HttpError(409, 'step_has_no_content')
+    const missing = profileMissing(await store.getProfile(ctx.orgId))
+    if (missing.length) throw new HttpError(409, 'sales_profile_incomplete', { missing })
+    const jobId = await store.createJob({
+      org: ctx.orgId,
+      task: 'campaign_content',
+      leadId: null,
+      input: { task: 'campaign_content', campaign_id: input.campaign_id, position: input.position, ...(input.instructions ? { instructions: input.instructions.slice(0, 500) } : {}) },
+      createdBy: ctx.userId,
+    })
+    return { job_id: jobId }
+  }
+  if (input.task === 'inbound_analysis') {
+    const inbound = await store.getInbound(ctx.orgId, input.inbound_id)
+    if (!inbound) throw new HttpError(404, 'inbound_not_found')
+    const jobId = await store.createJob({ org: ctx.orgId, task: 'inbound_analysis', leadId: inbound.lead_id, input: { task: 'inbound_analysis', inbound_id: inbound.id }, createdBy: ctx.userId })
+    return { job_id: jobId }
+  }
 
   let leadId: string
   if (input.task === 'follow_up_suggestion') {
@@ -428,6 +457,77 @@ async function runCopilot(store: SalesStore, ai: AiCaller, job: SalesJob): Promi
   return { output: { conversation_id: convId, message_id: answerId }, usage: res.usage, model: res.model }
 }
 
+async function runCampaignContent(store: SalesStore, ai: AiCaller, job: SalesJob): Promise<HandlerResult> {
+  const c = await store.getCampaignForContent(job.organizationId, String(job.input.campaign_id), Number(job.input.position))
+  if (!c) throw new HttpError(404, 'campaign_step_not_found')
+  if (!['draft', 'pending_approval'].includes(c.campaign.status)) throw new HttpError(409, 'campaign_locked')
+  const profile = await store.getProfile(job.organizationId)
+  const stats: SanitizeStats = { flagged: 0 }
+  const language = c.campaign.language
+  const data = {
+    profile: profileForModel(profile),
+    campaign: sanitizeDeep({ name: c.campaign.name, description: c.campaign.description, goal: c.campaign.goal, service: c.campaign.service_name, call_to_action: c.campaign.call_to_action ?? profile.callToAction }, 600, stats),
+    step: { type: c.step.kind === 'email' ? 'initial' : 'follow_up', day_offset: c.step.day_offset },
+    // Solo dati aggregati: nessun dato personale dei destinatari arriva al modello.
+    audience: sanitizeDeep(c.audience, 120, stats),
+  }
+  const res = await ai({
+    system: buildSystemPrompt(TASK_PROMPTS.campaign_content, language, profile.tone),
+    user: buildUserPrompt(data, (job.input.instructions as string) ?? null, stats),
+    schemaName: 'campaign_content',
+    schema: campaignContentJsonSchema,
+    maxOutputTokens: MAX_OUTPUT_TOKENS.campaign_content!,
+  })
+  const o = parseOrFail(campaignContentSchema, res.json)
+  if (new Set(o.variants.map((v) => v.variant)).size !== VARIANTS.length) throw new AiError('ai_bad_response')
+  const allowed = allowedValues(profile, null)
+  const all: Warning[] = []
+  const variants = o.variants.map((v) => {
+    const subject = checkText(v.subject, allowed, 120)
+    const body = checkText(v.body, allowed, 1800)
+    const cta = checkText(v.call_to_action, allowed)
+    const warnings = dedupeWarnings([...subject.warnings, ...body.warnings, ...campaignChecks(`${subject.text}\n${body.text}\n${cta.text}`)])
+    all.push(...warnings)
+    return { variant: v.variant, subject: subject.text.replace(/[\r\n]+/g, ' ').slice(0, 200), body: body.text.slice(0, 6000), call_to_action: cta.text.slice(0, 300), warnings }
+  })
+  if (stats.flagged) all.push({ code: 'untrusted_content_filtered', detail: String(stats.flagged) })
+  await store.saveStepVariants(job.organizationId, c.step.id, variants, dedupeWarnings(all), job.id)
+  return { output: { campaign_id: c.campaign.id, step_id: c.step.id, notes: sanitizeUntrusted(o.notes, 800) }, usage: res.usage, model: res.model }
+}
+
+async function runInboundAnalysis(store: SalesStore, ai: AiCaller, job: SalesJob): Promise<HandlerResult> {
+  const inbound = await store.getInbound(job.organizationId, String(job.input.inbound_id))
+  if (!inbound) throw new HttpError(404, 'inbound_not_found')
+  const profile = await store.getProfile(job.organizationId)
+  const raw = inbound.lead_id ? await store.getLead(job.organizationId, inbound.lead_id) : null
+  const stats: SanitizeStats = { flagged: 0 }
+  const data = {
+    profile: profileForModel(profile),
+    lead: raw ? leadForModel(raw, stats) : null,
+    original_message: inbound.original ? sanitizeDeep(inbound.original, 2000, stats) : null,
+    inbound: { subject: sanitizeUntrusted(inbound.subject ?? '', 300, stats), body: sanitizeUntrusted(inbound.body_text ?? '', 6000, stats), received_at: inbound.received_at },
+  }
+  const res = await ai({
+    system: buildSystemPrompt(TASK_PROMPTS.inbound_analysis, profile.language, profile.tone),
+    user: buildUserPrompt(data, null, stats),
+    schemaName: 'inbound_analysis',
+    schema: inboundAnalysisJsonSchema,
+    maxOutputTokens: MAX_OUTPUT_TOKENS.inbound_analysis!,
+  })
+  const o = parseOrFail(inboundAnalysisSchema, res.json)
+  // Nessuna bozza di risposta a chi si è opposto o ha chiesto la disiscrizione.
+  const canReply = o.classification !== 'unsubscribe' && o.classification !== 'out_of_office' && (!raw || isContactable(raw))
+  const reply = canReply && o.suggested_reply ? checkText(o.suggested_reply.body, allowedValues(profile, raw)).text.slice(0, 4000) : null
+  await store.saveInboundAnalysis(job.organizationId, inbound.id, {
+    classification: o.classification,
+    summary: sanitizeUntrusted(o.summary, 1500),
+    suggested_reply: reply,
+    needs_human: o.needs_human || o.classification === 'needs_human',
+    jobId: job.id,
+  })
+  return { output: { inbound_id: inbound.id, classification: o.classification }, usage: res.usage, model: res.model }
+}
+
 // ════════════════════════════════════════════════════════════════════════════
 // Esecuzione dei job (background function)
 // ════════════════════════════════════════════════════════════════════════════
@@ -450,6 +550,8 @@ export async function runSalesJob(
       proposal: () => runProposal(store, ai, job),
       follow_up_suggestion: () => runFollowUp(store, ai, job),
       copilot: () => runCopilot(store, ai, job),
+      campaign_content: () => runCampaignContent(store, ai, job),
+      inbound_analysis: () => runInboundAnalysis(store, ai, job),
     }
     const handler = handlers[job.task]
     if (!handler) throw new HttpError(400, 'unknown_task')

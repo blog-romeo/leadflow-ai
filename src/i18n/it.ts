@@ -1,3 +1,5 @@
+import { campaignsIt } from './campaigns.it'
+
 export const it = {
   common: {
     appName: 'LeadFlow AI',
@@ -25,6 +27,7 @@ export const it = {
     themeSystem: 'Tema di sistema',
     language: 'Lingua',
     all: 'Tutti',
+    close: 'Chiudi',
   },
   config: {
     missingTitle: 'Supabase non è configurato',
@@ -120,6 +123,9 @@ export const it = {
     campaigns: 'Campagne',
     followUp: 'AI Follow-up',
     analytics: 'Analytics',
+    inbox: 'Comunicazioni',
+    automations: 'Automazioni',
+    channels: 'Canali email',
     billing: 'Abbonamento',
     settings: 'Impostazioni',
     admin: 'Super Admin',
@@ -212,8 +218,8 @@ export const it = {
     },
     campaigns: {
       title: 'Campaign Manager',
-      body: 'Organizzerà i lead in campagne con obiettivi, segmenti e risultati misurabili.',
-      points: ['Segmentazione per stato e punteggio', 'Esclusione automatica dei contatti opposti', 'Approvazione umana degli invii'],
+      body: 'Organizza i lead in campagne con obiettivi, destinatari verificati per paese e canale, sequenze e risultati misurabili.',
+      points: ['Verifica di idoneità per ogni destinatario', 'Invio solo dopo conferma esplicita e da provider autorizzati', 'Stop immediato su opposizioni e risposte'],
     },
     followUp: {
       title: 'AI Follow-up',
@@ -222,8 +228,8 @@ export const it = {
     },
     analytics: {
       title: 'Analytics',
-      body: 'Mostrerà conversioni per fase, rendimento delle campagne e consumo degli strumenti AI.',
-      points: ['Metriche calcolate sui tuoi dati reali', 'Filtri per periodo e campagna', 'Esportazione dei report'],
+      body: 'Mostra il rendimento delle campagne su eventi reali, con il denominatore di ogni tasso.',
+      points: ['Metriche calcolate sui tuoi dati reali', 'Filtri per periodo, campagna, canale e stato', 'Aperture email non conteggiate perché inaffidabili'],
     },
     billing: {
       title: 'Abbonamento',
@@ -817,6 +823,10 @@ export const it = {
     },
     jobs: { queued: 'In coda…', running: 'Generazione in corso…', failed: 'Generazione non riuscita: {reason}', done: 'Completato.' },
     errors: {
+      campaign_locked: 'La campagna è attiva: i contenuti non sono modificabili.',
+      campaign_step_not_found: 'Step della campagna non trovato.',
+      step_has_no_content: 'Questo step non prevede testi.',
+      inbound_not_found: 'Messaggio non trovato.',
       lead_not_contactable: 'Il lead non è contattabile: operazione bloccata.',
       sales_profile_incomplete: 'Completa il profilo commerciale prima di generare.',
       ai_not_configured: 'L’AI non è configurata.',
@@ -870,6 +880,7 @@ export const it = {
     network: 'Connessione non disponibile. Controlla la rete e riprova.',
     notConfigured: 'Servizio di autenticazione non configurato.',
   },
+  ...campaignsIt,
 }
 
 type Widen<T> = T extends string ? string : T extends readonly string[] ? readonly string[] : { [K in keyof T]: Widen<T[K]> }

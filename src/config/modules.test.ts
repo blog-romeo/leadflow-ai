@@ -1,4 +1,4 @@
-import { MODULES, visibleModules } from './modules'
+import { MODULES, navItems, visibleModules } from './modules'
 import { it as dict } from '../i18n/it'
 import { lookup } from '../i18n'
 
@@ -18,7 +18,14 @@ describe('registro moduli', () => {
     expect(status).toEqual({ leadFinder: 'available', analyzer: 'available', scoring: 'available', salesAgent: 'available' })
     const followUp = MODULES.find((m) => m.key === 'followUp')
     expect(followUp?.status).toBe('available')
-    expect(MODULES.filter((m) => ['campaigns', 'analytics', 'billing'].includes(m.key)).every((m) => m.status === 'preparation')).toBe(true)
+    expect(MODULES.filter((m) => ['campaigns', 'analytics'].includes(m.key)).every((m) => m.status === 'available')).toBe(true)
+    expect(MODULES.find((m) => m.key === 'billing')?.status).toBe('preparation')
+  })
+  it('barra laterale: pagine operative incluse, path unici', () => {
+    const items = navItems(false)
+    expect(items.map((m) => m.key)).toEqual(expect.arrayContaining(['campaigns', 'inbox', 'automations', 'analytics', 'channels']))
+    expect(new Set(items.map((m) => m.path)).size).toBe(items.length)
+    for (const m of items) expect(typeof lookup(dict, m.labelKey), m.key).toBe('string')
   })
   it('Super Admin visibile solo ai super_admin', () => {
     expect(visibleModules(false).some((m) => m.key === 'admin')).toBe(false)

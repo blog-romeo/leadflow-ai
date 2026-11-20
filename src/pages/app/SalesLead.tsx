@@ -19,6 +19,7 @@ import { FollowUpList } from '../../features/sales/FollowUpList'
 import { Timeline } from '../../features/sales/Timeline'
 import { Copilot } from '../../features/sales/Copilot'
 import { safeHref } from '../../features/lead-finder/format'
+import { ConsentPanel } from '../../features/campaigns/ConsentPanel'
 
 type LeadView = {
   id: string
@@ -178,6 +179,7 @@ export default function SalesLead() {
               <ComplianceCard source={lead.source} contactStatus={lead.contact_status} contactable={contactable} />
               <OpportunityCard orgId={orgId} leadId={lead.id} companyName={lead.company_name} profile={profile} prefill={prefill} onChanged={bump} />
               <AppointmentsCard orgId={orgId} leadId={lead.id} bookingUrl={profile?.booking_url ?? null} onChanged={() => void load()} />
+              <ConsentPanel orgId={orgId} leadId={lead.id} />
             </div>
           </div>
         )}

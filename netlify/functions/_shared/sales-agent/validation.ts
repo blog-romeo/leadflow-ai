@@ -13,6 +13,8 @@ export const generateInputSchema = z.discriminatedUnion('task', [
   z.object({ organization_id: uuid, task: z.literal('messages'), lead_id: uuid, channel: z.enum(['email', 'linkedin', 'whatsapp', 'phone_script', 'follow_up']), instructions }),
   z.object({ organization_id: uuid, task: z.literal('proposal'), lead_id: uuid, variant: z.enum(['professional', 'direct', 'consultative']), instructions }),
   z.object({ organization_id: uuid, task: z.literal('follow_up_suggestion'), follow_up_task_id: uuid }),
+  z.object({ organization_id: uuid, task: z.literal('campaign_content'), campaign_id: uuid, position: z.number().int().min(0).max(9), instructions }),
+  z.object({ organization_id: uuid, task: z.literal('inbound_analysis'), inbound_id: uuid }),
 ])
 
 export const copilotInputSchema = z.object({

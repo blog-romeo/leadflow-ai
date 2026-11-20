@@ -292,5 +292,75 @@ export function createSalesStore(db: SupabaseClient): SalesStore {
       const { error } = await db.from('activities').insert({ organization_id: org, lead_id: leadId, type: 'ai', subject, metadata, created_by: actor })
       if (error) log('warn', 'sales_activity_failed', { code: error.code })
     },
+    async getCampaignForContent(org, campaignId, position) {
+      const { data: c, error } = await db
+        .from('campaigns')
+        .select('id, name, status, goal, service_name, language, channel, call_to_action, description, sequence:campaign_sequences(id)')
+        .eq('organization_id', org)
+        .eq('id', campaignId)
+        .maybeSingle()
+      if (error) fail('get_campaign', error)
+      if (!c) return null
+      const seq = (Array.isArray(c.sequence) ? c.sequence[0] : c.sequence) as { id: string } | null
+      if (!seq) return null
+      const { data: st, error: e2 } = await db.from('campaign_steps').select('id, position, kind, day_offset').eq('organization_id', org).eq('sequence_id', seq.id).eq('position', position).maybeSingle()
+      if (e2) fail('get_step', e2)
+      if (!st) return null
+      const { data: rec, error: e3 } = await db
+        .from('campaign_recipients')
+        .select('status, lead:leads(industry, country, city, contact_name)')
+        .eq('organization_id', org)
+        .eq('campaign_id', campaignId)
+        .in('status', ['eligible', 'pending', 'in_sequence'])
+        .limit(2000)
+      if (e3) fail('get_audience', e3)
+      const count = (vals: (string | null)[]) => {
+        const m = new Map<string, number>()
+        for (const v of vals) if (v) m.set(v, (m.get(v) ?? 0) + 1)
+        return [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([name, n]) => ({ name, count: n }))
+      }
+      const leads = (rec ?? []).map((r) => (Array.isArray(r.lead) ? r.lead[0] : r.lead) as { industry: string | null; country: string | null; city: string | null; contact_name: string | null } | null).filter(Boolean) as { industry: string | null; country: string | null; city: string | null; contact_name: string | null }[]
+      return {
+        campaign: { id: c.id, name: c.name, status: c.status, goal: c.goal, service_name: c.service_name, language: c.language, channel: c.channel, call_to_action: c.call_to_action, description: c.description },
+        step: st,
+        audience: {
+          recipients: leads.length,
+          with_contact_name: leads.filter((l) => l.contact_name).length,
+          industries: count(leads.map((l) => l.industry)),
+          countries: count(leads.map((l) => l.country)),
+          cities: count(leads.map((l) => l.city)),
+        },
+      }
+    },
+    async saveStepVariants(org, stepId, variants, warnings, jobId) {
+      const { error } = await db.from('campaign_steps').update({ ai_variants: variants, ai_warnings: warnings, ai_job_id: jobId }).eq('organization_id', org).eq('id', stepId)
+      if (error) fail('save_step_variants', error)
+    },
+    async getInbound(org, id) {
+      const { data, error } = await db
+        .from('inbound_messages')
+        .select('id, lead_id, from_email, subject, body_text, received_at, outbound:outbound_messages!inbound_messages_organization_id_outbound_message_id_fkey(subject, body_text)')
+        .eq('organization_id', org)
+        .eq('id', id)
+        .maybeSingle()
+      if (error) fail('get_inbound', error)
+      if (!data) return null
+      const o = (Array.isArray(data.outbound) ? data.outbound[0] : data.outbound) as { subject: string; body_text: string } | null
+      return { id: data.id, lead_id: data.lead_id, from_email: data.from_email, subject: data.subject, body_text: data.body_text, received_at: data.received_at, original: o ?? null }
+    },
+    async saveInboundAnalysis(org, id, a) {
+      const { error } = await db
+        .from('inbound_messages')
+        .update({ ai_classification: a.classification, ai_summary: a.summary, ai_suggested_reply: a.suggested_reply, ai_needs_human: a.needs_human, ai_job_id: a.jobId })
+        .eq('organization_id', org)
+        .eq('id', id)
+      if (error) fail('save_inbound_analysis', error)
+      // Disiscrizione riconosciuta dall'AI: si registra subito l'opposizione (scelta prudente,
+      // un admin può revocarla); la classificazione resta modificabile da una persona.
+      if (a.classification === 'unsubscribe') {
+        const { data } = await db.from('inbound_messages').select('lead_id').eq('id', id).maybeSingle()
+        if (data?.lead_id) await db.from('leads').update({ contact_status: 'opted_out' }).eq('organization_id', org).eq('id', data.lead_id).eq('contact_status', 'active')
+      }
+    },
   }
 }

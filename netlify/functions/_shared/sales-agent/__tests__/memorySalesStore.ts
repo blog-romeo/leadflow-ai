@@ -1,7 +1,7 @@
 /** SOLO TEST: store in memoria con isolamento per organizzazione e quote. */
 import { randomUUID } from 'node:crypto'
 import type { LeadRaw, SalesProfile } from '../context'
-import type { CopilotSnapshot, DraftWrite, FollowUpTaskRow, ProposalWrite, SalesJob, SalesStore } from '../store'
+import type { CampaignContentContext, CopilotSnapshot, DraftWrite, FollowUpTaskRow, InboundRow, ProposalWrite, SalesJob, SalesStore } from '../store'
 
 export interface SalesMemState {
   profiles: Record<string, SalesProfile>
@@ -17,12 +17,17 @@ export interface SalesMemState {
   activities: { org: string; leadId: string; subject: string }[]
   limits: { generations: number; tokens: number; rpm: number }
   rate: number
+  campaigns: (CampaignContentContext & { org: string })[]
+  stepVariants: { org: string; stepId: string; variants: unknown[]; warnings: unknown[]; jobId: string }[]
+  inbound: { org: string; row: InboundRow }[]
+  inboundAnalyses: { org: string; id: string; classification: string; summary: string; suggested_reply: string | null; needs_human: boolean; jobId: string }[]
 }
 
 export function createMemorySalesStore(init: Partial<SalesMemState> = {}) {
   const s: SalesMemState = {
     profiles: {}, leads: {}, tasks: [], jobs: [], drafts: [], proposals: [], intelligence: [], conversations: [], messages: [], usage: [], activities: [],
-    limits: { generations: 100, tokens: 1_000_000, rpm: 100 }, rate: 0, ...init,
+    limits: { generations: 100, tokens: 1_000_000, rpm: 100 }, rate: 0,
+    campaigns: [], stepVariants: [], inbound: [], inboundAnalyses: [], ...init,
   }
   const used = (org: string, ev: string) => s.usage.filter((u) => u.org === org && u.event === ev).reduce((a, u) => a + u.qty, 0)
   const store: SalesStore = {
@@ -124,6 +129,19 @@ export function createMemorySalesStore(init: Partial<SalesMemState> = {}) {
     },
     async logActivity(org, leadId, _actor, subject) {
       s.activities.push({ org, leadId, subject })
+    },
+    async getCampaignForContent(org, campaignId, position) {
+      const c = s.campaigns.find((x) => x.org === org && x.campaign.id === campaignId && x.step.position === position)
+      return c ? { campaign: c.campaign, step: c.step, audience: c.audience } : null
+    },
+    async saveStepVariants(org, stepId, variants, warnings, jobId) {
+      s.stepVariants.push({ org, stepId, variants, warnings, jobId })
+    },
+    async getInbound(org, id) {
+      return s.inbound.find((i) => i.org === org && i.row.id === id)?.row ?? null
+    },
+    async saveInboundAnalysis(org, id, a) {
+      s.inboundAnalyses.push({ org, id, ...a })
     },
   }
   return { store, state: s }

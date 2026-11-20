@@ -16,4 +16,6 @@ export const MAX_OUTPUT_TOKENS: Record<string, number> = {
   proposal: 4000,
   follow_up_suggestion: 2000,
   copilot: 2500,
+  campaign_content: 4000,
+  inbound_analysis: 2000,
 }

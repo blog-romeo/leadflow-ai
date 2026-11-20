@@ -1,4 +1,5 @@
 import type { Dictionary } from './it'
+import { campaignsEn } from './campaigns.en'
 
 export const en: Dictionary = {
   common: {
@@ -27,6 +28,7 @@ export const en: Dictionary = {
     themeSystem: 'System theme',
     language: 'Language',
     all: 'All',
+    close: 'Close',
   },
   config: {
     missingTitle: 'Supabase is not configured',
@@ -119,6 +121,9 @@ export const en: Dictionary = {
     campaigns: 'Campaigns',
     followUp: 'AI Follow-up',
     analytics: 'Analytics',
+    inbox: 'Communications',
+    automations: 'Automations',
+    channels: 'Email channels',
     billing: 'Billing',
     settings: 'Settings',
     admin: 'Super Admin',
@@ -211,8 +216,8 @@ export const en: Dictionary = {
     },
     campaigns: {
       title: 'Campaign Manager',
-      body: 'Will organize leads into campaigns with goals, segments and measurable results.',
-      points: ['Segment by status and score', 'Opted-out contacts excluded automatically', 'Human approval for sending'],
+      body: 'Organizes leads into campaigns with goals, recipients checked by country and channel, sequences and measurable results.',
+      points: ['Eligibility check for every recipient', 'Sending only after explicit confirmation and from authorised providers', 'Immediate stop on objections and replies'],
     },
     followUp: {
       title: 'AI Follow-up',
@@ -221,8 +226,8 @@ export const en: Dictionary = {
     },
     analytics: {
       title: 'Analytics',
-      body: 'Will show conversion by stage, campaign performance and AI usage.',
-      points: ['Metrics computed on your real data', 'Filters by period and campaign', 'Report export'],
+      body: 'Shows campaign performance on real events, with the denominator of every rate.',
+      points: ['Metrics computed on your real data', 'Filters by period, campaign, channel and status', 'Email opens not counted because unreliable'],
     },
     billing: {
       title: 'Billing',
@@ -816,6 +821,10 @@ export const en: Dictionary = {
     },
     jobs: { queued: 'Queued…', running: 'Generating…', failed: 'Generation failed: {reason}', done: 'Done.' },
     errors: {
+      campaign_locked: 'The campaign is active: content cannot be changed.',
+      campaign_step_not_found: 'Campaign step not found.',
+      step_has_no_content: 'This step has no text.',
+      inbound_not_found: 'Message not found.',
       lead_not_contactable: 'The lead is not contactable: action blocked.',
       sales_profile_incomplete: 'Complete the sales profile before generating.',
       ai_not_configured: 'AI is not configured.',
@@ -869,4 +878,5 @@ export const en: Dictionary = {
     network: 'No connection. Check your network and try again.',
     notConfigured: 'Authentication service not configured.',
   },
+  ...campaignsEn,
 }

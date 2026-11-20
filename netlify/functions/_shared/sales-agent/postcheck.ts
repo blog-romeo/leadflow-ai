@@ -19,6 +19,10 @@ export interface Warning {
     | 'whatsapp_opt_in_required'
     | 'no_commercial_terms'
     | 'untrusted_content_filtered'
+    | 'invented_testimonial'
+    | 'artificial_urgency'
+    | 'implied_relationship'
+    | 'unknown_placeholder'
   detail?: string
 }
 
@@ -120,4 +124,20 @@ export function dedupeWarnings(ws: Warning[]): Warning[] {
     seen.add(k)
     return true
   })
+}
+
+// ── Controlli specifici per i modelli di campagna ─────────────────────────
+const TESTIMONIAL_RE = /\b(i nostri clienti (dicono|affermano)|come (ci ha detto|racconta) [A-Z]|recension\w+ a 5 stelle|testimonianz\w+|our (clients|customers) say|five-star review|testimonial)/gi
+const URGENCY_RE = /\b(solo (oggi|per pochi giorni|fino a)|ultimi posti|ultim[ae] disponibilit\w*|offerta (scade|limitata|valida fino)|scade (oggi|domani|il)|affrettat\w*|non perdere|last chance|limited time|expires (today|soon)|act now|only today)\b/gi
+const RELATIONSHIP_RE = /\b(come (d'accordo|d’accordo|concordato|promesso|discusso)|facendo seguito alla nostra (telefonata|conversazione|chiacchierata)|come ci siamo detti|ci eravamo sentiti|as (discussed|agreed|promised)|following (up on )?our (call|conversation)|great (talking|speaking) (to|with) you)\b/gi
+const PLACEHOLDER_RE = /\{\{\s*([^}]*)\s*\}\}/g
+const ALLOWED_PH = new Set(['azienda', 'citta', 'settore', 'nome', 'company_name', 'city', 'industry', 'first_name'])
+
+export function campaignChecks(text: string): Warning[] {
+  const w: Warning[] = []
+  for (const m of text.match(TESTIMONIAL_RE) ?? []) w.push({ code: 'invented_testimonial', detail: m })
+  for (const m of text.match(URGENCY_RE) ?? []) w.push({ code: 'artificial_urgency', detail: m })
+  for (const m of text.match(RELATIONSHIP_RE) ?? []) w.push({ code: 'implied_relationship', detail: m })
+  for (const m of text.matchAll(PLACEHOLDER_RE)) if (!ALLOWED_PH.has((m[1] ?? '').trim())) w.push({ code: 'unknown_placeholder', detail: m[0] })
+  return w
 }

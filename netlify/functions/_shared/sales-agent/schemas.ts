@@ -123,3 +123,35 @@ export const copilotJsonSchema = obj({
   inferences: arr(obj({ statement: S, lead_ids: arr(S) })),
   suggestions: arr(obj({ statement: S, lead_id: NS, action: enm(COPILOT_ACTIONS) })),
 })
+
+// ── Contenuti di campagna (modelli con segnaposto, 3 varianti) ─────────────
+export const CAMPAIGN_PLACEHOLDERS = ['{{azienda}}', '{{citta}}', '{{settore}}', '{{nome}}'] as const
+export const campaignContentSchema = z.object({
+  variants: z
+    .array(z.object({ variant: z.enum(VARIANTS), subject: z.string().min(1).max(160), body: z.string().min(20).max(3000), call_to_action: short(300) }))
+    .length(3),
+  notes: short(800),
+})
+export type CampaignContentOutput = z.infer<typeof campaignContentSchema>
+export const campaignContentJsonSchema = obj({
+  variants: arr(obj({ variant: enm(VARIANTS), subject: S, body: S, call_to_action: S })),
+  notes: S,
+})
+
+// ── Analisi di una risposta ricevuta ──────────────────────────────────────
+export const INBOUND_CLASSES = ['positive', 'question', 'neutral', 'not_interested', 'unsubscribe', 'out_of_office', 'needs_human', 'other'] as const
+export const inboundAnalysisSchema = z.object({
+  summary: short(1200),
+  classification: z.enum(INBOUND_CLASSES),
+  needs_human: z.boolean(),
+  reasons: z.array(short(300)).max(5),
+  suggested_reply: z.object({ subject: z.string().max(200), body: z.string().min(1).max(3500) }).nullable(),
+})
+export type InboundAnalysisOutput = z.infer<typeof inboundAnalysisSchema>
+export const inboundAnalysisJsonSchema = obj({
+  summary: S,
+  classification: enm(INBOUND_CLASSES),
+  needs_human: { type: 'boolean' },
+  reasons: arr(S),
+  suggested_reply: { anyOf: [obj({ subject: S, body: S }), { type: 'null' }] },
+})

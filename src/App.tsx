@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Navigate, Route, Routes, useParams } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import { PublicOnly, RequireAuth, RequireOrganization } from './routes/guards'
 import { FullPageLoader, LoadingState } from './components/ui/States'
 import { AppShell } from './components/layout/AppShell'
@@ -22,6 +22,12 @@ const SalesProfile = lazy(() => import('./pages/app/SalesProfile'))
 const SalesLead = lazy(() => import('./pages/app/SalesLead'))
 const Pipeline = lazy(() => import('./pages/app/Pipeline'))
 const FollowUps = lazy(() => import('./pages/app/FollowUps'))
+const Campaigns = lazy(() => import('./pages/app/Campaigns'))
+const CampaignDetail = lazy(() => import('./pages/app/CampaignDetail'))
+const Inbox = lazy(() => import('./pages/app/Inbox'))
+const CampaignAnalytics = lazy(() => import('./pages/app/CampaignAnalytics'))
+const Automations = lazy(() => import('./pages/app/Automations'))
+const Channels = lazy(() => import('./pages/app/Channels'))
 const Billing = lazy(() => import('./pages/app/Billing'))
 const Settings = lazy(() => import('./pages/app/Settings'))
 const SuperAdmin = lazy(() => import('./pages/app/SuperAdmin'))
@@ -30,14 +36,13 @@ const NotFound = lazy(() => import('./pages/NotFound'))
 /** Moduli "in preparazione": path relativo sotto /app → chiave del registro moduli. */
 const PREVIEW_ROUTES: [string, string][] = [
   ['business-analyzer', 'analyzer'],
-  ['campaigns', 'campaigns'],
-  ['analytics', 'analytics'],
 ]
 
 /** Alias /dashboard/* → /app/* (es. /dashboard/lead-finder). */
 function DashboardAlias() {
   const params = useParams()
-  return <Navigate to={`/app/${params['*'] ?? ''}`} replace />
+  const { search } = useLocation()
+  return <Navigate to={`/app/${params['*'] ?? ''}${search}`} replace />
 }
 
 export function AppRoutes() {
@@ -73,6 +78,12 @@ export function AppRoutes() {
             <Route path="sales-agent/profile" element={<Suspense fallback={<LoadingState />}><SalesProfile /></Suspense>} />
             <Route path="sales-agent/leads/:leadId" element={<Suspense fallback={<LoadingState />}><SalesLead /></Suspense>} />
             <Route path="follow-up" element={<Suspense fallback={<LoadingState />}><FollowUps /></Suspense>} />
+            <Route path="campaigns" element={<Suspense fallback={<LoadingState />}><Campaigns /></Suspense>} />
+            <Route path="campaigns/:campaignId" element={<Suspense fallback={<LoadingState />}><CampaignDetail /></Suspense>} />
+            <Route path="inbox" element={<Suspense fallback={<LoadingState />}><Inbox /></Suspense>} />
+            <Route path="analytics" element={<Suspense fallback={<LoadingState />}><CampaignAnalytics /></Suspense>} />
+            <Route path="automations" element={<Suspense fallback={<LoadingState />}><Automations /></Suspense>} />
+            <Route path="settings/channels" element={<Suspense fallback={<LoadingState />}><Channels /></Suspense>} />
             {PREVIEW_ROUTES.map(([path, key]) => (
               <Route key={path} path={path} element={<Suspense fallback={<LoadingState />}><ModulePreview moduleKey={key} /></Suspense>} />
             ))}

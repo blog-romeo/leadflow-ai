@@ -21,7 +21,7 @@ export type FollowUpKind = 'check_in' | 'second_contact' | 'opportunity_review' 
 export type FollowUpStatus = 'open' | 'done' | 'dismissed' | 'blocked'
 export type SalesTone = 'formal' | 'friendly' | 'direct' | 'consultative'
 export type ContactStatus = 'active' | 'opted_out' | 'suppressed'
-export type CampaignStatus = 'draft' | 'active' | 'paused' | 'completed' | 'archived'
+export type CampaignStatus = WorkflowStatus
 export type AppointmentStatus = 'scheduled' | 'completed' | 'cancelled' | 'no_show'
 export type AiJobType = 'lead_finder' | 'business_analysis' | 'lead_scoring' | 'sales_agent' | 'follow_up'
 export type AiJobStatus = 'queued' | 'running' | 'succeeded' | 'failed' | 'cancelled'
@@ -72,6 +72,7 @@ export type LeadRow = {
   phone: string | null
   status: LeadStatus
   contact_status: ContactStatus
+  tags: string[]
   opted_out_at: string | null
   suppressed_at: string | null
   score: number | null
@@ -105,16 +106,221 @@ export type LeadSourceRow = {
   created_by: string | null
   created_at: string
 }
+export type WorkflowStatus = 'draft' | 'pending_approval' | 'scheduled' | 'running' | 'paused' | 'completed' | 'failed' | 'cancelled'
+export const WORKFLOW_STATUSES: WorkflowStatus[] = ['draft', 'pending_approval', 'scheduled', 'running', 'paused', 'completed', 'failed', 'cancelled']
+export type OutreachChannel = 'email' | 'linkedin' | 'whatsapp' | 'phone'
+export const OUTREACH_CHANNELS: OutreachChannel[] = ['email', 'linkedin', 'whatsapp', 'phone']
+export type CampaignGoal = 'meeting' | 'demo' | 'proposal' | 'awareness' | 'reactivation' | 'other'
+export const CAMPAIGN_GOALS: CampaignGoal[] = ['meeting', 'demo', 'proposal', 'awareness', 'reactivation', 'other']
+export type RecipientStatus = 'pending' | 'eligible' | 'excluded' | 'in_sequence' | 'stopped' | 'completed'
+export type OutboundStatus = 'queued' | 'sending' | 'sent' | 'delivered' | 'delivery_delayed' | 'bounced' | 'complained' | 'failed' | 'cancelled' | 'unknown'
+export type InboundClass = 'positive' | 'question' | 'neutral' | 'not_interested' | 'unsubscribe' | 'out_of_office' | 'needs_human' | 'other'
+export const INBOUND_CLASSES: InboundClass[] = ['positive', 'question', 'neutral', 'not_interested', 'unsubscribe', 'out_of_office', 'needs_human', 'other']
+export type AutomationTrigger = 'lead_qualified' | 'draft_approved' | 'campaign_activated' | 'message_delivered' | 'reply_received' | 'appointment_scheduled' | 'opportunity_updated' | 'opt_out_registered'
+export const AUTOMATION_TRIGGERS: AutomationTrigger[] = ['lead_qualified', 'draft_approved', 'campaign_activated', 'message_delivered', 'reply_received', 'appointment_scheduled', 'opportunity_updated', 'opt_out_registered']
+export type WorkflowActionType = 'create_activity' | 'notify' | 'generate_draft' | 'update_lead_status' | 'create_reminder' | 'prepare_follow_up'
+export const WORKFLOW_ACTIONS: WorkflowActionType[] = ['create_activity', 'notify', 'generate_draft', 'update_lead_status', 'create_reminder', 'prepare_follow_up']
+
 export type CampaignRow = {
   id: string
   organization_id: string
   name: string
   description: string | null
   status: CampaignStatus
+  goal: CampaignGoal
+  service_name: string | null
+  language: 'it' | 'en'
+  channel: OutreachChannel
+  purpose: string
+  planned_start_at: string | null
+  timezone: string
+  send_hour_start: number
+  send_hour_end: number
+  weekdays_only: boolean
+  audience_filters: Record<string, unknown>
+  account_id: string | null
+  stop_on_appointment: boolean
+  call_to_action: string | null
+  content_approved_by: string | null
+  content_approved_at: string | null
+  activated_by: string | null
+  activated_at: string | null
+  activation_snapshot: Json | null
+  paused_reason: string | null
+  completed_at: string | null
+  archived_at: string | null
   created_by: string | null
   created_at: string
   updated_at: string
 }
+export type CampaignSequenceRow = { id: string; organization_id: string; campaign_id: string; name: string; stop_on_reply: boolean; created_at: string; updated_at: string }
+export type CampaignStepRow = {
+  id: string
+  organization_id: string
+  sequence_id: string
+  position: number
+  day_offset: number
+  kind: 'email' | 'ai_review' | 'follow_up_email' | 'opportunity_review'
+  subject: string | null
+  body: string | null
+  ai_variants: { variant: string; subject: string; body: string; call_to_action: string; warnings: Warning[] }[]
+  ai_warnings: Warning[]
+  ai_job_id: string | null
+  created_at: string
+  updated_at: string
+}
+export type Eligibility = { eligible?: boolean; basis?: string | null; country?: string; reasons?: string[]; warnings?: string[]; source_type?: string; source_basis?: string }
+export type CampaignRecipientRow = {
+  id: string
+  organization_id: string
+  campaign_id: string
+  lead_id: string
+  status: RecipientStatus
+  eligible: boolean | null
+  eligibility: Eligibility
+  exclusion_reasons: string[]
+  evaluated_at: string | null
+  current_position: number | null
+  next_step_at: string | null
+  last_message_at: string | null
+  stopped_reason: string | null
+  stopped_at: string | null
+  completed_at: string | null
+  added_at: string
+  updated_at: string
+}
+export type CommunicationAccountRow = {
+  id: string
+  organization_id: string
+  provider: 'resend' | 'gmail' | 'microsoft365'
+  label: string
+  from_name: string
+  from_email: string
+  reply_to: string | null
+  sending_domain: string
+  provider_domain_id: string | null
+  domain_status: string
+  dns_records: { record: string; name: string; type: string; value: string; status: string; ttl?: string; priority?: number }[]
+  spf_status: 'unknown' | 'pass' | 'missing' | 'fail'
+  dkim_status: 'unknown' | 'pass' | 'missing' | 'fail'
+  dmarc_status: 'unknown' | 'pass' | 'missing' | 'fail'
+  dmarc_policy: string | null
+  status: 'pending' | 'connected' | 'error' | 'revoked'
+  webhook_configured: boolean
+  inbound_enabled: boolean
+  daily_limit: number
+  per_minute_limit: number
+  last_checked_at: string | null
+  last_error: string | null
+  connected_by: string | null
+  connected_at: string | null
+  revoked_by: string | null
+  revoked_at: string | null
+  created_at: string
+  updated_at: string
+}
+export type OutboundMessageRow = {
+  id: string
+  organization_id: string
+  kind: 'campaign' | 'reply' | 'test'
+  campaign_id: string | null
+  recipient_id: string | null
+  step_id: string | null
+  lead_id: string | null
+  account_id: string
+  in_reply_to: string | null
+  to_email: string
+  subject: string
+  body_text: string
+  status: OutboundStatus
+  idempotency_key: string
+  provider_message_id: string | null
+  attempts: number
+  confirmed_by: string | null
+  scheduled_at: string
+  sending_started_at: string | null
+  sent_at: string | null
+  delivered_at: string | null
+  bounced_at: string | null
+  last_error: string | null
+  created_at: string
+  updated_at: string
+}
+export type InboundMessageRow = {
+  id: string
+  organization_id: string
+  account_id: string
+  provider_message_id: string
+  lead_id: string | null
+  recipient_id: string | null
+  outbound_message_id: string | null
+  from_email: string
+  subject: string | null
+  body_text: string | null
+  received_at: string
+  ai_classification: InboundClass | null
+  ai_summary: string | null
+  ai_suggested_reply: string | null
+  ai_needs_human: boolean | null
+  ai_job_id: string | null
+  classification: InboundClass | null
+  classification_confirmed_by: string | null
+  classification_confirmed_at: string | null
+  handled_at: string | null
+  handled_by: string | null
+  created_at: string
+}
+export type ConsentRecordRow = {
+  id: string
+  organization_id: string
+  lead_id: string
+  channel: OutreachChannel
+  purpose: string
+  status: 'granted' | 'withdrawn' | 'objected'
+  evidence: string
+  evidence_url: string | null
+  policy_version: string | null
+  captured_at: string
+  created_by: string | null
+  created_at: string
+}
+export type WorkflowAction = { type: WorkflowActionType; days?: number; status?: string; title?: string; text?: string; channel?: string }
+export type AutomationWorkflowRow = {
+  id: string
+  organization_id: string
+  name: string
+  trigger: AutomationTrigger
+  conditions: { campaign_id?: string; min_score?: number; industry?: string; lead_statuses?: string[] }
+  actions: WorkflowAction[]
+  status: WorkflowStatus
+  approved_by: string | null
+  approved_at: string | null
+  run_count: number
+  last_run_at: string | null
+  last_error: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+export type AutomationJobRow = {
+  id: string
+  organization_id: string
+  kind: string
+  idempotency_key: string
+  payload: Record<string, unknown>
+  status: 'queued' | 'running' | 'succeeded' | 'dead' | 'cancelled'
+  run_at: string
+  attempts: number
+  max_attempts: number
+  last_error: string | null
+  campaign_id: string | null
+  workflow_id: string | null
+  created_at: string
+  updated_at: string
+  finished_at: string | null
+}
+export type NotificationRow = { id: string; organization_id: string; user_id: string | null; title: string; body: string | null; link: string | null; read_at: string | null; created_at: string }
+export type DeliveryEventRow = { id: string; organization_id: string; account_id: string; provider: string; provider_event_id: string; event_type: string; outbound_message_id: string | null; detail: Record<string, unknown>; occurred_at: string; created_at: string }
 export type ActivityRow = {
   id: string
   organization_id: string
@@ -254,6 +460,10 @@ export type SalesProfileRow = {
   booking_url: string | null
   commercial_terms: string | null
   follow_up_days: number[]
+  sender_legal_name: string | null
+  sender_address: string | null
+  privacy_policy_url: string | null
+  email_signature: string | null
   updated_by: string | null
   created_at: string
   updated_at: string
@@ -477,6 +687,18 @@ export type Database = {
       ai_conversations: Table<AiConversationRow>
       ai_messages: Table<AiMessageRow>
       lead_analyses: Table<LeadAnalysisRow>
+      campaign_sequences: Table<CampaignSequenceRow>
+      campaign_steps: Table<CampaignStepRow>
+      campaign_recipients: Table<CampaignRecipientRow>
+      communication_accounts: Table<CommunicationAccountRow>
+      outbound_messages: Table<OutboundMessageRow>
+      inbound_messages: Table<InboundMessageRow>
+      consent_records: Table<ConsentRecordRow>
+      automation_workflows: Table<AutomationWorkflowRow>
+      automation_jobs: Table<AutomationJobRow>
+      automation_events: Table<{ id: number; organization_id: string; type: AutomationTrigger; lead_id: string | null; campaign_id: string | null; entity_type: string; entity_id: string; payload: Json; created_at: string; processed_at: string | null }>
+      notifications: Table<NotificationRow>
+      delivery_events: Table<DeliveryEventRow>
     }
     Views: {
       lead_activities: { Row: LeadActivityRow; Relationships: [] }
@@ -497,6 +719,14 @@ export type Database = {
       suppress_lead: {
         Args: { p_lead_id: string; p_reason?: string }
         Returns: undefined
+      }
+      add_campaign_recipients: { Args: { p_campaign: string; p_filters: Json }; Returns: Json }
+      evaluate_campaign_recipients: { Args: { p_campaign: string }; Returns: Json }
+      campaign_readiness: { Args: { p_campaign: string }; Returns: Json }
+      campaign_transition: { Args: { p_campaign: string; p_action: string; p_confirmation?: Json }; Returns: CampaignRow }
+      campaign_metrics: {
+        Args: { p_org: string; p_from: string; p_to: string; p_campaign?: string | null; p_channel?: OutreachChannel | null; p_status?: WorkflowStatus | null }
+        Returns: Json
       }
     }
     Enums: {
