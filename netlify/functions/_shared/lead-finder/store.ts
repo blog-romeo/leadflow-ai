@@ -124,7 +124,7 @@ export interface SearchPatch {
 
 export interface LeadFinderStore {
   checkRateLimit(org: string, user: string, bucket: string): Promise<{ allowed: boolean; retry_after?: number }>
-  consumeUsage(org: string, user: string, event: 'lead_search' | 'lead_result' | 'ai_analysis', qty: number, metadata?: Record<string, unknown>): Promise<QuotaResult>
+  consumeUsage(org: string, user: string, event: 'lead_search' | 'lead_result' | 'ai_analysis' | 'ai_tokens', qty: number, metadata?: Record<string, unknown>): Promise<QuotaResult>
   countInflightAnalyses(org: string): Promise<number>
   getProfile(org: string): Promise<IcpProfile>
 
@@ -145,7 +145,7 @@ export interface LeadFinderStore {
 
   createAiJob(row: { org: string; candidateId: string; input: Record<string, unknown>; createdBy: string }): Promise<string>
   getAiJob(id: string): Promise<AiJobRecord | null>
-  updateAiJob(org: string, id: string, patch: Partial<{ status: AiJobRecord['status']; output: unknown; error: string | null; model: string | null; tokensInput: number; tokensOutput: number; startedAt: string; completedAt: string; input: Record<string, unknown> }>): Promise<void>
+  updateAiJob(org: string, id: string, patch: Partial<{ status: AiJobRecord['status']; output: unknown; error: string | null; model: string | null; tokensInput: number; tokensOutput: number; costUsd: number | null; startedAt: string; completedAt: string; input: Record<string, unknown> }>): Promise<void>
 
   audit(org: string, actor: string, action: string, entityType: string, entityId: string | null, metadata?: Record<string, unknown>): Promise<void>
 }

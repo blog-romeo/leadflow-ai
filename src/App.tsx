@@ -17,6 +17,11 @@ const Crm = lazy(() => import('./pages/app/Crm'))
 const ModulePreview = lazy(() => import('./pages/app/ModulePreview'))
 const LeadFinder = lazy(() => import('./pages/app/LeadFinder'))
 const LeadScoring = lazy(() => import('./pages/app/LeadScoring'))
+const SalesDashboard = lazy(() => import('./pages/app/SalesDashboard'))
+const SalesProfile = lazy(() => import('./pages/app/SalesProfile'))
+const SalesLead = lazy(() => import('./pages/app/SalesLead'))
+const Pipeline = lazy(() => import('./pages/app/Pipeline'))
+const FollowUps = lazy(() => import('./pages/app/FollowUps'))
 const Billing = lazy(() => import('./pages/app/Billing'))
 const Settings = lazy(() => import('./pages/app/Settings'))
 const SuperAdmin = lazy(() => import('./pages/app/SuperAdmin'))
@@ -25,9 +30,7 @@ const NotFound = lazy(() => import('./pages/NotFound'))
 /** Moduli "in preparazione": path relativo sotto /app → chiave del registro moduli. */
 const PREVIEW_ROUTES: [string, string][] = [
   ['business-analyzer', 'analyzer'],
-  ['sales-agent', 'salesAgent'],
   ['campaigns', 'campaigns'],
-  ['follow-up', 'followUp'],
   ['analytics', 'analytics'],
 ]
 
@@ -65,6 +68,11 @@ export function AppRoutes() {
             <Route path="crm" element={<Suspense fallback={<LoadingState />}><Crm /></Suspense>} />
             <Route path="lead-finder" element={<Suspense fallback={<LoadingState />}><LeadFinder /></Suspense>} />
             <Route path="lead-scoring" element={<Suspense fallback={<LoadingState />}><LeadScoring /></Suspense>} />
+            <Route path="crm/pipeline" element={<Suspense fallback={<LoadingState />}><Pipeline /></Suspense>} />
+            <Route path="sales-agent" element={<Suspense fallback={<LoadingState />}><SalesDashboard /></Suspense>} />
+            <Route path="sales-agent/profile" element={<Suspense fallback={<LoadingState />}><SalesProfile /></Suspense>} />
+            <Route path="sales-agent/leads/:leadId" element={<Suspense fallback={<LoadingState />}><SalesLead /></Suspense>} />
+            <Route path="follow-up" element={<Suspense fallback={<LoadingState />}><FollowUps /></Suspense>} />
             {PREVIEW_ROUTES.map(([path, key]) => (
               <Route key={path} path={path} element={<Suspense fallback={<LoadingState />}><ModulePreview moduleKey={key} /></Suspense>} />
             ))}

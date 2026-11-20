@@ -2,11 +2,12 @@
 
 Piattaforma SaaS multi-tenant per trovare, analizzare, qualificare e gestire opportunità commerciali B2B.
 
-**Stato: Fase 2 (AI Lead Finder).** Oltre alle fondamenta della fase 1 (auth, organizzazioni, dashboard,
-CRM, RLS) sono operativi: **AI Lead Finder** (ricerca su fonti autorizzate, importazione CSV,
-deduplicazione, salvataggio nel CRM, esclusione, export dove consentito), **AI Business Analyzer**
-(analisi del sito con OpenAI, lato server) e **AI Lead Scoring** (criteri e pesi configurabili).
-Sales Agent, Campagne, Follow-up, Analytics e Billing restano **dichiaratamente "in preparazione"**.
+**Stato: Fase 3 (AI Sales Agent).** Oltre alle fondamenta (auth, organizzazioni, dashboard, CRM, RLS) e
+all'**AI Lead Finder** (ricerca su fonti autorizzate, import CSV, Business Analyzer, Lead Scoring) sono
+operativi: **AI Sales Agent** (profilo commerciale, Lead Intelligence, generatore di bozze messaggi,
+proposte commerciali, follow-up intelligente, Copilot), **pipeline a 12 fasi** con drag-and-drop e
+storico, **calendario follow-up**. Il Sales Agent **non invia nulla**: produce solo bozze; l'approvazione
+di una bozza non autorizza l'invio. Campagne, Analytics e Billing restano **"in preparazione"**.
 Nessun dato simulato viene mostrato come reale: i mock esistono solo nei test.
 
 ## Stack
@@ -16,7 +17,7 @@ Nessun dato simulato viene mostrato come reale: i mock esistono solo nei test.
 | Frontend | React 18, Vite, TypeScript (strict), Tailwind CSS v4, React Router 6 |
 | Backend dati | Supabase PostgreSQL, Auth, Row Level Security |
 | Serverless | Netlify Functions (`netlify/functions`, esposte su `/api/*`) |
-| AI (fasi successive) | OpenAI API, solo lato server |
+| AI | OpenAI Responses API (Structured Outputs), solo lato server |
 | Pagamenti (fasi successive) | Stripe, webhook lato server |
 
 ## Struttura
@@ -28,11 +29,14 @@ src/
   contexts/        AuthContext (sessione, profilo, membership, org corrente), ThemeContext
   i18n/            it.ts (predefinita), en.ts, provider
   lib/             supabase client (solo anon key), env, validation, errors, tipi DB
-  pages/           Landing, auth/*, Onboarding, app/* (Dashboard, Crm, Settings, Billing, SuperAdmin, ModulePreview)
+  features/        lead-finder/, sales/ (generatore, proposte, follow-up, pipeline, Copilot, grafici)
+  pages/           Landing, auth/*, Onboarding, app/* (Dashboard, Crm, Pipeline, FollowUps, LeadFinder,
+                   SalesDashboard, SalesProfile, SalesLead, Settings, Billing, SuperAdmin, ModulePreview)
   routes/guards    RequireAuth, RequireOrganization, RequireSuperAdmin, PublicOnly
-netlify/functions  health, ai-status, _shared (auth server-side, http)
+netlify/functions  health, ai-status, lead-finder-*, sales-agent-*, _shared (auth, http, dispatch,
+                   lead-finder/, sales-agent/)
 supabase/
-  migrations/      0001 schema · 0002 sicurezza, RLS, trigger, RPC
+  migrations/      0001 schema · 0002 sicurezza/RLS · 0003 Lead Finder · 0004 tipi attività · 0005 Sales Agent
   tests/           test RLS eseguibili su Postgres locale
 ```
 
@@ -60,8 +64,9 @@ mostrano un avviso "Supabase non è configurato" con i form disabilitati.
 | `SUPABASE_SERVICE_ROLE_KEY` | solo Netlify Functions | scritture server del Lead Finder dopo i controlli. Mai nel browser |
 | `OVERPASS_API_URL`, `OVERPASS_CONTACT`, `OVERPASS_API_KEY` | solo Netlify Functions | fonte OpenStreetMap (endpoint HTTPS a pagamento o self-hosted) |
 | `GOOGLE_PLACES_API_KEY` | solo Netlify Functions | fonte Google Places (solo sessione) |
-| `OPENAI_API_KEY`, `OPENAI_MODEL` | solo Netlify Functions | AI Business Analyzer |
-| `LEADFLOW_INTERNAL_SECRET` | solo Netlify Functions | ≥ 32 caratteri, autentica l'avvio dei job AI in background |
+| `OPENAI_API_KEY`, `OPENAI_MODEL` | solo Netlify Functions | Business Analyzer e Sales Agent |
+| `LEADFLOW_INTERNAL_SECRET` | solo Netlify Functions | ≥ 32 caratteri, autentica l'avvio dei job AI in background (Lead Finder e Sales Agent) |
+| `OPENAI_PRICE_INPUT_PER_MTOK`, `OPENAI_PRICE_OUTPUT_PER_MTOK` | solo Netlify Functions | facoltative: USD per 1M token, per stimare `ai_jobs.cost_usd` |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | solo Netlify Functions | fasi successive |
 
 Le variabili server **non** devono mai avere il prefisso `VITE_`, altrimenti Vite le inserisce nel bundle.
@@ -82,6 +87,13 @@ In alternativa, nel SQL Editor di Supabase esegui nell'ordine:
 1. `supabase/migrations/20261119000001_initial_schema.sql`
 2. `supabase/migrations/20261119000002_security_rls.sql`
 3. `supabase/migrations/20261119000003_lead_finder.sql`
+4. `supabase/migrations/20261120000004_activity_types.sql` (da eseguire **da sola**: `ALTER TYPE … ADD VALUE`
+   non può essere usato nella stessa transazione che usa i nuovi valori)
+5. `supabase/migrations/20261120000005_sales_agent.sql`
+
+La migrazione 0005 sostituisce l'enum `lead_status` con le 12 fasi della pipeline: i lead esistenti in
+`proposal` passano a `proposal_sent`; nessun dato viene cancellato. Le organizzazioni esistenti ricevono
+un profilo commerciale vuoto.
 
 ### Configurazione Auth
 
@@ -97,7 +109,9 @@ Si consiglia di lasciare attiva la conferma email.
 
 Tabelle: `profiles`, `organizations`, `organization_members`, `lead_sources`, `leads`,
 `contact_suppressions`, `lead_analyses`, `campaigns`, `campaign_leads`, `activities`, `appointments`,
-`ai_jobs`, `subscriptions`, `usage_events`, `audit_logs`.
+`ai_jobs`, `subscriptions`, `usage_events`, `audit_logs`, e per il Sales Agent `sales_profiles`,
+`sales_opportunities`, `sales_proposals`, `message_drafts`, `follow_up_tasks`, `ai_conversations`,
+`ai_messages` (più la vista `lead_activities` su `activities`).
 
 Ogni record aziendale ha `organization_id`. Le relazioni tra tabelle aziendali usano **chiavi esterne
 composite** `(organization_id, id)`: è impossibile collegare un lead a una fonte o a una campagna di
@@ -145,7 +159,7 @@ update public.profiles set platform_role = 'super_admin' where email = 'operator
 ```bash
 npm run typecheck   # TypeScript su app, config e functions
 npm test            # unit test (validazione, i18n, guard delle rotte, DataTable, CSP)
-npm run test:rls    # migrazioni + 78 test SQL (isolamento, dedup, licenze, quote) su Postgres temporaneo
+npm run test:rls    # migrazioni + 134 test SQL (isolamento, dedup, licenze, quote, Sales Agent) su Postgres temporaneo
 npm run build       # build di produzione
 ```
 
@@ -181,6 +195,10 @@ aggiorna l'hash (un test lo verifica).
 | `POST /api/lead-finder/save` | Bearer JWT, membro | salva nel CRM i candidati consentiti |
 | `POST /api/lead-finder/exclude` | Bearer JWT, membro | esclude/ripristina candidati |
 | `GET /api/lead-finder/export` | Bearer JWT, membro | CSV dei soli dati esportabili per licenza |
+| `GET /api/sales-agent/status?organization_id=` | Bearer JWT, membro | configurazione AI, completezza profilo, quote |
+| `POST /api/sales-agent/generate` | Bearer JWT, membro | avvia un job: `intelligence`, `messages`, `proposal`, `follow_up_suggestion` (202) |
+| `POST /api/sales-agent/copilot` | Bearer JWT, membro | domanda al Copilot; crea/continua una conversazione privata (202) |
+| `POST /api/sales-agent/run` | segreto interno | background function che esegue i job del Sales Agent |
 
 Le pagine `/dashboard/*` reindirizzano a `/app/*` (es. `/dashboard/lead-finder`).
 
@@ -235,9 +253,80 @@ ipotesi; le esigenze digitali sono sempre ipotesi. Il credito si consuma solo ad
 - **Quote interne** (`organization_quotas`, default per mese): 50 ricerche, 1000 risultati, 100 analisi AI,
   20 richieste/minuto per utente. Si modificano via SQL (service role).
 
+## AI Sales Agent
+
+Pagine: `/app/sales-agent` (KPI, grafici, filtri 7/30/90/365 giorni; alias
+`/dashboard/sales-agent`), `/app/sales-agent/profile`, `/app/sales-agent/leads/:id` (schede Panoramica,
+Messaggi, Proposte, Follow-up, Cronologia), `/app/crm/pipeline`, `/app/follow-up`. Dal Lead Finder un
+lead salvato si apre con "Apri nel Sales Agent".
+
+### Architettura (`netlify/functions/_shared/sales-agent/`)
+
+| File | Ruolo |
+| --- | --- |
+| `validation.ts` | input zod (unione discriminata per compito), limiti di lunghezza |
+| `service.ts` | `requestSalesJob` / `requestCopilot` (autorizzazione, quote, job) e `runSalesJob` (esecuzione) |
+| `context.ts` | profilo e lead minimizzati per il modello: niente email, telefoni o nomi di persone |
+| `sanitize.ts` | neutralizza testo esterno (siti, note, campi lead) prima del prompt |
+| `prompts.ts` | regole di sistema + istruzioni per compito; i dati vanno in `<dati_non_attendibili>` |
+| `schemas.ts` | JSON Schema strict per OpenAI + zod per rivalidare la risposta |
+| `postcheck.ts` | controlli dopo la generazione: email, URL, telefoni, importi, promesse, fatti non supportati |
+| `costs.ts` | stima costo e limite di token in uscita per compito |
+| `supabaseStore.ts` | persistenza (service role solo dopo verifica JWT e membership) |
+
+Flusso: l'endpoint verifica JWT, appartenenza, configurazione AI, rate limit e quote → crea un record
+`ai_jobs` → avvia la background function con il segreto interno → il client segue lo stato del job
+(polling RLS su `ai_jobs`) → le bozze vengono salvate come `message_drafts`/`sales_proposals` in stato `draft`.
+
+### Sicurezza dei contenuti AI
+
+- Le regole di sistema sono fisse nel codice; siti, note, nomi e campi del lead sono passati come dati
+  JSON non attendibili. Frasi che sembrano istruzioni ("ignora le istruzioni…", marcatori di ruolo)
+  vengono sostituite prima dell'invio.
+- La risposta è validata due volte (Structured Outputs strict + zod). Dopo la generazione: email
+  rimosse; URL, telefoni e importi accettati solo se presenti nel profilo/listino o nei dati del lead;
+  promesse ("garantito", "100%"…) e fatti non verificabili segnalati come avvisi visibili.
+- Il Copilot riceve solo dati dell'organizzazione corrente (RLS + filtri server) e separa **fatti**,
+  **inferenze** e **suggerimenti**; le azioni proposte su lead non contattabili vengono declassate.
+
+### Conformità commerciale
+
+- **Nessun invio automatico.** Nessuna integrazione email, LinkedIn, WhatsApp o telefonia è configurata.
+  Per i messaggi è disponibile solo "Copia testo"; per le proposte "Segna come inviata da me" registra un invio fatto fuori dalla piattaforma.
+- **Approvare ≠ autorizzare l'invio.** L'interfaccia lo ripete in testata e alla conferma di ogni approvazione.
+- **Email pubblica ≠ consenso marketing.** La scheda Conformità mostra fonte e base giuridica del lead e
+  ricorda di verificarla prima del contatto.
+- Il database blocca (trigger, non solo UI): approvazione di bozze, invio manuale di proposte e
+  follow-up di contatto per lead in opposizione, soppressi o `not_contactable`; un lead in opposizione
+  è forzato in `not_contactable`. Lo spostamento a won/lost chiude le opportunità e annulla i follow-up di contatto.
+
+### Pipeline
+
+12 fasi: `new`, `qualified`, `to_contact`, `contacted`, `replied`, `meeting_scheduled`,
+`proposal_sent`, `negotiation`, `won`, `lost`, `follow_up`, `not_contactable`. Ogni cambio di fase è
+registrato da trigger in `activities` (da/a, utente responsabile). Alternativa accessibile al
+drag-and-drop: un menu "Sposta in" su ogni scheda, utilizzabile da tastiera e screen reader.
+
+### Follow-up
+
+Cadenza configurabile nel profilo (predefinita 3/7/14 giorni). All'approvazione di una proposta
+vengono pianificati: primo contatto di verifica, secondo contatto, revisione dell'opportunità. I compiti
+di contatto non si possono creare o completare per lead non contattabili.
+
+### Limiti e costi
+
+- **Quote mensili** (`organization_quotas`): 300 generazioni AI, 3.000.000 token AI; rate limit 20
+  richieste/minuto per utente. Si modificano via SQL (service role). Il riepilogo è in `usage_summary`
+  (costo stimato visibile solo agli admin).
+- **Token massimi in uscita per chiamata**: intelligence 3000, messaggi 4000, proposta 4000,
+  suggerimento follow-up 2000, Copilot 2500. Input tipico 2–6k token (profilo + lead + analisi).
+- **Costo**: ogni job salva token in ingresso/uscita e, se configurati i prezzi
+  (`OPENAI_PRICE_*_PER_MTOK`), il costo stimato in `ai_jobs.cost_usd`. I prezzi variano per modello:
+  consulta il listino OpenAI e imposta budget e limiti anche nella dashboard OpenAI.
+
 ## Roadmap
 
 - **Fase 2 (completata)**: AI Lead Finder, Business Analyzer, Lead Scoring.
-- **Prossimo**: scheda lead nel CRM con attività, opposizione/soppressione da UI, inviti al team via function.
-- **Fase 4**: Stripe (checkout, portale, webhook → `subscriptions`), limiti per piano.
-- **Fase 5**: Campaign Manager, AI Follow-up, Sales Agent (solo bozze con approvazione umana), Analytics.
+- **Fase 3 (completata)**: AI Sales Agent, pipeline a 12 fasi, follow-up, Copilot.
+- **In preparazione**: export PDF delle proposte; integrazioni di invio (email/LinkedIn/WhatsApp) con
+  consenso verificato e doppia conferma; Campaign Manager; Analytics; Stripe (checkout, portale, webhook).

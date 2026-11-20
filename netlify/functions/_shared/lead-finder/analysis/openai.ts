@@ -27,6 +27,7 @@ export async function callStructured(params: {
   schemaName: string
   schema: unknown
   timeoutMs: number
+  maxOutputTokens?: number
   fetchImpl?: typeof fetch
 }): Promise<AiCallResult> {
   if (!params.apiKey || !params.model) throw new AiError('ai_not_configured')
@@ -40,7 +41,7 @@ export async function callStructured(params: {
         body: JSON.stringify({
           model: params.model,
           store: false,
-          max_output_tokens: 4000,
+          max_output_tokens: params.maxOutputTokens ?? 4000,
           input: [
             { role: 'system', content: params.system },
             { role: 'user', content: params.user },

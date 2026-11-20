@@ -6,7 +6,20 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 
 export type PlatformRole = 'user' | 'super_admin'
 export type OrgRole = 'organization_admin' | 'member'
-export type LeadStatus = 'new' | 'contacted' | 'qualified' | 'proposal' | 'won' | 'lost'
+export type LeadStatus =
+  | 'new' | 'to_qualify' | 'qualified' | 'to_contact' | 'contacted' | 'in_conversation'
+  | 'meeting_scheduled' | 'proposal_sent' | 'negotiation' | 'won' | 'lost' | 'not_contactable'
+export const PIPELINE_STAGES: LeadStatus[] = [
+  'new', 'to_qualify', 'qualified', 'to_contact', 'contacted', 'in_conversation',
+  'meeting_scheduled', 'proposal_sent', 'negotiation', 'won', 'lost', 'not_contactable',
+]
+export type MessageChannel = 'email' | 'linkedin' | 'whatsapp' | 'phone_script' | 'follow_up'
+export type MessageVariant = 'professional' | 'direct' | 'consultative'
+export type DraftStatus = 'draft' | 'approved' | 'archived'
+export type ProposalStatus = 'draft' | 'approved' | 'sent_manually' | 'archived'
+export type FollowUpKind = 'check_in' | 'second_contact' | 'opportunity_review' | 'custom'
+export type FollowUpStatus = 'open' | 'done' | 'dismissed' | 'blocked'
+export type SalesTone = 'formal' | 'friendly' | 'direct' | 'consultative'
 export type ContactStatus = 'active' | 'opted_out' | 'suppressed'
 export type CampaignStatus = 'draft' | 'active' | 'paused' | 'completed' | 'archived'
 export type AppointmentStatus = 'scheduled' | 'completed' | 'cancelled' | 'no_show'
@@ -66,6 +79,8 @@ export type LeadRow = {
   score_basis: 'rules' | 'ai' | null
   score_breakdown: Json | null
   score_explanation: string | null
+  stage_changed_at: string | null
+  region: string | null
   provider: 'osm_overpass' | 'google_places' | 'csv_import' | null
   external_id: string | null
   acquired_at: string | null
@@ -136,6 +151,9 @@ export type AiJobRow = {
   tokens_input: number | null
   tokens_output: number | null
   candidate_id: string | null
+  task: string | null
+  lead_id: string | null
+  cost_usd: number | null
   created_by: string | null
   created_at: string
   started_at: string | null
@@ -209,6 +227,189 @@ export type OrganizationProfileRow = {
   updated_by: string | null
   updated_at: string
 }
+export type SalesService = {
+  id: string
+  name: string
+  description?: string | null
+  price_from?: number | null
+  price_to?: number | null
+  price_unit?: string | null
+}
+export type SalesProfileRow = {
+  id: string
+  organization_id: string
+  commercial_name: string | null
+  sector: string | null
+  offer_description: string | null
+  services: SalesService[]
+  price_range: string | null
+  currency: string
+  served_areas: string[]
+  ideal_customer: string | null
+  differentiators: string[]
+  website: string | null
+  language: 'it' | 'en'
+  tone: SalesTone
+  call_to_action: string | null
+  booking_url: string | null
+  commercial_terms: string | null
+  follow_up_days: number[]
+  updated_by: string | null
+  created_at: string
+  updated_at: string
+}
+export type Warning = { code: string; detail?: string }
+export type FactUsed = { fact: string; source: string; verified: boolean }
+export type MessageDraftRow = {
+  id: string
+  organization_id: string
+  lead_id: string
+  channel: MessageChannel
+  variant: MessageVariant
+  generation_id: string
+  subject: string | null
+  body: string
+  status: DraftStatus
+  facts_used: FactUsed[]
+  warnings: Warning[]
+  generated_by: 'ai' | 'manual'
+  ai_job_id: string | null
+  follow_up_task_id: string | null
+  edited_at: string | null
+  approved_at: string | null
+  approved_by: string | null
+  archived_at: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+export type ProposalContent = {
+  company_presentation?: string
+  opportunity?: { statement: string; basis: 'verified' | 'hypothesis'; evidence?: string }
+  solution?: string
+  services_included?: string[]
+  benefits?: string[]
+  pricing?: { currency: string; price_range?: string | null; lines: { service_id: string; name: string; price_from: number | null; price_to: number | null; price_unit: string | null }[] }
+  conditions?: string
+  call_to_action?: string
+  assumptions?: string[]
+}
+export type SalesProposalRow = {
+  id: string
+  organization_id: string
+  lead_id: string
+  opportunity_id: string | null
+  title: string
+  status: ProposalStatus
+  variant: MessageVariant
+  language: 'it' | 'en'
+  content: ProposalContent
+  facts_used: FactUsed[]
+  warnings: Warning[]
+  generated_by: 'ai' | 'manual'
+  ai_job_id: string | null
+  version: number
+  edited_at: string | null
+  approved_at: string | null
+  approved_by: string | null
+  sent_at: string | null
+  sent_by: string | null
+  archived_at: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+export type FollowUpTaskRow = {
+  id: string
+  organization_id: string
+  lead_id: string
+  proposal_id: string | null
+  opportunity_id: string | null
+  kind: FollowUpKind
+  is_contact: boolean
+  title: string
+  notes: string | null
+  due_at: string
+  status: FollowUpStatus
+  priority: 'high' | 'medium' | 'low'
+  assigned_to: string | null
+  source: 'cadence' | 'manual' | 'ai'
+  blocked_reason: string | null
+  ai_suggestion: { suggestion: string; reasoning: string; timing_note: string; draft_id: string | null; generated_at: string } | null
+  completed_at: string | null
+  completed_by: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+export type SalesOpportunityRow = {
+  id: string
+  organization_id: string
+  lead_id: string
+  title: string
+  service_name: string | null
+  value_amount: number | null
+  currency: string
+  status: 'open' | 'won' | 'lost'
+  expected_close_date: string | null
+  owner_id: string | null
+  notes: string | null
+  closed_at: string | null
+  closed_by: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+export type AiConversationRow = {
+  id: string
+  organization_id: string
+  user_id: string
+  title: string | null
+  lead_id: string | null
+  archived_at: string | null
+  created_at: string
+  updated_at: string
+}
+export type AiMessageRow = {
+  id: string
+  organization_id: string
+  conversation_id: string
+  role: 'user' | 'assistant'
+  content: string
+  structured: {
+    facts: { statement: string; lead_ids: string[] }[]
+    inferences: { statement: string; lead_ids: string[] }[]
+    suggestions: { statement: string; lead_id: string | null; action: string }[]
+  } | null
+  ai_job_id: string | null
+  model: string | null
+  tokens_input: number | null
+  tokens_output: number | null
+  created_at: string
+}
+export type LeadAnalysisRow = {
+  id: string
+  organization_id: string
+  lead_id: string
+  ai_job_id: string | null
+  kind: 'business_analysis' | 'sales_intelligence'
+  summary: string | null
+  data: Json
+  model: string | null
+  created_at: string
+}
+export type LeadActivityRow = {
+  id: string
+  organization_id: string
+  lead_id: string
+  type: ActivityType | 'proposal' | 'message_draft' | 'follow_up' | 'opportunity' | 'appointment' | 'ai'
+  subject: string | null
+  body: string | null
+  metadata: Record<string, unknown>
+  occurred_at: string
+  created_by: string | null
+  created_at: string
+}
 export type SubscriptionRow = {
   id: string
   organization_id: string
@@ -268,12 +469,26 @@ export type Database = {
       lead_candidates: Table<LeadCandidateRow>
       lead_searches: Table<LeadSearchRow>
       organization_profiles: Table<OrganizationProfileRow>
+      sales_profiles: Table<SalesProfileRow>
+      message_drafts: Table<MessageDraftRow>
+      sales_proposals: Table<SalesProposalRow>
+      follow_up_tasks: Table<FollowUpTaskRow>
+      sales_opportunities: Table<SalesOpportunityRow>
+      ai_conversations: Table<AiConversationRow>
+      ai_messages: Table<AiMessageRow>
+      lead_analyses: Table<LeadAnalysisRow>
     }
-    Views: { [_ in never]: never }
+    Views: {
+      lead_activities: { Row: LeadActivityRow; Relationships: [] }
+    }
     Functions: {
       create_organization: {
         Args: { p_name: string; p_vat_number?: string | null; p_country?: string }
         Returns: OrganizationRow
+      }
+      sales_dashboard: {
+        Args: { p_org: string; p_from: string; p_to: string }
+        Returns: Json
       }
       usage_summary: {
         Args: { p_org: string }

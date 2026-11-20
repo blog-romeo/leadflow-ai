@@ -3,16 +3,18 @@ import { Kanban } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useI18n } from '../../i18n'
 import { supabase } from '../../lib/supabase'
-import type { ContactStatus, LeadRow, LeadStatus } from '../../lib/database.types'
+import { PIPELINE_STAGES, type ContactStatus, type LeadRow, type LeadStatus } from '../../lib/database.types'
 import { escapeLike, useDebounced } from '../../lib/useDebounced'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { DataTable, type Column } from '../../components/ui/DataTable'
 import { Select } from '../../components/ui/Field'
 import { Badge } from '../../components/ui/Badge'
 import { EmptyState } from '../../components/ui/States'
+import { Link } from 'react-router-dom'
+import { CrmTabs } from '../../features/sales/CrmTabs'
 
 type LeadListRow = Pick<LeadRow, 'id' | 'company_name' | 'city' | 'status' | 'contact_status' | 'score' | 'priority' | 'score_basis' | 'created_at'>
-const STATUSES: LeadStatus[] = ['new', 'contacted', 'qualified', 'proposal', 'won', 'lost']
+const STATUSES: LeadStatus[] = PIPELINE_STAGES
 const PAGE_SIZE = 20
 
 const contactTone: Record<ContactStatus, 'ok' | 'signal' | 'neutral'> = { active: 'ok', opted_out: 'signal', suppressed: 'neutral' }
@@ -64,7 +66,9 @@ export default function Crm() {
       header: t('crm.colCompany'),
       render: (r) => (
         <div>
-          <p className="font-medium">{r.company_name}</p>
+          <Link to={`/app/sales-agent/leads/${r.id}`} className="font-medium hover:text-flow hover:underline">
+            {r.company_name}
+          </Link>
           {r.city && <p className="text-xs text-muted">{r.city}</p>}
         </div>
       ),
@@ -93,7 +97,7 @@ export default function Crm() {
 
   return (
     <>
-      <PageHeader title={t('crm.title')} subtitle={t('crm.subtitle')} />
+      <PageHeader title={t('crm.title')} subtitle={t('crm.subtitle')} actions={<CrmTabs />} />
       <DataTable
         caption={t('crm.title')}
         columns={columns}

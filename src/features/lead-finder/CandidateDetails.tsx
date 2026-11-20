@@ -1,4 +1,5 @@
 import { ExternalLink, Sparkles } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import type { ReactNode } from 'react'
 import { useI18n } from '../../i18n'
 import { Dialog } from '../../components/ui/Dialog'
@@ -179,6 +180,11 @@ export function CandidateDetails({
       }
     >
       {c.sessionOnly && !c.company_name && <InlineAlert tone="signal">{t('leadFinder.sessionOnly')}</InlineAlert>}
+      {c.lead_id && (
+        <Link to={`/app/sales-agent/leads/${c.lead_id}`} className="mb-2 inline-flex items-center gap-1 text-sm font-medium text-flow hover:underline">
+          {t('leadFinder.openInSalesAgent')}
+        </Link>
+      )}
       <Section title={t('leadFinder.details.company')}>
         <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
           <dt className="text-muted">{t('leadFinder.colSector')}</dt>

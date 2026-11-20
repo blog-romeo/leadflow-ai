@@ -15,7 +15,10 @@ describe('registro moduli', () => {
   })
   it('stato dei moduli AI coerente con le funzioni realmente operative', () => {
     const status = Object.fromEntries(MODULES.filter((m) => m.group === 'ai').map((m) => [m.key, m.status]))
-    expect(status).toEqual({ leadFinder: 'available', analyzer: 'available', scoring: 'available', salesAgent: 'preparation' })
+    expect(status).toEqual({ leadFinder: 'available', analyzer: 'available', scoring: 'available', salesAgent: 'available' })
+    const followUp = MODULES.find((m) => m.key === 'followUp')
+    expect(followUp?.status).toBe('available')
+    expect(MODULES.filter((m) => ['campaigns', 'analytics', 'billing'].includes(m.key)).every((m) => m.status === 'preparation')).toBe(true)
   })
   it('Super Admin visibile solo ai super_admin', () => {
     expect(visibleModules(false).some((m) => m.key === 'admin')).toBe(false)

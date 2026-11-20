@@ -16,7 +16,7 @@ export function Panel({
   as?: 'h2' | 'h3'
 }) {
   return (
-    <section className={cn('rounded-[var(--radius-panel)] border border-line bg-surface', className)}>
+    <section className={cn('min-w-0 rounded-[var(--radius-panel)] border border-line bg-surface', className)}>
       {title && (
         <header className="flex items-center justify-between gap-3 border-b border-line px-5 py-3.5">
           <Heading className="text-base font-semibold">{title}</Heading>

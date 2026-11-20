@@ -7,6 +7,7 @@ import { scoreLead, type ScorableCompany } from './scoring'
 import type { LeadFinderStore } from './store'
 import type { ProviderId } from './types'
 import type { Ctx } from './services'
+import { estimateCostUsd } from '../sales-agent/costs'
 
 export function aiMissingConfig(env: NodeJS.ProcessEnv = process.env): string[] {
   const missing: string[] = []
@@ -100,7 +101,10 @@ export async function runAnalysisJob(
       await store.updateCandidate(org, candidate.id, { analysis, lastAnalyzedAt: now, score })
     }
     // Il credito si consuma solo ad analisi riuscita.
-    await store.consumeUsage(org, job.createdBy ?? '00000000-0000-0000-0000-000000000000', 'ai_analysis', 1, { job_id: jobId })
+    const actor = job.createdBy ?? '00000000-0000-0000-0000-000000000000'
+    await store.consumeUsage(org, actor, 'ai_analysis', 1, { job_id: jobId })
+    const tokens = analysis.usage.input_tokens + analysis.usage.output_tokens
+    if (tokens > 0) await store.consumeUsage(org, actor, 'ai_tokens', tokens, { job_id: jobId })
     await store.updateAiJob(org, jobId, {
       status: 'succeeded',
       // Per i provider senza memorizzazione il risultato vive nel job; i dati di input vengono rimossi.
@@ -108,6 +112,7 @@ export async function runAnalysisJob(
       model: analysis.model,
       tokensInput: analysis.usage.input_tokens,
       tokensOutput: analysis.usage.output_tokens,
+      costUsd: estimateCostUsd(analysis.usage, deps.env ?? process.env),
       completedAt: now,
       input: { keywords },
     })

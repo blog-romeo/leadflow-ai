@@ -295,7 +295,7 @@ export function createSupabaseStore(db: SupabaseClient): LeadFinderStore {
     async createAiJob(row) {
       const { data, error } = await db
         .from('ai_jobs')
-        .insert({ organization_id: row.org, candidate_id: row.candidateId, type: 'business_analysis', status: 'queued', input: row.input, created_by: row.createdBy })
+        .insert({ organization_id: row.org, candidate_id: row.candidateId, type: 'business_analysis', task: 'business_analysis', status: 'queued', input: row.input, created_by: row.createdBy })
         .select('id')
         .single()
       if (error) fail('create_job', error)
@@ -322,6 +322,7 @@ export function createSupabaseStore(db: SupabaseClient): LeadFinderStore {
       if ('model' in patch) row.model = patch.model
       if (patch.tokensInput !== undefined) row.tokens_input = patch.tokensInput
       if (patch.tokensOutput !== undefined) row.tokens_output = patch.tokensOutput
+      if ('costUsd' in patch) row.cost_usd = patch.costUsd
       if (patch.startedAt) row.started_at = patch.startedAt
       if (patch.completedAt) row.completed_at = patch.completedAt
       if (patch.input) row.input = patch.input

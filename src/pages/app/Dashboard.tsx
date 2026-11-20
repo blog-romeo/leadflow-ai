@@ -4,7 +4,7 @@ import { Check, CircleDashed, Inbox } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useI18n } from '../../i18n'
 import { supabase } from '../../lib/supabase'
-import type { ActivityRow, LeadStatus } from '../../lib/database.types'
+import { PIPELINE_STAGES, type ActivityRow, type LeadStatus } from '../../lib/database.types'
 import { MODULES } from '../../config/modules'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Panel } from '../../components/ui/Panel'
@@ -12,7 +12,7 @@ import { Badge } from '../../components/ui/Badge'
 import { EmptyState, ErrorState, LoadingState } from '../../components/ui/States'
 import { cn } from '../../lib/cn'
 
-const PIPELINE: LeadStatus[] = ['new', 'contacted', 'qualified', 'proposal', 'won', 'lost']
+const PIPELINE: LeadStatus[] = PIPELINE_STAGES
 
 interface DashboardData {
   byStatus: Record<LeadStatus, number>
@@ -94,7 +94,7 @@ function Pipeline({ byStatus }: { byStatus: Record<LeadStatus, number> }) {
   const total = PIPELINE.reduce((acc, s) => acc + byStatus[s], 0)
   return (
     <div>
-      <ol className="grid grid-cols-2 gap-px overflow-hidden rounded-[var(--radius-control)] border border-line bg-line sm:grid-cols-3 lg:grid-cols-6">
+      <ol className="grid grid-cols-2 gap-px overflow-hidden rounded-[var(--radius-control)] border border-line bg-line sm:grid-cols-4 lg:grid-cols-6">
         {PIPELINE.map((s) => {
           const n = byStatus[s]
           const share = total ? n / total : 0

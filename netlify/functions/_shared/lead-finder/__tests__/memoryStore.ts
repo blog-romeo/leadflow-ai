@@ -47,6 +47,10 @@ export function createMemoryStore(init: Partial<MemoryState> = {}) {
       return { allowed: true }
     },
     async consumeUsage(org, user, event, qty) {
+      if (event === 'ai_tokens') {
+        if (qty > 0) s.usage.push({ org, user, event, qty, at: Date.now() })
+        return { allowed: true, used: qty, limit: 1e9, remaining: 1e9 }
+      }
       const limit = quota(org)[limits[event]]
       const used = s.usage.filter((u) => u.org === org && u.event === event).reduce((a, u) => a + u.qty, 0)
       if (used + qty > limit) return { allowed: false, used, limit, remaining: Math.max(limit - used, 0) }
