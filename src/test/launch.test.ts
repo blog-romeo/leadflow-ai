@@ -63,8 +63,9 @@ describe('nessun segreto nel codice del browser', () => {
   })
   it('solo variabili VITE_ pubbliche nel frontend', () => {
     const names = new Set(files.flatMap((f) => [...readFileSync(f, 'utf8').matchAll(/import\.meta\.env\.([A-Z_]+)/g)].map((m) => m[1])))
-    // VITE_FEATURE_AI_AGENTS (Prompt 8): booleano pubblico di sola visibilità del menu, non un segreto.
-    for (const n of names) expect(['VITE_SUPABASE_URL', 'VITE_SUPABASE_ANON_KEY', 'VITE_APP_URL', 'VITE_RELEASE', 'VITE_FEATURE_AI_AGENTS', 'DEV', 'PROD', 'MODE']).toContain(n)
+    // VITE_FEATURE_AI_AGENTS (Prompt 8), VITE_FEATURE_SUPPORT_CHAT e VITE_FREE_BETA (Prompt 13):
+    // booleani pubblici di sola presentazione, non segreti (l'accesso lo decide il server).
+    for (const n of names) expect(['VITE_SUPABASE_URL', 'VITE_SUPABASE_ANON_KEY', 'VITE_APP_URL', 'VITE_RELEASE', 'VITE_FEATURE_AI_AGENTS', 'VITE_FEATURE_SUPPORT_CHAT', 'VITE_FREE_BETA', 'DEV', 'PROD', 'MODE']).toContain(n)
   })
 })
 
@@ -96,7 +97,7 @@ describe('contenuti pubblici onesti', () => {
 })
 
 describe('richiesta demo (validazione nel browser)', () => {
-  const ok = { name: 'Laura Bianchi', company: 'Bianchi Srl', email: 'laura@bianchi.it', phone: '', sector: 'Logistica', message: 'Vorremmo una demo del Lead Finder.', contact_preference: 'email' }
+  const ok = { name: 'Laura Bianchi', company: 'Bianchi Srl', email: 'laura@bianchi.test', phone: '', sector: 'Logistica', message: 'Vorremmo una demo del Lead Finder.', contact_preference: 'email' }
   it('valida', () => expect(validateDemoClient(ok, true)).toEqual({}))
   it('consenso e telefono richiesti', () => {
     expect(validateDemoClient({ ...ok, contact_preference: 'phone' }, false)).toEqual({ phone: 'required', consent: 'required' })

@@ -9,7 +9,7 @@ import { PlanAdmin } from '../../features/billing/PlanAdmin'
 import { ReasonDialog, inputCls, post, useApi } from '../../features/console/shared'
 
 interface Flag { key: string; description: string; scope: 'organization' | 'reseller'; enabled: boolean }
-interface Settings { settings: { white_label?: { cname_target: string | null } }; flags: Flag[] }
+interface Settings { settings: { white_label?: { cname_target: string | null } }; flags: Flag[]; free_beta_enabled?: boolean }
 
 export default function SuperAdminSettings() {
   const { t } = useI18n()
@@ -26,6 +26,27 @@ export default function SuperAdminSettings() {
     <>
       <PageHeader title={t('saSettings.title')} />
       <div className="space-y-5">
+        <Panel title={t('saSettings.freeBeta')}>
+          <p className="mb-3 max-w-prose text-xs text-muted">{t('saSettings.freeBetaHint')}</p>
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <Badge tone={data.free_beta_enabled ? 'ok' : 'danger'}>{data.free_beta_enabled ? t('saSettings.enabled') : t('saSettings.disabled')}</Badge>
+            {data.free_beta_enabled ? (
+              <Button size="sm" variant="ghost" onClick={() => ask(t('saSettings.freeBetaOff'), (reason) => post('/api/super-admin/free-beta', { enabled: false, backfill: false, reason }), true)}>
+                {t('saSettings.freeBetaOff')}
+              </Button>
+            ) : (
+              <>
+                <Button size="sm" variant="secondary" onClick={() => ask(t('saSettings.freeBetaOn'), (reason) => post('/api/super-admin/free-beta', { enabled: true, backfill: false, reason }))}>
+                  {t('saSettings.freeBetaOn')}
+                </Button>
+                <Button size="sm" variant="secondary" onClick={() => ask(t('saSettings.freeBetaOnBackfill'), (reason) => post('/api/super-admin/free-beta', { enabled: true, backfill: true, reason }))}>
+                  {t('saSettings.freeBetaOnBackfill')}
+                </Button>
+              </>
+            )}
+          </div>
+        </Panel>
+
         <Panel title={t('saSettings.flags')}>
           <p className="mb-3 text-xs text-muted">{t('saSettings.flagsHint')}</p>
           <ul className="divide-y divide-line text-sm">

@@ -34,7 +34,9 @@ per essere verificato · **NOT IMPLEMENTED**. Nessuna voce è verificata su Supa
 | Retention automatica | IMPLEMENTED (spenta) | decisione del titolare (REL-9) |
 | Backup | BLOCKED | dipende dal piano Supabase (REL-15) |
 | Rate limiting | TESTED | `check_rate_limit`, `public_rate_limit`, limite feedback |
-| **Cancellazione account / organizzazione self-service** | **NOT IMPLEMENTED** | REL-47: oggi solo eliminazione logica dei lead e intervento del Super Admin |
+| Cancellazione account / organizzazione self-service | IMPLEMENTED, NOT VERIFIED IN PRODUCTION | Prompt 13: Impostazioni → Cancellazione; SQL testato; eliminazione definitiva dopo 30 giorni con `RETENTION_PURGE_ENABLED=true` (REL-50) |
+| Chatbot di assistenza (sito + app) | IMPLEMENTED, NOT VERIFIED IN PRODUCTION | Prompt 13: `/api/support-chat`, risposte dalla documentazione, ticket con conferma; AI solo in app e solo se configurata (`docs/SUPPORT_CHATBOT.md`) |
+| Beta gratuita (piano a costo zero) | IMPLEMENTED, DISABLED BY DEFAULT | Prompt 13: `sa_set_free_beta` + `VITE_FREE_BETA`; nessun pagamento, tetti di 100 lead / 200 crediti / 3 utenti al mese |
 | Accessibilità e responsive | IMPLEMENTED | controllo visivo solo con dati simulati (Prompt 8); nessun Lighthouse |
 
 ## Note dell'audit del codice

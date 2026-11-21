@@ -321,7 +321,7 @@ export default function Billing() {
             {t('billing.plansTitle')}
           </h2>
           <div className="grid gap-4 md:grid-cols-3">
-            {plans.map((p) => {
+            {plans.filter((p) => p.is_active).map((p) => {
               const isCurrent = p.code === sub?.plan_code && data.entitlements.has_access
               const direction: 'upgrade' | 'downgrade' = currentPlan && p.price_cents < currentPlan.price_cents ? 'downgrade' : 'upgrade'
               const label = hasStripeSub ? t('billing.switchTo', { plan: p.name }) : t('billing.choose', { plan: p.name })

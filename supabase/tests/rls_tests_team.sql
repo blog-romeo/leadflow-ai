@@ -27,11 +27,11 @@
 select private.billing_set_enforcement(true) \g /dev/null
 \o /dev/null
 insert into auth.users (id, email, raw_user_meta_data, email_confirmed_at) values
-  (:'A', 'anna@team-a.it', '{"full_name":"Anna Admin"}', now()),
-  (:'M', 'marco@team-a.it', '{"full_name":"Marco Membro"}', now()),
-  (:'X', 'xenia@altrove.it', '{}', now()),
-  (:'U', 'ugo@team-a.it', '{}', null),
-  (:'B', 'bruno@team-b.it', '{}', now());
+  (:'A', 'anna@team-a.test', '{"full_name":"Anna Admin"}', now()),
+  (:'M', 'marco@team-a.test', '{"full_name":"Marco Membro"}', now()),
+  (:'X', 'xenia@altrove.test', '{}', now()),
+  (:'U', 'ugo@team-a.test', '{}', null),
+  (:'B', 'bruno@team-b.test', '{}', now());
 \o
 
 :as_a
@@ -41,7 +41,7 @@ select id as org_b from public.create_organization('Team B Srl', null, 'IT') \gs
 
 -- ── 1. Senza abbonamento: limite di 1 utente, nessun invito ────────────────
 :as_a
-select public.__expect_error(format($$select public.org_create_invitation(%L, 'marco@team-a.it', 'member')$$, :'org_a'),
+select public.__expect_error(format($$select public.org_create_invitation(%L, 'marco@team-a.test', 'member')$$, :'org_a'),
   array['P0001'], 'senza piano attivo: limite utenti (1) raggiunto, invito rifiutato');
 
 -- Piano Business (5 utenti) attivato dal webhook (simulato).
@@ -56,24 +56,24 @@ select public.billing_apply_subscription(jsonb_build_object(
 
 -- ── 2. Creazione: solo admin, token restituito una volta, salvato solo come hash ──
 :as_a
-select public.org_create_invitation(:'org_a', '  Marco@Team-A.it ', 'member') as inv \gset
+select public.org_create_invitation(:'org_a', '  Marco@Team-A.test ', 'member') as inv \gset
 select (:'inv'::jsonb ->> 'token') as tok, (:'inv'::jsonb ->> 'id') as inv_id \gset
 select public.__expect(length(:'tok') = 48 and :'tok' ~ '^[0-9a-f]+$', 'token casuale da 192 bit');
-select public.__expect((:'inv'::jsonb ->> 'email') = 'marco@team-a.it', 'email normalizzata');
-select public.__expect_error(format($$select public.org_create_invitation(%L, 'marco@team-a.it', 'member')$$, :'org_a'), array['P0001'], 'invito già in attesa per la stessa email');
-select public.__expect_error(format($$select public.org_create_invitation(%L, 'anna@team-a.it', 'member')$$, :'org_a'), array['P0001'], 'chi è già membro non si invita');
+select public.__expect((:'inv'::jsonb ->> 'email') = 'marco@team-a.test', 'email normalizzata');
+select public.__expect_error(format($$select public.org_create_invitation(%L, 'marco@team-a.test', 'member')$$, :'org_a'), array['P0001'], 'invito già in attesa per la stessa email');
+select public.__expect_error(format($$select public.org_create_invitation(%L, 'anna@team-a.test', 'member')$$, :'org_a'), array['P0001'], 'chi è già membro non si invita');
 select public.__expect_error(format($$select public.org_create_invitation(%L, 'non-una-email', 'member')$$, :'org_a'), array['22023'], 'email non valida');
-select public.__expect((select count(*) = 1 from jsonb_array_elements(public.org_invitations(:'org_a')) e where e ->> 'email' = 'marco@team-a.it' and e ->> 'status' = 'pending' and not (e ? 'token_hash')), 'elenco inviti senza token');
+select public.__expect((select count(*) = 1 from jsonb_array_elements(public.org_invitations(:'org_a')) e where e ->> 'email' = 'marco@team-a.test' and e ->> 'status' = 'pending' and not (e ? 'token_hash')), 'elenco inviti senza token');
 select public.__expect_error($$select token_hash from public.organization_invitations$$, array['42501'], 'colonna token_hash non leggibile dagli utenti');
 :as_postgres
 select public.__expect((select token_hash = encode(extensions.digest(:'tok', 'sha256'), 'hex') and token_hash <> :'tok' from public.organization_invitations where id = :'inv_id'), 'nel database solo l''hash SHA-256 del token');
-select public.__expect((select count(*) = 1 from public.audit_logs where action = 'invitation.created' and entity_id = :'inv_id' and metadata ->> 'email_domain' = 'team-a.it'
+select public.__expect((select count(*) = 1 from public.audit_logs where action = 'invitation.created' and entity_id = :'inv_id' and metadata ->> 'email_domain' = 'team-a.test'
   and not (metadata::text like '%' || :'tok' || '%') and not (metadata::text like '%marco@%')), 'audit della creazione senza token né email completa');
 
 -- ── 3. Nessuna auto-aggiunta, nessun accesso di altri ───────────────────────
 :as_x
 select public.__expect_error(format($$insert into public.organization_members (organization_id, user_id, role) values (%L, auth.uid(), 'member')$$, :'org_a'), array['42501'], 'nessuno si aggiunge da solo a un''organizzazione');
-select public.__expect_error(format($$select public.org_create_invitation(%L, 'xenia@altrove.it', 'organization_admin')$$, :'org_a'), array['42501'], 'un estraneo non crea inviti');
+select public.__expect_error(format($$select public.org_create_invitation(%L, 'xenia@altrove.test', 'organization_admin')$$, :'org_a'), array['42501'], 'un estraneo non crea inviti');
 select public.__expect_error(format($$select public.team_invitation_preview(%L)$$, :'tok'), array['P0002'], 'token valido ma email diversa: invito non trovato');
 select public.__expect_error(format($$select public.accept_team_invitation(%L)$$, :'tok'), array['P0002'], 'un''altra persona non può usare il link');
 select public.__expect((select count(*) = 0 from public.organization_invitations), 'inviti di altre organizzazioni non visibili');
@@ -92,7 +92,7 @@ select public.__expect(public.accept_team_invitation(:'tok') = :'org_a'::uuid, '
 select public.__expect((select role = 'member' from public.organization_members where organization_id = :'org_a' and user_id = :'M'), 'utente associato con il ruolo scelto');
 select public.__expect_error(format($$select public.accept_team_invitation(%L)$$, :'tok'), array['P0001'], 'token monouso: seconda accettazione rifiutata');
 select public.__expect((public.team_invitation_preview(:'tok') ->> 'status') = 'accepted', 'stato accettato');
-select public.__expect_error(format($$select public.org_create_invitation(%L, 'xenia@altrove.it', 'member')$$, :'org_a'), array['42501'], 'un membro non amministratore non invita');
+select public.__expect_error(format($$select public.org_create_invitation(%L, 'xenia@altrove.test', 'member')$$, :'org_a'), array['42501'], 'un membro non amministratore non invita');
 select public.__expect_error(format($$select public.org_invitations(%L)$$, :'org_a'), array['42501'], 'un membro non legge l''elenco inviti');
 select public.__expect(jsonb_array_length(public.org_members(:'org_a') -> 'members') = 2, 'il membro vede i colleghi');
 :as_postgres
@@ -100,7 +100,7 @@ select public.__expect((select count(*) = 1 from public.audit_logs where action 
 
 -- Email non confermata: identità non verificata.
 :as_a
-select public.org_create_invitation(:'org_a', 'ugo@team-a.it', 'member') ->> 'token' as tok_u \gset
+select public.org_create_invitation(:'org_a', 'ugo@team-a.test', 'member') ->> 'token' as tok_u \gset
 :as_u
 select public.__expect((public.team_invitation_preview(:'tok_u') ->> 'email_confirmed')::boolean = false, 'anteprima: email non confermata segnalata');
 select public.__expect_error(format($$select public.accept_team_invitation(%L)$$, :'tok_u'), array['P0001'], 'email non confermata: accettazione rifiutata');
@@ -112,15 +112,15 @@ select public.__expect((select count(*) = 1 from public.organization_members whe
 
 -- ── 5. Scadenza e revoca ───────────────────────────────────────────────────
 :as_a
-select public.org_create_invitation(:'org_a', 'xenia@altrove.it', 'member') as inv_x \gset
+select public.org_create_invitation(:'org_a', 'xenia@altrove.test', 'member') as inv_x \gset
 :as_postgres
 update public.organization_invitations set expires_at = now() - interval '1 minute' where id = (:'inv_x'::jsonb ->> 'id')::uuid;
 :as_x
 select public.__expect_error(format($$select public.accept_team_invitation(%L)$$, :'inv_x'::jsonb ->> 'token'), array['P0001'], 'invito scaduto rifiutato');
 select public.__expect((public.team_invitation_preview(:'inv_x'::jsonb ->> 'token') ->> 'status') = 'expired', 'stato scaduto');
 :as_a
-select public.org_create_invitation(:'org_a', 'xenia@altrove.it', 'member') as inv_x2 \gset
-select public.__expect((select count(*) = 1 from public.organization_invitations where email = 'xenia@altrove.it' and status = 'revoked'), 'l''invito scaduto viene sostituito');
+select public.org_create_invitation(:'org_a', 'xenia@altrove.test', 'member') as inv_x2 \gset
+select public.__expect((select count(*) = 1 from public.organization_invitations where email = 'xenia@altrove.test' and status = 'revoked'), 'l''invito scaduto viene sostituito');
 select public.org_revoke_invitation(:'org_a', (:'inv_x2'::jsonb ->> 'id')::uuid) \g /dev/null
 :as_x
 select public.__expect_error(format($$select public.accept_team_invitation(%L)$$, :'inv_x2'::jsonb ->> 'token'), array['P0001'], 'invito revocato rifiutato');
@@ -129,10 +129,10 @@ select public.__expect_error(format($$select public.org_revoke_invitation(%L, %L
 
 -- ── 6. Limite utenti del piano (Business = 5): membri + inviti validi ──────
 -- Membri: A, M, U = 3. Due inviti validi portano a 5; il sesto posto non esiste.
-select public.org_create_invitation(:'org_a', 'quattro@team-a.it', 'member') \g /dev/null
-select public.org_create_invitation(:'org_a', 'cinque@team-a.it', 'member') \g /dev/null
+select public.org_create_invitation(:'org_a', 'quattro@team-a.test', 'member') \g /dev/null
+select public.org_create_invitation(:'org_a', 'cinque@team-a.test', 'member') \g /dev/null
 select public.__expect((public.org_members(:'org_a') -> 'seats' ->> 'used')::int = 5 and (public.org_members(:'org_a') -> 'seats' ->> 'limit')::int = 5, 'posti: 5 usati su 5');
-select public.__expect_error(format($$select public.org_create_invitation(%L, 'sei@team-a.it', 'member')$$, :'org_a'), array['P0001'], 'oltre il limite del piano: invito rifiutato');
+select public.__expect_error(format($$select public.org_create_invitation(%L, 'sei@team-a.test', 'member')$$, :'org_a'), array['P0001'], 'oltre il limite del piano: invito rifiutato');
 
 -- ── 7. Rimozione collaboratori ─────────────────────────────────────────────
 :as_m

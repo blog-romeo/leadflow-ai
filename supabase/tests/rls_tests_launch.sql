@@ -24,10 +24,10 @@
 :as_postgres
 \o /dev/null
 insert into auth.users (id, email, raw_user_meta_data) values
-  (:'S', 'staff@leadflow-launch.it', '{}'), (:'A', 'alice@azienda-a.it', '{"full_name":"Alice Rossi"}'),
-  (:'M', 'mario@azienda-a.it', '{}'), (:'B', 'bruno@azienda-b.it', '{}');
+  (:'S', 'staff@leadflow-launch.test', '{}'), (:'A', 'alice@azienda-a.test', '{"full_name":"Alice Rossi"}'),
+  (:'M', 'mario@azienda-a.test', '{}'), (:'B', 'bruno@azienda-b.test', '{}');
 \o
-select private.set_platform_role('staff@leadflow-launch.it', 'super_admin', 'Staff di assistenza, nomina interna') \g /dev/null
+select private.set_platform_role('staff@leadflow-launch.test', 'super_admin', 'Staff di assistenza, nomina interna') \g /dev/null
 
 -- ── 1. Registrazione: evento signup_completed generato dal database, una sola volta ──
 select public.__expect((select count(*) = 1 from public.funnel_events where event = 'signup_completed' and user_id = :'A'), 'registrazione tracciata (signup_completed)');
@@ -136,15 +136,15 @@ select public.__expect_error($$select public.public_rate_limit('192.168.1.1', 'd
 
 -- ── 7. Richieste demo: solo il server scrive, solo lo staff legge ─────────
 :as_anon
-select public.__expect_error($$insert into public.demo_requests (name, company, email, sector, message, contact_preference, consent_at) values ('Spam', 'Spam', 'a@b.it', 'x', 'messaggio di prova', 'email', now())$$,
+select public.__expect_error($$insert into public.demo_requests (name, company, email, sector, message, contact_preference, consent_at) values ('Spam', 'Spam', 'a@b.test', 'x', 'messaggio di prova', 'email', now())$$,
   array['42501'], 'anon non scrive richieste demo direttamente');
 :as_service
 insert into public.demo_requests (name, company, email, sector, employees, message, contact_preference, consent_at)
-values ('Laura Bianchi', 'Bianchi Srl', 'laura@bianchi-srl.it', 'Logistica', '10-49', 'Vorremmo vedere il Lead Finder.', 'email', now())
+values ('Laura Bianchi', 'Bianchi Srl', 'laura@bianchi-srl.test', 'Logistica', '10-49', 'Vorremmo vedere il Lead Finder.', 'email', now())
 returning id as demo1 \gset
-select public.__expect_error($$insert into public.demo_requests (name, company, email, sector, message, contact_preference, consent_at) values ('Test', 'Test Srl', 'test@test.it', 'IT', 'messaggio di prova', 'phone', now())$$,
+select public.__expect_error($$insert into public.demo_requests (name, company, email, sector, message, contact_preference, consent_at) values ('Test', 'Test Srl', 'test@test.test', 'IT', 'messaggio di prova', 'phone', now())$$,
   array['23514'], 'preferenza telefono senza numero rifiutata');
-select public.__expect_error($$insert into public.demo_requests (name, company, email, sector, message, contact_preference, consent_at) values ('<script>', 'Test Srl', 'test@test.it', 'IT', 'messaggio di prova', 'email', now())$$,
+select public.__expect_error($$insert into public.demo_requests (name, company, email, sector, message, contact_preference, consent_at) values ('<script>', 'Test Srl', 'test@test.test', 'IT', 'messaggio di prova', 'email', now())$$,
   array['23514'], 'markup nel nome rifiutato');
 select public.__expect((select count(*) = 1 from public.funnel_events where event = 'demo_requested' and dedup_key = 'demo_requested:' || :'demo1'), 'demo_requested tracciato');
 :as_a

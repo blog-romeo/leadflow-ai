@@ -57,12 +57,17 @@ const GET: Record<string, (db: Db, q: URLSearchParams) => Promise<unknown>> = {
   },
   async settings(db) {
     await rpc(db, 'sa_log_access', { p_section: 'settings' })
-    const [settings, flags] = await Promise.all([
+    const [settings, flags, billing] = await Promise.all([
       db.from('platform_settings').select('key, value, updated_at'),
       db.from('feature_flags').select('key, description, scope, enabled, updated_at').order('key'),
+      db.from('billing_settings').select('free_beta_enabled').maybeSingle(),
     ])
     if (settings.error || flags.error) throw new HttpError(500, 'storage_error')
-    return { settings: Object.fromEntries((settings.data ?? []).map((s: { key: string; value: unknown }) => [s.key, s.value])), flags: flags.data }
+    return {
+      settings: Object.fromEntries((settings.data ?? []).map((s: { key: string; value: unknown }) => [s.key, s.value])),
+      flags: flags.data,
+      free_beta_enabled: (billing.data as { free_beta_enabled?: boolean } | null)?.free_beta_enabled ?? false,
+    }
   },
   async growth(db, q) {
     await rpc(db, 'sa_log_access', { p_section: 'growth' })
@@ -160,6 +165,7 @@ const POST: Record<string, (db: Db, b: Record<string, unknown>, userId: string) 
   }),
   'ai-config-activate': (db, b) => rpc(db, 'sa_ai_config_activate', { p_version: uuid(b.version_id, 'version_id'), p_benchmark: uuid(b.benchmark_id, 'benchmark_id'), p_reason: reason(b.reason) }),
   'ai-config-reject': (db, b) => rpc(db, 'sa_ai_config_reject', { p_version: uuid(b.version_id, 'version_id'), p_reason: reason(b.reason) }),
+  'free-beta': (db, b) => rpc(db, 'sa_set_free_beta', { p_enabled: b.enabled === true, p_backfill: b.backfill === true, p_reason: reason(b.reason) }),
   'ai-config-rollback': (db, b) => rpc(db, 'sa_ai_config_rollback', { p_config_key: str(b.config_key, 'config_key', 3, 61), p_reason: reason(b.reason) }),
   'organization-status': (db, b) =>
     rpc(db, 'sa_set_organization_status', { p_org: uuid(b.organization_id, 'organization_id'), p_action: oneOf(b.action, 'action', ['suspend', 'reactivate'] as const), p_reason: reason(b.reason) }),

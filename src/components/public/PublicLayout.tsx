@@ -5,6 +5,7 @@ import { Logo } from '../ui/Logo'
 import { LanguageSwitch, ThemeToggle } from '../ui/Preferences'
 import { buttonClasses } from '../ui/Button'
 import { ConsentBanner } from './ConsentBanner'
+import { AssistantWidget } from '../../features/support/Assistant'
 import { resetConsent } from '../../lib/analytics'
 import { useAuth } from '../../contexts/AuthContext'
 import { cn } from '../../lib/cn'
@@ -102,6 +103,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
           © {new Date().getFullYear()} LeadFlow AI · [DA COMPLETARE: ragione sociale e P.IVA] · {t('site.footer.rights')}
         </p>
       </footer>
+      <AssistantWidget audience="public" />
       <ConsentBanner />
     </div>
   )

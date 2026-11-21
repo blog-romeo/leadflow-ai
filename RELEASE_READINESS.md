@@ -1,12 +1,38 @@
-# Release Readiness Report — LeadFlow AI (Prompt 12)
+# Release Readiness Report — LeadFlow AI (Prompt 13)
 
-Data: 21/11/2026 · Archivio: `leadflow-ai-prompt12-release.zip` · Precedente: Prompt 11
+Data: 21/11/2026 · Archivio: `leadflow-ai-prompt13-release.zip` · Precedente: Prompt 12
 
 ## Classificazione: NOT READY
 
 Invariata. I **5 problemi HIGH** restano aperti: build e deploy (REL-1), Stripe Test Mode (REL-2), fiscalità e fatturazione
 (REL-3), documentazione legale (REL-5), integrazioni Supabase e Netlify (REL-6). Le nuove funzionalità AI **non** li risolvono.
 npm, Netlify e GitHub restano non raggiungibili da questa sessione (verificato all'avvio): nessuna build, CI o deploy reale.
+
+## Prompt 13 — beta gratuita, chatbot di assistenza, cancellazione account
+
+Richiesta: niente pagamenti per ora, tutto funzionante, agenti "addestrati", chatbot di assistenza funzionante.
+Classificazione **invariata: NOT READY** per il lancio a pagamento; i 5 HIGH restano aperti. La beta gratuita permette di
+far provare il prodotto **senza** Stripe, ma non risolve REL-2/3/5: servono comunque build reale (REL-1), Supabase e
+Netlify reali (REL-6) e i testi legali (privacy, termini) prima di aprire la beta a utenti esterni.
+
+| Voce | Esito |
+| --- | --- |
+| Beta gratuita | migrazione 0016: piano `beta` a costo zero non in vendita (100 lead, 200 crediti AI, 3 utenti/mese), concesso dal database alle nuove organizzazioni quando `free_beta_enabled` è attivo (`sa_set_free_beta`, con motivazione e audit; pulsante in Super Admin → Impostazioni). `VITE_FREE_BETA=true` mostra la beta su prezzi e onboarding e nasconde il pagamento. **Spenta per default** |
+| Chatbot di assistenza | sito + app, `POST /api/support-chat`; risposte solo dalla documentazione con fonti, astensione e passaggio a una persona (ticket con conferma in app, modulo di contatto sul sito); sul sito nessuna AI. Misurato su dataset sintetico: test P@1 0,889, astensione 4/4 (`docs/SUPPORT_CHATBOT.md`) |
+| "Agenti addestrati" | **nessun modello addestrato o fine-tuned** (nessun accesso autorizzato a un modello in questa sessione). Applicati in produzione i 6 sinonimi dei settori validati dal benchmark del Prompt 12; aggiunto il benchmark del chatbot. Sono miglioramenti di regole misurati, non addestramento |
+| REL-47 cancellazione | **implementata**: Impostazioni → Cancellazione account e organizzazione (conferma scritta, regola dell'ultimo amministratore, blocco con abbonamento Stripe attivo, disattivazione immediata, eliminazione definitiva dopo 30 giorni, audit). Da verificare su Supabase reale e far rivedere al legale |
+| REL-46 | email dei fixture di test spostate su `.test` (10 file); restano alcuni siti web di esempio `.it` nei test di onboarding (nessun invio, nessuna richiesta) |
+| Test | SQL **806** asserzioni (+41: beta, cancellazione, purge); concorrenza billing OK; runner di compatibilità (non Vitest) 38 file / 412 test, 0 falliti; typecheck parziale functions: solo i 24 errori noti dei tipi finti; 51/51 functions impacchettate; import del frontend risolti con esbuild (non è una build né un typecheck); i18n 2.818 = 2.818 chiavi; nessun segreto |
+| Non verificato | build Vite, `tsc -b` del frontend, Vitest reale, test dei componenti React, deploy: possibili solo con push e CI |
+
+| ID | Gravità | Descrizione | Stato |
+| --- | --- | --- | --- |
+| REL-47 | MEDIUM | Cancellazione self-service di account e organizzazione | **RISOLTO nel codice** (SQL testato); verifica in staging e revisione legale dei tempi (30 giorni) |
+| REL-46 | LOW | Email di test su domini `.it` reali | **RISOLTO** (email); siti di esempio residui senza effetti |
+| REL-50 | LOW | La purge definitiva delle organizzazioni cancellate gira solo con `RETENTION_PURGE_ENABLED=true`; le organizzazioni con fatture restano disattivate ma non eliminate finché non c'è la decisione fiscale (REL-3) | **APERTO** |
+| REL-51 | LOW | Qualità del chatbot misurata solo su domande inventate dal team | **APERTO** — rimisurare con le domande reali in staging |
+
+Problemi aperti dopo il Prompt 13: CRITICAL **0** · HIGH **5** · MEDIUM **15** · LOW **19**.
 
 ## Prompt 12 — sintesi con evidenze
 
@@ -168,7 +194,7 @@ OpenAI, Overpass, Stripe test, test e2e, misure di latenza.
 | ID | Gravità | Descrizione | Stato |
 | --- | --- | --- | --- |
 | REL-45 | MEDIUM | Il codice dei Prompt 5–10 non è committato in git: push o CI senza commit userebbero una versione vecchia | **APERTO** — Prompt 11: branch `feature/leadflow-staging-release` pronto, manifest generato, segreti verificati; manca il commit/push del proprietario (runbook §0) |
-| REL-46 | LOW | Fixture di test con email inventate su domini `.it` reali | **APERTO** — nessun invio; sostituire con `.test`/`.example` |
+| REL-46 | LOW | Fixture di test con email inventate su domini `.it` reali | **RISOLTO** nel Prompt 13 (email su `.test`) |
 | REL-41 | MEDIUM (bloccante per il lancio a pagamento) | L'istanza pubblica `overpass-api.de` chiede che l'uso commerciale passi da server propri o a pagamento e limiti molto inferiori per l'uso regolare di un'app | **APERTO** — scegliere un'istanza adeguata (`OVERPASS_API_URL`/`OVERPASS_API_KEY` già supportati) |
 | REL-42 | MEDIUM | I log oscuravano solo i nomi dei campi: un segreto dentro un messaggio d'errore poteva finire nei log di Netlify | **RISOLTO** (test) |
 | REL-43 | LOW | Token di risposte AI troncate o rifiutate non contabilizzati nel costo | **RISOLTO** (test) |
@@ -182,5 +208,5 @@ OpenAI, Overpass, Stripe test, test e2e, misure di latenza.
 
 1. READY FOR PAID LAUNCH solo senza problemi CRITICAL o HIGH su sicurezza, pagamenti, infrastruttura, fiscalità o documenti legali.
 2. Stripe Live, invii commerciali, DNS e cancellazioni di dati solo con approvazione esplicita.
-3. Nessuna migrazione distruttiva: 0001–0014 sono additive. Nessuna migrazione in produzione senza approvazione.
+3. Nessuna migrazione distruttiva: 0001–0016 sono additive (la 0016 ridefinisce `protect_last_admin` e `run_retention_purge` mantenendone il comportamento sulle organizzazioni attive). Nessuna migrazione in produzione senza approvazione.
 4. Una funzione è "Operativa" sul sito solo dopo la verifica in produzione.

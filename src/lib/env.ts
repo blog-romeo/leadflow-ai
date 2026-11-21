@@ -20,4 +20,8 @@ export const env = {
    * restano protette lato server da AI_AGENTS_ENABLED / AI_AGENTS_PILOT_ORGS.
    */
   featureAiAgents: (import.meta.env.VITE_FEATURE_AI_AGENTS ?? '').trim() === 'true',
+  /** Prompt 13: chatbot di assistenza (sito e app). Attivo salvo VITE_FEATURE_SUPPORT_CHAT=false. */
+  featureSupportChat: (import.meta.env.VITE_FEATURE_SUPPORT_CHAT ?? '').trim() !== 'false',
+  /** Prompt 13: beta gratuita. Solo presentazione (pagina prezzi); l'accesso lo concede il database (free_beta_enabled). */
+  featureFreeBeta: (import.meta.env.VITE_FREE_BETA ?? '').trim() === 'true',
 } as const

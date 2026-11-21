@@ -25,9 +25,9 @@
 :as_postgres
 \o /dev/null
 insert into auth.users (id, email, raw_user_meta_data, email_confirmed_at) values
-  (:'A', 'anna@agenti-a.it', '{"full_name":"Anna Admin"}', now()),
-  (:'M', 'marco@agenti-a.it', '{"full_name":"Marco Membro"}', now()),
-  (:'B', 'bruno@agenti-b.it', '{}', now());
+  (:'A', 'anna@agenti-a.test', '{"full_name":"Anna Admin"}', now()),
+  (:'M', 'marco@agenti-a.test', '{"full_name":"Marco Membro"}', now()),
+  (:'B', 'bruno@agenti-b.test', '{}', now());
 \o
 :as_a
 select id as org_a from public.create_organization('Agenti A Srl', null, 'IT') \gset

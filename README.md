@@ -2,6 +2,11 @@
 
 Piattaforma SaaS multi-tenant per trovare, analizzare, qualificare e gestire opportunità commerciali B2B.
 
+**Prompt 13 — beta gratuita, chatbot di assistenza, cancellazione account.** Piano `beta` a costo zero (spento per
+default: Super Admin → Impostazioni → Beta gratuita, più `VITE_FREE_BETA=true`), assistente in chat sul sito e nell'app
+con risposte dalla documentazione e passaggio a una persona (`docs/SUPPORT_CHATBOT.md`), cancellazione self-service di
+account e organizzazione. Stato di rilascio: **NOT READY** per il lancio a pagamento (`RELEASE_READINESS.md`).
+
 **Stato: Prompt 5 — Super Admin, White Label & SaaS Control Center** (sopra la Fase 5 Billing). Console
 `/super-admin` (panoramica, aziende, utilizzo e costi, rivenditori, impostazioni, audit), portale `/reseller` con
 inviti clienti, branding dinamico e domini personalizzati verificati via DNS, abbonamenti White Label su Stripe
@@ -120,6 +125,7 @@ In alternativa, nel SQL Editor di Supabase esegui nell'ordine:
 6. `supabase/migrations/20261121000006_campaign_manager.sql`
 7. `supabase/migrations/20261122000007_billing.sql`
 8. `supabase/migrations/20261123000008_control_center_white_label.sql`
+9. tutte le successive in ordine di nome, fino a `20261130000016_free_beta_support_chat_account_deletion.sql`
 
 La migrazione 0005 sostituisce l'enum `lead_status` con le 12 fasi della pipeline: i lead esistenti in
 `proposal` passano a `proposal_sent`; nessun dato viene cancellato. Le organizzazioni esistenti ricevono
@@ -229,6 +235,8 @@ aggiorna l'hash (un test lo verifica).
 | Endpoint | Auth | Descrizione |
 | --- | --- | --- |
 | `GET /api/health` | no | liveness |
+| `POST /api/support-chat` | no (sito, solo documentazione, 30/ora per IP) · Bearer JWT, membro (app) | chatbot di assistenza |
+| `POST /api/account/delete` | Bearer JWT | cancellazione del proprio account (conferma con email) |
 | `GET /api/ai-status?organization_id=` | Bearer JWT, membro | stato dei moduli AI |
 | `GET /api/lead-finder/providers?organization_id=` | Bearer JWT, membro | fonti configurate, diritti di licenza, stato AI |
 | `POST /api/lead-finder/search` | Bearer JWT, membro | ricerca su una fonte (rate limit + quote) |

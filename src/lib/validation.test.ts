@@ -4,7 +4,7 @@ import { errorKey } from './errors'
 
 describe('validation', () => {
   it('email', () => {
-    expect(validateEmail('anna@azienda.it').ok).toBe(true)
+    expect(validateEmail('anna@azienda.test').ok).toBe(true)
     expect(validateEmail('').ok).toBe(false)
     expect(validateEmail('non-una-email').ok).toBe(false)
   })

@@ -6,6 +6,7 @@ import { outputReviewV1 } from './datasets/outputReview'
 import { providerErrorsV1 } from './datasets/providerErrors'
 import { sectorClassificationV1 } from './datasets/sectorClassification'
 import type { Dataset } from './datasets/types'
+import { supportQuestionsV1 } from '../../assistant/eval/supportQuestions'
 
 /**
  * Catalogo dei dataset (Prompt 12): solo metadati (nessun contenuto) per la dashboard e i report.
@@ -20,6 +21,7 @@ const all: [Dataset<unknown>, string, string[]][] = [
   [leadScoringV2 as Dataset<unknown>, 'Scoring', ['E', 'A (regole: pesi)']],
   [outputReviewV1 as Dataset<unknown>, 'Quality Reviewer', ['E']],
   [injectionV1 as Dataset<unknown>, 'Sicurezza', ['E']],
+  [supportQuestionsV1 as Dataset<unknown>, 'Customer Service chatbot', ['B (retrieval)', 'E', 'A (regole: sinonimi, soglia)']],
   [llmTasksV1 as Dataset<unknown>, 'Strategy (modello reale)', ['E — non eseguito senza credenziali']],
 ]
 

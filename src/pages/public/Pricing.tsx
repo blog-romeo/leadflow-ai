@@ -7,6 +7,7 @@ import { buttonClasses } from '../../components/ui/Button'
 import { RESELLER_PLANS, formatEuro } from '../../config/plans'
 import { useSeo } from '../../lib/seo'
 import { onConsentChange, track } from '../../lib/analytics'
+import { env } from '../../lib/env'
 
 export default function Pricing() {
   const { t, locale } = useI18n()
@@ -21,7 +22,16 @@ export default function Pricing() {
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:py-16">
         <h1 className="text-4xl font-semibold">{t('pricing.title')}</h1>
         <p className="mt-3 mb-10 max-w-[60ch] text-lg text-muted">{t('pricing.subtitle')}</p>
-        <PricingCards />
+        {env.featureFreeBeta && (
+          <section className="mb-10 rounded-[var(--radius-panel)] border border-flow/40 bg-flow-soft p-6" aria-labelledby="beta-title">
+            <h2 id="beta-title" className="text-2xl font-semibold">{t('pricing.beta.title')}</h2>
+            <p className="mt-2 max-w-[70ch] text-muted">{t('pricing.beta.body')}</p>
+            <Link to="/register" className={buttonClasses('primary', 'md', 'mt-5')}>{t('pricing.beta.cta')}</Link>
+            <p className="mt-3 text-xs text-muted">{t('pricing.beta.note')}</p>
+          </section>
+        )}
+        {env.featureFreeBeta && <h2 className="mb-4 text-xl font-semibold">{t('pricing.beta.afterTitle')}</h2>}
+        <PricingCards {...(env.featureFreeBeta ? { ctaHref: () => '/register' } : {})} />
 
         <section className="mt-14 grid gap-10 lg:grid-cols-2">
           <div>

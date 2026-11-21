@@ -16,6 +16,8 @@ export interface HelpArticle {
   /** Percorso dell'app in cui si usa la funzione (link "Apri"). */
   link?: string
   keywords: string[]
+  /** Prompt 13: chi può leggerlo nel chatbot. 'app' = solo utenti autenticati (default: tutti). */
+  audience?: 'public' | 'app'
   title: Record<HelpLocale, string>
   body: Record<HelpLocale, string>
 }
@@ -204,6 +206,99 @@ export const HELP_ARTICLES: HelpArticle[] = [
     body: {
       it: "Oggi LeadFlow AI non è collegato a calendari esterni, LinkedIn, WhatsApp, centralini telefonici o CRM di terze parti, e non offre un'API pubblica. Non invia messaggi senza la tua azione e non garantisce clienti, vendite o risultati commerciali. Se una di queste funzioni è importante per te, segnalalo con un ticket: ci aiuta a decidere le priorità.",
       en: 'Today LeadFlow AI is not connected to external calendars, LinkedIn, WhatsApp, phone systems or third-party CRMs, and it does not offer a public API. It does not send messages without your action and it does not guarantee customers, sales or business results. If one of these features matters to you, tell us with a ticket: it helps us set priorities.',
+    },
+  },
+  // ── Prompt 13: articoli per il chatbot di assistenza ─────────────────────
+  {
+    id: 'free-beta',
+    category: 'billing',
+    link: '/app/billing',
+    keywords: ['gratis', 'gratuito', 'gratuita', 'beta', 'prova', 'costo', 'costa', 'prezzo', 'pagare', 'carta', 'free', 'trial', 'cost', 'price', 'pay'],
+    title: { it: 'Beta gratuita', en: 'Free beta' },
+    body: {
+      it: "Durante la beta, quando la piattaforma la attiva, ogni nuova organizzazione riceve gratuitamente il piano Beta: Lead Finder, Business Analyzer, AI Sales Agent, CRM avanzato ed export, con 100 lead, 200 crediti AI e 3 utenti al mese. Non serve una carta di credito e non viene addebitato nulla. I limiti mensili servono a contenere i costi dei servizi AI. Il piano attuale e i consumi del mese sono visibili nella pagina Abbonamento.",
+      en: 'During the beta, when the platform enables it, every new organization gets the Beta plan for free: Lead Finder, Business Analyzer, AI Sales Agent, advanced CRM and export, with 100 leads, 200 AI credits and 3 users per month. No credit card is needed and nothing is charged. The monthly limits keep AI service costs under control. Your current plan and this month usage are shown on the Subscription page.',
+    },
+  },
+  {
+    id: 'ai-agents',
+    category: 'ai',
+    link: '/app/ai-agents',
+    audience: 'app',
+    keywords: ['agenti', 'agent', 'agents', 'orchestrator', 'discovery', 'research', 'scoring', 'strategy', 'growth', 'automatico', 'automatici', 'multi-agent'],
+    title: { it: 'AI Agents: cosa fanno', en: 'AI Agents: what they do' },
+    body: {
+      it: "Gli AI Agents collaborano su un obiettivo commerciale: Discovery cerca aziende su fonti autorizzate, Research analizza i dati pubblici e separa fatti, deduzioni e dati mancanti, Scoring calcola un indice di compatibilità (non una probabilità di acquisto), Strategy prepara strategie e bozze, Follow-up individua trattative ferme, Growth Analyst analizza i risultati. Prima di salvare lead nel CRM serve la tua approvazione. Gli agenti non inviano email o messaggi e non toccano pagamenti, ruoli o impostazioni. La funzione è in beta e può non essere attiva per la tua organizzazione.",
+      en: 'AI Agents work together on a sales goal: Discovery searches companies on authorized sources, Research analyzes public data and separates facts, inferences and missing data, Scoring computes a compatibility index (not a purchase probability), Strategy prepares strategies and drafts, Follow-up finds stalled deals, Growth Analyst analyzes results. Saving leads to the CRM requires your approval. Agents never send emails or messages and never touch payments, roles or settings. The feature is in beta and may not be enabled for your organization.',
+    },
+  },
+  {
+    id: 'ai-workflows',
+    category: 'ai',
+    link: '/app/ai-workflows',
+    audience: 'app',
+    keywords: ['workflow', 'obiettivo', 'avviare', 'approvazione', 'approvare', 'interrompere', 'fermare', 'budget', 'esportare', 'risultati', 'approval', 'stop', 'export'],
+    title: { it: 'Avviare e controllare un workflow AI', en: 'Starting and controlling an AI workflow' },
+    body: {
+      it: "In AI Workflows scrivi l'obiettivo, ad esempio trovare hotel a Roma e preparare proposte, controlli il piano proposto e il budget massimo in crediti, poi avvii. Puoi seguire ogni passo con durata, crediti e token, interrompere il workflow in qualsiasi momento e approvare o rifiutare il salvataggio dei lead nel CRM. Il Quality Reviewer segnala fatti senza fonte, duplicati e strategie non supportate. A workflow concluso puoi esportare i risultati in JSON o la classifica in CSV.",
+      en: 'In AI Workflows you write the goal, for example finding hotels in Rome and preparing proposals, review the proposed plan and the maximum credit budget, then start. You can follow every step with duration, credits and tokens, stop the workflow at any time and approve or reject saving leads to the CRM. The Quality Reviewer flags facts without sources, duplicates and unsupported strategies. When the workflow ends you can export results as JSON or the ranking as CSV.',
+    },
+  },
+  {
+    id: 'ai-feedback-memory',
+    category: 'ai',
+    link: '/app/ai-agents',
+    audience: 'app',
+    keywords: ['feedback', 'memoria', 'imparare', 'migliorare', 'correggere', 'addestrare', 'addestramento', 'esempi', 'learn', 'memory', 'train', 'training'],
+    title: { it: 'Feedback e memoria aziendale', en: 'Feedback and company memory' },
+    body: {
+      it: "Puoi segnalare un punteggio o una strategia come utile o da correggere. Un amministratore valida il feedback e può salvarlo come esempio nella memoria aziendale, che è separata per ogni organizzazione, ha una scadenza e non contiene email o numeri di telefono. Il feedback non modifica automaticamente i modelli AI: le nuove configurazioni degli agenti vengono valutate su test e attivate solo dopo approvazione. I tuoi dati non vengono usati per altri clienti.",
+      en: 'You can mark a score or a strategy as useful or as needing correction. An administrator validates the feedback and can save it as an example in the company memory, which is separate for each organization, expires and contains no emails or phone numbers. Feedback does not change AI models automatically: new agent configurations are evaluated on tests and activated only after approval. Your data is never used for other customers.',
+    },
+  },
+  {
+    id: 'login-password',
+    category: 'account',
+    link: '/forgot-password',
+    keywords: ['password', 'accesso', 'accedere', 'login', 'entrare', 'dimenticato', 'reimpostare', 'recuperare', 'email', 'conferma', 'registrazione', 'registrarsi', 'iscrizione', 'reset', 'sign', 'signup', 'register'],
+    title: { it: 'Registrazione, accesso e password', en: 'Sign-up, login and password' },
+    body: {
+      it: "Per registrarti usa la pagina Registrati con email e password: riceverai un'email per confermare l'indirizzo prima del primo accesso. Se non ricordi la password, nella pagina di accesso scegli Password dimenticata: riceverai un link per impostarne una nuova. Se l'email non arriva, controlla la cartella spam e verifica di aver scritto l'indirizzo corretto. Il supporto non può vedere né inviarti la tua password.",
+      en: 'To sign up use the Register page with email and password: you will receive an email to confirm the address before the first login. If you forgot your password, choose Forgot password on the login page: you will receive a link to set a new one. If the email does not arrive, check your spam folder and make sure the address is correct. Support cannot see or send you your password.',
+    },
+  },
+  {
+    id: 'account-deletion',
+    category: 'account',
+    link: '/app/settings',
+    audience: 'app',
+    keywords: ['cancellare', 'eliminare', 'chiudere', 'account', 'organizzazione', 'oblio', 'dati', 'rimuovere', 'delete', 'remove', 'close', 'erase'],
+    title: { it: 'Cancellare account o organizzazione', en: 'Deleting your account or organization' },
+    body: {
+      it: "Da Impostazioni → Cancellazione account e organizzazione puoi cancellare il tuo account scrivendo la tua email per conferma: vieni rimosso dalle organizzazioni e l'account viene eliminato. Se sei l'unico amministratore di un'organizzazione con altri membri, prima nomina un altro amministratore; se sei l'unico membro, l'organizzazione viene disattivata ed eliminata dopo 30 giorni. Un amministratore può chiedere la cancellazione dell'intera organizzazione scrivendone il nome per conferma: l'organizzazione viene disattivata subito e i suoi dati vengono eliminati definitivamente dopo 30 giorni, salvo i documenti fiscali che la legge impone di conservare. Con un abbonamento a pagamento attivo occorre prima disdirlo.",
+      en: 'From Settings → Account and organization deletion you can delete your account by typing your email to confirm: you are removed from your organizations and the account is deleted. If you are the only administrator of an organization with other members, appoint another administrator first; if you are the only member, the organization is deactivated and deleted after 30 days. An administrator can request deletion of the whole organization by typing its name to confirm: the organization is deactivated immediately and its data is permanently deleted after 30 days, except tax documents the law requires us to keep. With an active paid subscription you need to cancel it first.',
+    },
+  },
+  {
+    id: 'what-is-leadflow',
+    category: 'start',
+    audience: 'public',
+    keywords: ['cosa', 'cos', 'leadflow', 'serve', 'funziona', 'prodotto', 'piattaforma', 'software', 'what', 'product', 'platform', 'about'],
+    title: { it: 'Cos’è LeadFlow AI', en: 'What LeadFlow AI is' },
+    body: {
+      it: "LeadFlow AI è una piattaforma B2B per trovare aziende potenzialmente interessate ai tuoi servizi, analizzarle con l'AI, assegnare un punteggio di compatibilità e preparare messaggi e proposte da rivedere. Include un CRM con pipeline e campagne email controllate. Non invia comunicazioni senza la tua azione e non garantisce clienti o vendite. Puoi registrarti dalla pagina Registrati o chiedere una demo.",
+      en: 'LeadFlow AI is a B2B platform to find companies that may be interested in your services, analyze them with AI, assign a compatibility score and prepare messages and proposals for you to review. It includes a CRM with pipeline and controlled email campaigns. It never sends communications without your action and does not guarantee customers or sales. You can sign up from the Register page or request a demo.',
+    },
+  },
+  {
+    id: 'contact-human',
+    category: 'start',
+    link: '/app/support',
+    keywords: ['operatore', 'umano', 'persona', 'parlare', 'contattare', 'contatto', 'assistenza', 'aiuto', 'telefono', 'human', 'person', 'contact', 'help'],
+    title: { it: 'Parlare con una persona', en: 'Talking to a person' },
+    body: {
+      it: "Se il chatbot non risolve il problema puoi chiedere di parlare con una persona: dall'app si apre un ticket di assistenza con la conversazione allegata, se acconsenti; dal sito puoi compilare il modulo della pagina Demo. Lo staff risponde nel Centro assistenza. Non inserire password, chiavi API o dati di carte nella chat.",
+      en: 'If the chatbot does not solve the problem you can ask to talk to a person: in the app a support ticket is opened with the conversation attached, if you agree; on the website you can fill in the form on the Demo page. Staff replies in the Help center. Never put passwords, API keys or card data in the chat.',
     },
   },
 ]

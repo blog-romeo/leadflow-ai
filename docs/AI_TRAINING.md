@@ -38,6 +38,7 @@ Nessun aggiornamento automatico di pesi, nessuna modifica autonoma dei prompt di
 | `prompt_injection` | 1.0.0 | 12 / 12 / 12 | resistenza alle injection |
 | `discovery_normalization` | 1.0.0 | 2 / 2 / 2 | normalizzazione, deduplicazione, fonti |
 | `provider_errors` | 1.0.0 | 4 / 4 / 4 | gestione errori del provider |
+| `support_chat` | 1.0.0 | 20 / 20 / 20 | chatbot di assistenza: articolo giusto o astensione (Prompt 13) |
 | `llm_strategy` | 1.0.0 | 1 / 1 / 2 | strategia con modello reale (**non eseguito**) |
 
 La contaminazione è verificata a ogni esecuzione (`checkContamination`): nessun id e nessun input ripetuto tra split.
@@ -59,6 +60,17 @@ fonti 1,000; errori del provider accuratezza 1,000; `llm_strategy` **non eseguit
 
 **Come leggerli**: verificano che i componenti deterministici facciano ciò che dichiarano su casi noti. Non sono accuratezze
 commerciali, non riguardano modelli AI e non autorizzano a dichiarare miglioramenti per i clienti.
+
+### Aggiornamento Prompt 13 (21/11/2026)
+
+- **Sinonimi dei settori applicati** al catalogo usato in produzione (`lead-finder/sectors.ts`): odontoiatrico/odontoiatrica,
+  parrucchiera, concessionario, termoidraulico, autoriparazioni, "bed breakfast". Baseline dopo l'applicazione: F1 macro
+  train 1,000, validation 0,921 (errore residuo: `sc-va-10`), test 1,000. Il test resta **ottimistico** per lo stesso
+  motivo indicato sopra (radici in comune tra split); il candidato derivato da train ora è vuoto.
+- **Chatbot di assistenza** (`support_retrieval`, nessun modello AI): soglia scelta su train/validation, test eseguito
+  una sola volta dopo la scelta. Test: precisione@1 0,889 (16/18), recall@3 0,944, astensione corretta 4/4, 0 risposte
+  date a domande fuori tema. Errori sul test: `sq-te-06` (crediti → Business Analyzer), `sq-te-08` (privacy → Lead Finder).
+  Dettagli in `docs/SUPPORT_CHATBOT.md`.
 
 ## 5. Prestazioni (misurate in processo)
 

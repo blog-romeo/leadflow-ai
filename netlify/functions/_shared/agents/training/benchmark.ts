@@ -17,6 +17,8 @@ import { llmTasksV1 } from './datasets/llmTasks'
 import { outputReviewV1 } from './datasets/outputReview'
 import { providerErrorsV1 } from './datasets/providerErrors'
 import { sectorClassificationV1 } from './datasets/sectorClassification'
+import { supportQuestionsV1 } from '../../assistant/eval/supportQuestions'
+import { evalSupport } from '../../assistant/eval/evalSupport'
 
 /**
  * AI Benchmark Engine (Prompt 12). Benchmark RIPETIBILI e deterministici sui dataset sintetici versionati.
@@ -208,6 +210,16 @@ export function runDiscoverySuite(split: Split): SuiteResult {
   return { suite: 'discovery_normalization', dataset: meta(discoveryV1), split, config: 'baseline:normalize+dedup', status: 'executed', cases: cases.length, ms, metrics: { exact_match_rate: r3(rows.filter((r) => r.exact).length / rows.length), source_coverage: kept ? r3(rows.reduce((a, r) => a + r.sources, 0) / kept) : null, mismatches: rows.filter((r) => !r.exact).map((r) => ({ id: r.id, got: r.got })) } }
 }
 
+/** Chatbot di assistenza: recupero dalla documentazione e astensione (nessun modello AI coinvolto). */
+export function runSupportSuite(split: Split): SuiteResult {
+  const cases = supportQuestionsV1.splits[split]
+  const { value: m, ms } = timed(() => evalSupport(cases))
+  return {
+    suite: 'support_retrieval', dataset: meta(supportQuestionsV1 as Dataset<unknown>), split, config: 'baseline:assistant/chat.ts', status: 'executed', cases: cases.length, ms,
+    metrics: { precision_at_1: m.precisionAt1, recall_at_3: m.recallAt3, correct_abstention_rate: m.abstentionRate, false_abstentions: m.falseAbstentions, wrong_answers: m.wrongAnswers, wrong_ids: m.failures.map((f) => `${f.id}:${f.got ?? 'none'}`) },
+  }
+}
+
 export function llmSuiteNotExecuted(split: Split): SuiteResult {
   return { suite: 'llm_strategy', dataset: meta(llmTasksV1), split, config: 'n/a', status: 'not_executed', reason: 'requires_authorized_model_access', cases: llmTasksV1.splits[split].length, ms: 0, metrics: {} }
 }
@@ -265,7 +277,7 @@ function compare(suite: string, metric: string, b: SuiteResult, c: SuiteResult, 
 }
 
 export function checkContamination(): { dataset: string; duplicate_ids: string[]; duplicate_inputs: string[] }[] {
-  const all: Dataset<{ id: string } & Record<string, unknown>>[] = [sectorClassificationV1, leadScoringV2, injectionV1, outputReviewV1, providerErrorsV1, discoveryV1, llmTasksV1] as never
+  const all: Dataset<{ id: string } & Record<string, unknown>>[] = [sectorClassificationV1, leadScoringV2, injectionV1, outputReviewV1, providerErrorsV1, discoveryV1, llmTasksV1, supportQuestionsV1] as never
   return all.map((d) => {
     const ids = new Map<string, number>()
     const inputs = new Map<string, string>()
@@ -335,7 +347,7 @@ export async function runBenchmark(now = () => new Date(), candidate?: Candidate
     suites.push(runSectorSuite(split, BASELINE.sector), runSectorSuite(split, sectorCand))
     suites.push(runScoringSuite(split, BASELINE.scoring), runScoringSuite(split, scoring.config))
     suites.push(runReviewSuite(split, BASELINE.review), runReviewSuite(split, reviewCand))
-    suites.push(runInjectionSuite(split), runDiscoverySuite(split), await runProviderErrorSuite(split), llmSuiteNotExecuted(split))
+    suites.push(runInjectionSuite(split), runDiscoverySuite(split), await runProviderErrorSuite(split), runSupportSuite(split), llmSuiteNotExecuted(split))
   }
   const pick = (suite: string, cfg: string) => suites.find((s) => s.suite === suite && s.split === 'test' && s.config === cfg)!
   const comparisons = [

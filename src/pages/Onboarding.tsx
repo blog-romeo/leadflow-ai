@@ -19,6 +19,7 @@ import { InlineAlert, LoadingState } from '../components/ui/States'
 import { LanguageSwitch, ThemeToggle } from '../components/ui/Preferences'
 import { PricingCards } from '../components/public/PricingCards'
 import { cn } from '../lib/cn'
+import { env } from '../lib/env'
 
 const STEPS = ['account', 'company', 'commercial', 'plan', 'payment', 'setup'] as const
 const SIZES = ['1-9', '10-49', '50-249', '250+'] as const
@@ -191,9 +192,28 @@ export default function Onboarding() {
     })()
     const preselected = (state.plan_code ?? (PLANS.some((p) => p.code === stored) ? stored : null)) as PlanCode | null
     return (
-      <Frame step={4} title={t('wizard.plan.title')} intro={t('wizard.plan.intro')}>
+      <Frame step={4} title={t('wizard.plan.title')} intro={env.featureFreeBeta ? t('wizard.plan.betaIntro') : t('wizard.plan.intro')}>
         {banner}
         {errBox}
+        {env.featureFreeBeta && (
+          <div className="mb-8 rounded-[var(--radius-panel)] border border-flow/40 bg-flow-soft p-5">
+            <h2 className="text-lg font-semibold">{t('wizard.plan.betaTitle')}</h2>
+            <p className="mt-1 text-sm text-muted">{t('wizard.plan.betaBody')}</p>
+            <Button
+              className="mt-4"
+              loading={busy}
+              onClick={() =>
+                void run(async () => {
+                  // Avanza solo se il database ha davvero concesso l'accesso beta (free_beta_enabled).
+                  const r = await supabase!.rpc('onboarding_advance', { p_action: 'payment_confirmed' })
+                  return r.error ? { data: null, error: { message: r.error.message?.includes('payment_not_confirmed') ? 'beta_unavailable' : r.error.message } } : r
+                })
+              }
+            >
+              {t('wizard.plan.betaCta')}
+            </Button>
+          </div>
+        )}
         <PricingCards compact selected={preselected} onChoose={(code) => void run(async () => supabase!.rpc('onboarding_advance', { p_action: 'choose_plan', p_plan: code }))} />
         <Button variant="ghost" className="mt-6" onClick={() => goBack(3)}>
           {t('wizard.back')}

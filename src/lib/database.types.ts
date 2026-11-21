@@ -1022,6 +1022,9 @@ export type Database = {
       onboarding_save_commercial: { Args: { p_org: string; p_services: string | null; p_ideal_customer: string | null; p_area: string | null; p_goal: string | null }; Returns: Json }
       onboarding_advance: { Args: { p_action: string; p_plan?: string | null }; Returns: Json }
       onboarding_checklist: { Args: { p_org: string }; Returns: Json }
+      account_deletion_preflight: { Args: Record<string, never>; Returns: Json }
+      account_delete_self: { Args: { p_confirm: string }; Returns: Json }
+      organization_request_deletion: { Args: { p_org: string; p_confirm_name: string }; Returns: Json }
       support_create_ticket: { Args: { p_org: string; p_subject: string; p_category: TicketCategory; p_priority: TicketPriority; p_body: string }; Returns: string }
       support_reply: { Args: { p_ticket: string; p_body: string }; Returns: string }
       support_set_status: { Args: { p_ticket: string; p_status: TicketStatus }; Returns: undefined }

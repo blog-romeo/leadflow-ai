@@ -17,7 +17,7 @@ export default async (req: Request): Promise<Response> => {
 
     const [status, plans, costs, invoices] = await Promise.all([
       db.rpc('billing_status', { p_org: orgId }),
-      db.from('billing_plans').select('code, name, description, price_cents, currency, stripe_price_id, monthly_leads, monthly_ai_credits, max_users, features, is_active, sort_order').eq('is_active', true).order('sort_order'),
+      db.from('billing_plans').select('code, name, description, price_cents, currency, stripe_price_id, monthly_leads, monthly_ai_credits, max_users, features, is_active, sort_order').order('sort_order'),
       db.from('ai_credit_costs').select('operation, credits, feature, description').order('credits'),
       role === 'organization_admin'
         ? db.from('billing_invoices')
@@ -29,9 +29,11 @@ export default async (req: Request): Promise<Response> => {
     ])
     if (status.error || plans.error || costs.error || invoices.error) return json({ error: 'storage_error' }, 500)
 
+    // Piani acquistabili (attivi) + il piano corrente anche se non in vendita (es. beta gratuita del Prompt 13).
+    const currentCode = (status.data as { subscription?: { plan_code?: string | null } } | null)?.subscription?.plan_code ?? null
     return json({
       ...(status.data as Record<string, unknown>),
-      plans: ((plans.data ?? []) as (PlanRow & { description: string | null })[]).map(({ stripe_price_id, ...p }) => ({
+      plans: ((plans.data ?? []) as (PlanRow & { description: string | null })[]).filter((p) => p.is_active || p.code === currentCode).map(({ stripe_price_id, ...p }) => ({
         ...p,
         purchasable: Boolean(config && priceIdForPlan({ code: p.code, stripe_price_id }, config.envPrices)),
       })),

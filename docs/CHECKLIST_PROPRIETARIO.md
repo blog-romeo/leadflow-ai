@@ -51,6 +51,19 @@ Nessuna chiave va incollata in chat: le variabili si impostano nel pannello Netl
 - [ ] `AI_EVAL_LIVE=1 npm run ai:eval` con le chiavi di staging (consuma pochi token): annotare JSON validi, evidenze, avvisi.
 - [ ] Riportare gli esiti in `RELEASE_READINESS.md` (REL-6, REL-28, REL-35).
 
+## 2-quater. Prompt 13: beta gratuita e chatbot su staging (½ giornata — dopo §2)
+
+- [ ] Applica la migrazione `0016` su staging; esegui `supabase/tests/run_local_rls_tests.sh` in CI o in locale.
+- [ ] Super Admin → Impostazioni → **Beta gratuita** → "Attiva per le nuove organizzazioni" (motivazione obbligatoria).
+- [ ] Netlify (staging): `VITE_FREE_BETA=true`, nuovo deploy. Registra un account di prova: l'onboarding deve offrire
+      "Continua con la beta gratuita" e non chiedere la carta.
+- [ ] Chatbot: apri il sito senza login e fai 5 domande (una fuori tema: deve dire che non lo sa e proporre il contatto).
+      In app chiedi "voglio parlare con una persona" → invia → il ticket deve comparire in `/super-admin/support`.
+- [ ] Facoltativo: `OPENAI_API_KEY` e `OPENAI_MODEL` su staging per le risposte AI in app (costo per domanda nel Control Center).
+- [ ] Cancellazione: con un account di prova cancella l'organizzazione (nome per conferma) e poi l'account (email). Verifica
+      che non sia più possibile accedere. L'eliminazione definitiva dopo 30 giorni richiede `RETENTION_PURGE_ENABLED=true`.
+- [ ] **Prima di aprire la beta a persone esterne**: privacy e termini definitivi (REL-5) e Supabase/Netlify verificati (REL-6).
+
 ## 3. Stripe in modalità test (½ giornata)
 
 - [ ] Prodotti e Price (importi IVA esclusa, `tax_behavior=exclusive`), webhook, Customer Portal (disdetta a fine periodo).

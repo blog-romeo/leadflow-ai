@@ -7,7 +7,7 @@ import { buildErrorRow, sanitizeMessage, sanitizePath } from '../../monitoring'
 
 const NOW = 1_800_000_000_000
 const valid = {
-  name: 'Laura Bianchi', company: 'Bianchi Srl', email: 'Laura@Bianchi-Srl.it', sector: 'Logistica', employees: '10-49',
+  name: 'Laura Bianchi', company: 'Bianchi Srl', email: 'Laura@Bianchi-Srl.test', sector: 'Logistica', employees: '10-49',
   message: 'Vorremmo capire come usare il Lead Finder.', contact_preference: 'email', consent: true, website_url: '', started_at: NOW - 20_000,
 }
 
@@ -16,7 +16,7 @@ describe('richiesta demo: validazione e antispam', () => {
     const r = validateDemo(valid, NOW)
     expect(r.ok).toBe(true)
     if (r.ok) {
-      expect(r.data.email).toBe('laura@bianchi-srl.it')
+      expect(r.data.email).toBe('laura@bianchi-srl.test')
       expect(r.personalEmail).toBe(false)
     }
   })
@@ -98,6 +98,6 @@ describe('notifiche di piattaforma', () => {
     if (prev !== undefined) process.env.PLATFORM_NOTIFY_RESEND_API_KEY = prev
   })
   it('filtra i destinatari non validi', () => {
-    expect(notifyConfig({ PLATFORM_NOTIFY_RESEND_API_KEY: 're_x', PLATFORM_NOTIFY_FROM: 'ops@leadflow.it', PLATFORM_NOTIFY_TO: 'a@b.it, non-valido' })?.to).toEqual(['a@b.it'])
+    expect(notifyConfig({ PLATFORM_NOTIFY_RESEND_API_KEY: 're_x', PLATFORM_NOTIFY_FROM: 'ops@leadflow.test', PLATFORM_NOTIFY_TO: 'a@b.test, non-valido' })?.to).toEqual(['a@b.test'])
   })
 })

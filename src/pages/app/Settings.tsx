@@ -12,6 +12,7 @@ import { Button } from '../../components/ui/Button'
 import { InlineAlert } from '../../components/ui/States'
 import { LanguageSwitch, ThemeSegmented } from '../../components/ui/Preferences'
 import { TeamPanel } from '../../features/team/TeamPanel'
+import { AccountDeletionPanel } from '../../features/account/AccountDeletionPanel'
 
 
 function OrganizationForm() {
@@ -123,6 +124,7 @@ export default function Settings() {
         <Panel title={t('settings.privacySection')}>
           <p className="max-w-prose text-sm text-muted">{t('settings.privacyBody')}</p>
         </Panel>
+        <AccountDeletionPanel />
       </div>
     </>
   )

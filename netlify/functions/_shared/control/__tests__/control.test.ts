@@ -133,14 +133,14 @@ describe('risoluzione tenant e branding pubblico', () => {
   it('solo campi pubblici, rivalidati: niente URL non https, markup o percorsi arbitrari', () => {
     const b = toPublicBranding('r1', {
       platform_name: 'Alfa <b>', primary_color: '#1D4ED8', secondary_color: 'red', theme: 'dark',
-      privacy_url: 'javascript:alert(1)', terms_url: 'https://alfa.it/termini', support_email: 'help@alfa.it',
+      privacy_url: 'javascript:alert(1)', terms_url: 'https://alfa.it/termini', support_email: 'help@alfa.test',
       logo_path: '11111111-1111-4111-8111-111111111111/logo-0123456789ab.png', favicon_path: '../../secret.png',
       updated_by: 'user-id', stripe_customer_id: 'cus_x',
     }, 'https://abc.supabase.co')
     expect(b).toEqual({
       reseller_id: 'r1', platform_name: null, logo_url: 'https://abc.supabase.co/storage/v1/object/public/branding/11111111-1111-4111-8111-111111111111/logo-0123456789ab.png',
       login_logo_url: null, favicon_url: null, primary_color: '#1d4ed8', secondary_color: null, theme: 'dark', welcome_title: null, welcome_text: null,
-      support_email: 'help@alfa.it', privacy_url: null, terms_url: 'https://alfa.it/termini',
+      support_email: 'help@alfa.test', privacy_url: null, terms_url: 'https://alfa.it/termini',
     })
     expect(assetUrl('http://insecure.example', '11111111-1111-4111-8111-111111111111/logo-0123456789ab.png')).toBe(null)
   })

@@ -253,7 +253,7 @@ describe('Provider e configurazione', () => {
     ]
     for (const [status, name, kind] of cases) {
       const p = createResendProvider((async () => new Response(JSON.stringify({ name }), { status })) as unknown as typeof fetch)
-      await expect(p.send('k', { from: 'a <a@b.it>', to: 'c@d.it', subject: 's', text: 't', html: 'h', headers: {}, tags: [] }, 'key')).rejects.toSatisfy(
+      await expect(p.send('k', { from: 'a <a@b.test>', to: 'c@d.test', subject: 's', text: 't', html: 'h', headers: {}, tags: [] }, 'key')).rejects.toSatisfy(
         (e: unknown) => e instanceof ProviderError && e.kind === kind,
       )
     }

@@ -201,6 +201,11 @@ export const controlEn: Widen<typeof controlIt> = {
   },
   saSettings: {
     title: 'Platform settings',
+    freeBeta: 'Free beta',
+    freeBetaHint: 'Grants the “Free beta” plan (100 leads, 200 AI credits, 3 users per month, no payment) to new organizations. When disabled, organizations that already received it keep it: revoking it requires manual action. Also set VITE_FREE_BETA=true to show it on the website.',
+    freeBetaOn: 'Enable for new organizations',
+    freeBetaOnBackfill: 'Enable for existing ones too',
+    freeBetaOff: 'Disable the beta',
     flags: 'Feature flags',
     flagsHint: 'Disable features for everyone (or for single customers/resellers). They do not replace subscriptions and permissions: they add up.',
     scope: { organization: 'Organizations', reseller: 'Resellers' },

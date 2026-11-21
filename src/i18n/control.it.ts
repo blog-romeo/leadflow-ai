@@ -197,6 +197,11 @@ export const controlIt = {
   },
   saSettings: {
     title: 'Impostazioni piattaforma',
+    freeBeta: 'Beta gratuita',
+    freeBetaHint: 'Concede il piano “Beta gratuita” (100 lead, 200 crediti AI, 3 utenti al mese, nessun pagamento) alle nuove organizzazioni. Disattivandola, le organizzazioni che l’hanno già ricevuta la mantengono: per revocarla serve un intervento manuale. Imposta anche VITE_FREE_BETA=true per mostrarla sul sito.',
+    freeBetaOn: 'Attiva per le nuove organizzazioni',
+    freeBetaOnBackfill: 'Attiva anche per le esistenti',
+    freeBetaOff: 'Disattiva la beta',
     flags: 'Feature flag',
     flagsHint: 'Disattivano funzionalità per tutti (o per singoli clienti/rivenditori). Non sostituiscono abbonamenti e permessi: si sommano.',
     scope: { organization: 'Organizzazioni', reseller: 'Rivenditori' },
