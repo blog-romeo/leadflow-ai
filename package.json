@@ -20,7 +20,8 @@
     "staging:e2e": "node scripts/staging-e2e.mjs",
     "staging:isolation": "node scripts/staging-isolation.mjs",
     "security:secrets": "node scripts/check-secrets.mjs",
-    "staging:smoke": "node scripts/staging-smoke.mjs"
+    "staging:smoke": "node scripts/staging-smoke.mjs",
+    "ai:benchmark": "BENCHMARK_REPORT_PATH=benchmark-report.json vitest run netlify/functions/_shared/agents/__tests__/training.test.ts"
   },
   "dependencies": {
     "@fontsource-variable/bricolage-grotesque": "^5.3.0",

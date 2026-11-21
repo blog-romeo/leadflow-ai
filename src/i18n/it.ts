@@ -4,6 +4,7 @@ import { controlIt } from './control.it'
 import { launchIt } from './launch.it'
 import { aiAgentsIt } from './aiAgents.it'
 import { aiMonitoringIt } from './aiMonitoring.it'
+import { aiTrainingIt } from './aiTraining.it'
 
 export const it = {
   common: {
@@ -889,6 +890,7 @@ export const it = {
   ...launchIt,
   ...aiAgentsIt,
   ...aiMonitoringIt,
+  ...aiTrainingIt,
 }
 
 type Widen<T> = T extends string ? string : T extends readonly string[] ? readonly string[] : { [K in keyof T]: Widen<T[K]> }

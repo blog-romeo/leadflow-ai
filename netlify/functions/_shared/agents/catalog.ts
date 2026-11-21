@@ -65,6 +65,8 @@ export const FORBIDDEN_TOOL_PATTERNS: readonly RegExp[] = [
   /\.(bulk_delete|delete_all|purge|truncate)$/,
   /^(org|organizations?|tenants?)\./,
   /^agents?\.(configure|update|grant)/,
+  // Prompt 12: nessun agente modifica configurazioni, impostazioni di sicurezza, flag o il proprio training.
+  /^(configs?|ai_configs?|settings|security|feature_flags?|flags?|training|benchmarks?|feedback)\./,
 ]
 
 export function isForbiddenTool(tool: string): boolean {

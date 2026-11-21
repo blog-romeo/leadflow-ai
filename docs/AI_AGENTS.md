@@ -225,3 +225,23 @@ concluso, solo dati dell'organizzazione corrente, CSV protetto dalla formula inj
 - **Avvisi**: `ai_monitoring_evaluate` (workflow falliti > 30% con almeno 3, workflow fermi, verifica fallita).
 - **Strumenti di staging**: `npm run staging:e2e` (5 aziende, 3 proposte, si ferma all'approvazione), `npm run staging:isolation`
   (due organizzazioni, RLS reali), `npm run integrations:preflight`, workflow GitHub "Staging checks".
+
+## 11. Prompt 12 — architettura aggiornata
+
+```
+Utente ── piano ── Orchestrator ──► Discovery ──► Research ──► Scoring ──► [approvazione] ──► CRM ──► Strategy
+                       │                 │             │            │                                   │
+                       │                 └─────────────┴── envelope JSON validato (schema per azione) ───┘
+                       │                                   │
+                       │                         Quality Reviewer (regole deterministiche, dopo OGNI passo)
+                       │                           avvisi → output.review / envelope.review
+                       │                           blocchi → `review_blocked` (codici da versione ATTIVA approvata)
+                       ▼
+             heartbeat (1 UPDATE: lease + crediti + annullamento)
+Feedback utente ─► validazione admin ─► memoria della SOLA organizzazione (approved_feedback)
+Super Admin ─► /super-admin/ai-training: versioni candidate ─► benchmark (server, dataset sintetici, split di test) ─► gate ─► attivazione │ rollback
+```
+
+Dettagli: `docs/AI_TRAINING.md`. Matrice delle funzionalità: `docs/FEATURE_MATRIX.md`.
+Gli agenti non hanno strumenti per pagamenti, ruoli, credenziali, impostazioni di sicurezza o configurazioni: allowlist nel codice
+(`catalog.ts`) e pattern vietati invariati; le versioni di configurazione sono modificabili solo dal Super Admin via RPC.

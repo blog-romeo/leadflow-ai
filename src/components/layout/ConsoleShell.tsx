@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { NavLink, Outlet, Link } from 'react-router-dom'
-import { Activity, ArrowLeft, Bot, Building2, ChartLine, Gauge, History, LifeBuoy, Settings2, ShieldAlert, Store, TrendingUp } from 'lucide-react'
+import { Activity, ArrowLeft, Bot, BrainCircuit, Building2, ChartLine, Gauge, History, LifeBuoy, Settings2, ShieldAlert, Store, TrendingUp } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useI18n } from '../../i18n'
 import { cn } from '../../lib/cn'
@@ -17,6 +17,7 @@ const SA_NAV = [
   { to: '/super-admin/support', key: 'support', icon: LifeBuoy },
   { to: '/super-admin/system', key: 'system', icon: Activity },
   { to: '/super-admin/ai-monitoring', key: 'aiMonitoring', icon: Bot },
+  { to: '/super-admin/ai-training', key: 'aiTraining', icon: BrainCircuit },
   { to: '/super-admin/settings', key: 'settings', icon: Settings2 },
   { to: '/super-admin/audit', key: 'audit', icon: History },
 ]

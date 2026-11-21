@@ -81,6 +81,8 @@ export const aiAgentsIt = {
         approved_strategies: 'Strategie approvate',
         campaign_results: 'Risultati delle campagne',
         user_feedback: 'Feedback degli utenti',
+        target_sectors: 'Settori target',
+        approved_feedback: 'Feedback approvati (esempi)',
       },
     },
     missing: {
@@ -256,6 +258,7 @@ export const aiAgentsIt = {
       approval_not_pending: 'L’approvazione è già stata decisa.',
       workflow_not_waiting: 'Il workflow non è in attesa di approvazione.',
       forbidden: 'Non hai i permessi per questa operazione.',
+      review_blocked: 'Il Quality Reviewer ha fermato il passo: dati incoerenti o duplicati (nessun retry, nessun credito consumato due volte).',
       invalid_agent_output: 'Risultato dell’agente non conforme: passo fermato senza ripeterlo (nessun credito consumato due volte).',
       too_many_active_workflows: 'Troppi workflow in esecuzione per la tua organizzazione: attendi che terminino o interrompine uno.',
       dependency_deadlock: 'Dipendenze tra i passi non risolvibili: workflow chiuso in sicurezza.',

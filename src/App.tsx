@@ -51,6 +51,7 @@ const Support = lazy(() => import('./pages/app/Support'))
 const SuperAdminGrowth = lazy(() => import('./pages/console/SuperAdminGrowth'))
 const SuperAdminSystem = lazy(() => import('./pages/console/SuperAdminSystem'))
 const SuperAdminAiMonitoring = lazy(() => import('./pages/console/SuperAdminAiMonitoring'))
+const SuperAdminAiTraining = lazy(() => import('./pages/console/SuperAdminAiTraining'))
 const SuperAdminSupport = lazy(() => import('./pages/console/SuperAdminSupport'))
 const AiAgents = lazy(() => import('./pages/app/AiAgents'))
 const AiWorkflows = lazy(() => import('./pages/app/AiWorkflows'))
@@ -106,6 +107,7 @@ export function AppRoutes() {
           <Route path="demo" element={<Navigate to="/super-admin/support" replace />} />
           <Route path="system" element={<Suspense fallback={<LoadingState />}><SuperAdminSystem /></Suspense>} />
           <Route path="ai-monitoring" element={<Suspense fallback={<LoadingState />}><SuperAdminAiMonitoring /></Suspense>} />
+          <Route path="ai-training" element={<Suspense fallback={<LoadingState />}><SuperAdminAiTraining /></Suspense>} />
         </Route>
         <Route path="/reseller" element={<ResellerShell />}>
           <Route index element={<Suspense fallback={<LoadingState />}><ResellerDashboard /></Suspense>} />

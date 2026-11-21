@@ -5,16 +5,16 @@ repository: si inseriscono solo nei pannelli di GitHub, Netlify e Supabase. Ness
 
 ## 0. Prerequisito critico: versionare il codice (Prompt 11)
 
-Nel repository consegnato il branch `feature/leadflow-staging-release` è **già creato** ma **senza commit**: 213 file nuovi,
-55 modificati, 1 eliminato (elenco in `docs/STAGING_RELEASE_MANIFEST.md`). Il commit non è stato fatto da Claude perché il
-repository non è collegato a GitHub. Sul tuo computer, nella cartella estratta dallo ZIP:
+Prompt 12: il branch `feature/leadflow-staging-release` contiene ora **due commit locali** (stato del Prompt 11 e Prompt 12),
+già verificati con `npm run security:secrets`. Manca solo il push, che richiede la tua approvazione. Se il working tree non è
+pulito, completa prima il commit. Sul tuo computer, nella cartella estratta dallo ZIP:
 
 ```bash
 git branch --show-current          # deve stampare feature/leadflow-staging-release
 npm run security:secrets           # deve stampare "Nessun segreto trovato"
 git status --short | grep -E '\.env($|\.)' && echo "STOP: file .env da non versionare"
-git add -A
-git commit -m "LeadFlow AI: codice completo dei Prompt 5–11 per lo staging"
+git log --oneline -3               # deve mostrare i commit dei Prompt 5–11 e del Prompt 12
+git status --short                 # deve essere vuoto
 # Repository PRIVATO creato da te su GitHub (vuoto, senza README):
 git remote add origin git@github.com:<account>/<repo>.git
 git push -u origin main                                  # storia esistente (4 commit)

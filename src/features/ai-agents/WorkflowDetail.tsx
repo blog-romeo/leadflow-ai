@@ -8,6 +8,7 @@ import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { InlineAlert } from '../../components/ui/States'
 import { ApprovalCard } from './ApprovalCard'
+import { FeedbackButtons } from './Feedback'
 import { download, formatDuration, progressDone, rankingCsv, stepDurationMs, workflowJson } from './exportResults'
 import { actionKey, aiErrorMessage, codeMessage, controlWorkflow, StatusBadge, TERMINAL } from './shared'
 
@@ -60,7 +61,8 @@ function StepOutput({ step, orgId, workflowId, isAdmin }: { step: AiWorkflowStep
                 <th className="py-1.5 pr-3 font-medium">{t('aiWorkflows.out.cols.score')}</th>
                 <th className="py-1.5 pr-3 font-medium">{t('aiWorkflows.out.cols.priority')}</th>
                 <th className="py-1.5 pr-3 font-medium">{t('aiWorkflows.out.cols.suggestion')}</th>
-                <th className="py-1.5 font-medium">{t('aiWorkflows.out.cols.missing')}</th>
+                <th className="py-1.5 pr-3 font-medium">{t('aiWorkflows.out.cols.missing')}</th>
+                <th className="py-1.5 font-medium"><span className="sr-only">{t('aiFeedback.title')}</span></th>
               </tr>
             </thead>
             <tbody>
@@ -70,7 +72,8 @@ function StepOutput({ step, orgId, workflowId, isAdmin }: { step: AiWorkflowStep
                   <td className="py-1.5 pr-3 tabular-nums">{n(r.score)}</td>
                   <td className="py-1.5 pr-3">{t(`leadFinder.priority.${String(r.priority)}`)}</td>
                   <td className="py-1.5 pr-3">{t(`aiWorkflows.suggestions.${String(r.suggestion)}`)}</td>
-                  <td className="py-1.5 text-xs text-muted">{arr<string>(r.missing).slice(0, 4).join(', ') || '—'}</td>
+                  <td className="py-1.5 pr-3 text-xs text-muted">{arr<string>(r.missing).slice(0, 4).join(', ') || '—'}</td>
+                  <td className="py-1.5"><FeedbackButtons orgId={orgId} workflowId={workflowId} agent="scoring" subjectType="candidate" subjectId={String(r.candidate_id)} correction={{ priority: String(r.priority) }} /></td>
                 </tr>
               ))}
             </tbody>
@@ -104,7 +107,8 @@ function StepOutput({ step, orgId, workflowId, isAdmin }: { step: AiWorkflowStep
                 <Link to={`/app/sales-agent/leads/${String(item.lead_id)}?tab=messages`} className="font-semibold hover:text-flow hover:underline">
                   {String(item.company_name ?? '—')}
                 </Link>
-                <div className="flex gap-1.5">
+                <div className="flex items-center gap-1.5">
+                  {item.strategy ? <FeedbackButtons orgId={orgId} workflowId={workflowId} agent="strategy" subjectType="lead" subjectId={String(item.lead_id)} /> : null}
                   {item.status === 'cached' && <Badge>{t('aiWorkflows.out.cached')}</Badge>}
                   {item.status === 'failed' && <Badge tone="danger">{codeMessage(String(item.error ?? ''), t)}</Badge>}
                 </div>
@@ -267,6 +271,21 @@ function StepOutput({ step, orgId, workflowId, isAdmin }: { step: AiWorkflowStep
   return null
 }
 
+/** Esito del Quality Reviewer (Prompt 12): solo codici e conteggi. */
+function ReviewBadges({ output }: { output: Json | null }) {
+  const { t } = useI18n()
+  const r = obj(obj(output).review)
+  const findings = obj(r.findings)
+  const entries = Object.entries(findings).filter(([, v]) => typeof v === 'number' && v > 0)
+  if (!('checked' in r)) return null
+  return (
+    <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
+      <span className="text-muted">{t('aiReview.title')}</span>
+      {entries.length === 0 ? <Badge tone="ok">{t('aiReview.ok')}</Badge> : entries.map(([k, v]) => <Badge key={k} tone="signal">{t(`aiReview.codes.${k}`)} · {String(v)}</Badge>)}
+    </div>
+  )
+}
+
 export function WorkflowDetail({
   workflow,
   steps,
@@ -373,6 +392,7 @@ export function WorkflowDetail({
               {s.error_code && <span className="text-xs text-danger">{codeMessage(s.error_code, t)}</span>}
             </div>
             <StepOutput step={s} orgId={orgId} workflowId={workflow.id} isAdmin={isAdmin} />
+            <ReviewBadges output={s.output} />
           </li>
         ))}
       </ol>

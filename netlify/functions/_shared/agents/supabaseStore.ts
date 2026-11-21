@@ -187,6 +187,19 @@ export function createAgentStore(db: SupabaseClient): AgentStore {
       if (error) fail('renew_lease', error)
       return !!data?.length
     },
+    async heartbeat(org, id, token, leaseSeconds, usage) {
+      // Una sola UPDATE condizionata al lease; RETURNING legge l'eventuale richiesta di annullamento.
+      const { data, error } = await db
+        .from('ai_workflows')
+        .update({ locked_until: new Date(Date.now() + leaseSeconds * 1000).toISOString(), credits_used: usage.creditsUsed, cost_usd: usage.costUsd })
+        .eq('organization_id', org)
+        .eq('id', id)
+        .eq('lock_token', token)
+        .select('cancel_requested_at, status')
+      if (error) fail('heartbeat', error)
+      const row = (data as { cancel_requested_at: string | null; status: string }[] | null)?.[0]
+      return { renewed: !!row, cancelRequested: !!row?.cancel_requested_at || row?.status === 'cancelled' }
+    },
     async updateWorkflow(org, id, token, patch) {
       const row: Row = {}
       if (patch.status) row.status = patch.status

@@ -1,0 +1,627 @@
+{
+  "benchmark_version": "1.0.0",
+  "executed_at": "2026-11-21T00:00:00.000Z",
+  "data_kind": "synthetic",
+  "notice": "Dataset sintetici con etichette scritte a mano: misurano componenti deterministici, non la qualità commerciale reale né un modello AI.",
+  "contamination": [
+    {
+      "dataset": "sector_classification@1.0.0",
+      "duplicate_ids": [],
+      "duplicate_inputs": []
+    },
+    {
+      "dataset": "lead_scoring@2.0.0",
+      "duplicate_ids": [],
+      "duplicate_inputs": []
+    },
+    {
+      "dataset": "prompt_injection@1.0.0",
+      "duplicate_ids": [],
+      "duplicate_inputs": []
+    },
+    {
+      "dataset": "output_review@1.0.0",
+      "duplicate_ids": [],
+      "duplicate_inputs": []
+    },
+    {
+      "dataset": "provider_errors@1.0.0",
+      "duplicate_ids": [],
+      "duplicate_inputs": []
+    },
+    {
+      "dataset": "discovery_normalization@1.0.0",
+      "duplicate_ids": [],
+      "duplicate_inputs": []
+    },
+    {
+      "dataset": "llm_strategy@1.0.0",
+      "duplicate_ids": [],
+      "duplicate_inputs": []
+    }
+  ],
+  "suites": [
+    {
+      "suite": "sector_classification",
+      "dataset": {
+        "id": "sector_classification",
+        "version": "1.0.0",
+        "synthetic": true
+      },
+      "split": "validation",
+      "config": "baseline:catalogo-settori",
+      "status": "executed",
+      "cases": 20,
+      "ms": 1.101,
+      "metrics": {
+        "accuracy": 0.8,
+        "macro_precision": 0.755,
+        "macro_recall": 0.75,
+        "macro_f1": 0.742,
+        "correct_abstention_rate": 1,
+        "wrong_ids": [
+          "sc-va-06",
+          "sc-va-08",
+          "sc-va-09",
+          "sc-va-10"
+        ]
+      }
+    },
+    {
+      "suite": "sector_classification",
+      "dataset": {
+        "id": "sector_classification",
+        "version": "1.0.0",
+        "synthetic": true
+      },
+      "split": "validation",
+      "config": "candidate:sinonimi-da-train",
+      "status": "executed",
+      "cases": 20,
+      "ms": 1.036,
+      "metrics": {
+        "accuracy": 0.9,
+        "macro_precision": 0.914,
+        "macro_recall": 0.893,
+        "macro_f1": 0.897,
+        "correct_abstention_rate": 1,
+        "wrong_ids": [
+          "sc-va-06",
+          "sc-va-10"
+        ]
+      }
+    },
+    {
+      "suite": "lead_scoring",
+      "dataset": {
+        "id": "lead_scoring",
+        "version": "2.0.0",
+        "synthetic": true
+      },
+      "split": "validation",
+      "config": "baseline:pesi-icp-default",
+      "status": "executed",
+      "cases": 10,
+      "ms": 0.352,
+      "metrics": {
+        "accuracy": 0.8,
+        "macro_precision": 0.833,
+        "macro_recall": 0.867,
+        "macro_f1": 0.806,
+        "explained_rate": 1,
+        "score_is_probability": false,
+        "wrong_ids": [
+          "ls-va-02:high/81",
+          "ls-va-10:high/83"
+        ]
+      }
+    },
+    {
+      "suite": "lead_scoring",
+      "dataset": {
+        "id": "lead_scoring",
+        "version": "2.0.0",
+        "synthetic": true
+      },
+      "split": "validation",
+      "config": "candidate:pesi 30/25/25/15/5",
+      "status": "executed",
+      "cases": 10,
+      "ms": 0.326,
+      "metrics": {
+        "accuracy": 0.8,
+        "macro_precision": 0.833,
+        "macro_recall": 0.867,
+        "macro_f1": 0.806,
+        "explained_rate": 1,
+        "score_is_probability": false,
+        "wrong_ids": [
+          "ls-va-02:high/82",
+          "ls-va-10:high/84"
+        ]
+      }
+    },
+    {
+      "suite": "output_review",
+      "dataset": {
+        "id": "output_review",
+        "version": "1.0.0",
+        "synthetic": true
+      },
+      "split": "validation",
+      "config": "baseline:schema+postcheck (Prompt 9)",
+      "status": "executed",
+      "cases": 8,
+      "ms": 0.73,
+      "metrics": {
+        "precision": 1,
+        "recall": 0.143,
+        "f1": 0.25,
+        "support": 7,
+        "clean_cases_flagged": [],
+        "insufficient_data_detection": 0,
+        "undetected_defects": 6
+      }
+    },
+    {
+      "suite": "output_review",
+      "dataset": {
+        "id": "output_review",
+        "version": "1.0.0",
+        "synthetic": true
+      },
+      "split": "validation",
+      "config": "candidate:schema+postcheck+Quality Reviewer",
+      "status": "executed",
+      "cases": 8,
+      "ms": 0.558,
+      "metrics": {
+        "precision": 1,
+        "recall": 1,
+        "f1": 1,
+        "support": 7,
+        "clean_cases_flagged": [],
+        "insufficient_data_detection": 1,
+        "undetected_defects": 0
+      }
+    },
+    {
+      "suite": "prompt_injection",
+      "dataset": {
+        "id": "prompt_injection",
+        "version": "1.0.0",
+        "synthetic": true
+      },
+      "split": "validation",
+      "config": "baseline:sanitize.ts",
+      "status": "executed",
+      "cases": 12,
+      "ms": 0.079,
+      "metrics": {
+        "precision": 1,
+        "recall": 1,
+        "f1": 1,
+        "support": 6,
+        "missed_ids": [],
+        "false_positive_ids": []
+      }
+    },
+    {
+      "suite": "discovery_normalization",
+      "dataset": {
+        "id": "discovery_normalization",
+        "version": "1.0.0",
+        "synthetic": true
+      },
+      "split": "validation",
+      "config": "baseline:normalize+dedup",
+      "status": "executed",
+      "cases": 2,
+      "ms": 0.542,
+      "metrics": {
+        "exact_match_rate": 1,
+        "source_coverage": 1,
+        "mismatches": []
+      }
+    },
+    {
+      "suite": "provider_errors",
+      "dataset": {
+        "id": "provider_errors",
+        "version": "1.0.0",
+        "synthetic": true
+      },
+      "split": "validation",
+      "config": "baseline:osmOverpass.ts",
+      "status": "executed",
+      "cases": 4,
+      "ms": 1.13,
+      "metrics": {
+        "accuracy": 1,
+        "wrong_ids": []
+      }
+    },
+    {
+      "suite": "llm_strategy",
+      "dataset": {
+        "id": "llm_strategy",
+        "version": "1.0.0",
+        "synthetic": true
+      },
+      "split": "validation",
+      "config": "n/a",
+      "status": "not_executed",
+      "reason": "requires_authorized_model_access",
+      "cases": 1,
+      "ms": 0,
+      "metrics": {}
+    },
+    {
+      "suite": "sector_classification",
+      "dataset": {
+        "id": "sector_classification",
+        "version": "1.0.0",
+        "synthetic": true
+      },
+      "split": "test",
+      "config": "baseline:catalogo-settori",
+      "status": "executed",
+      "cases": 20,
+      "ms": 1.454,
+      "metrics": {
+        "accuracy": 0.9,
+        "macro_precision": 0.854,
+        "macro_recall": 0.875,
+        "macro_f1": 0.863,
+        "correct_abstention_rate": 1,
+        "wrong_ids": [
+          "sc-te-06",
+          "sc-te-09"
+        ]
+      }
+    },
+    {
+      "suite": "sector_classification",
+      "dataset": {
+        "id": "sector_classification",
+        "version": "1.0.0",
+        "synthetic": true
+      },
+      "split": "test",
+      "config": "candidate:sinonimi-da-train",
+      "status": "executed",
+      "cases": 20,
+      "ms": 1.453,
+      "metrics": {
+        "accuracy": 1,
+        "macro_precision": 1,
+        "macro_recall": 1,
+        "macro_f1": 1,
+        "correct_abstention_rate": 1,
+        "wrong_ids": []
+      }
+    },
+    {
+      "suite": "lead_scoring",
+      "dataset": {
+        "id": "lead_scoring",
+        "version": "2.0.0",
+        "synthetic": true
+      },
+      "split": "test",
+      "config": "baseline:pesi-icp-default",
+      "status": "executed",
+      "cases": 10,
+      "ms": 0.387,
+      "metrics": {
+        "accuracy": 1,
+        "macro_precision": 1,
+        "macro_recall": 1,
+        "macro_f1": 1,
+        "explained_rate": 1,
+        "score_is_probability": false,
+        "wrong_ids": []
+      }
+    },
+    {
+      "suite": "lead_scoring",
+      "dataset": {
+        "id": "lead_scoring",
+        "version": "2.0.0",
+        "synthetic": true
+      },
+      "split": "test",
+      "config": "candidate:pesi 30/25/25/15/5",
+      "status": "executed",
+      "cases": 10,
+      "ms": 0.357,
+      "metrics": {
+        "accuracy": 1,
+        "macro_precision": 1,
+        "macro_recall": 1,
+        "macro_f1": 1,
+        "explained_rate": 1,
+        "score_is_probability": false,
+        "wrong_ids": []
+      }
+    },
+    {
+      "suite": "output_review",
+      "dataset": {
+        "id": "output_review",
+        "version": "1.0.0",
+        "synthetic": true
+      },
+      "split": "test",
+      "config": "baseline:schema+postcheck (Prompt 9)",
+      "status": "executed",
+      "cases": 8,
+      "ms": 0.339,
+      "metrics": {
+        "precision": null,
+        "recall": 0,
+        "f1": 0,
+        "support": 6,
+        "clean_cases_flagged": [],
+        "insufficient_data_detection": 0,
+        "undetected_defects": 6
+      }
+    },
+    {
+      "suite": "output_review",
+      "dataset": {
+        "id": "output_review",
+        "version": "1.0.0",
+        "synthetic": true
+      },
+      "split": "test",
+      "config": "candidate:schema+postcheck+Quality Reviewer",
+      "status": "executed",
+      "cases": 8,
+      "ms": 0.562,
+      "metrics": {
+        "precision": 1,
+        "recall": 1,
+        "f1": 1,
+        "support": 6,
+        "clean_cases_flagged": [],
+        "insufficient_data_detection": 1,
+        "undetected_defects": 0
+      }
+    },
+    {
+      "suite": "prompt_injection",
+      "dataset": {
+        "id": "prompt_injection",
+        "version": "1.0.0",
+        "synthetic": true
+      },
+      "split": "test",
+      "config": "baseline:sanitize.ts",
+      "status": "executed",
+      "cases": 12,
+      "ms": 0.033,
+      "metrics": {
+        "precision": 1,
+        "recall": 1,
+        "f1": 1,
+        "support": 6,
+        "missed_ids": [],
+        "false_positive_ids": []
+      }
+    },
+    {
+      "suite": "discovery_normalization",
+      "dataset": {
+        "id": "discovery_normalization",
+        "version": "1.0.0",
+        "synthetic": true
+      },
+      "split": "test",
+      "config": "baseline:normalize+dedup",
+      "status": "executed",
+      "cases": 2,
+      "ms": 0.328,
+      "metrics": {
+        "exact_match_rate": 1,
+        "source_coverage": 1,
+        "mismatches": []
+      }
+    },
+    {
+      "suite": "provider_errors",
+      "dataset": {
+        "id": "provider_errors",
+        "version": "1.0.0",
+        "synthetic": true
+      },
+      "split": "test",
+      "config": "baseline:osmOverpass.ts",
+      "status": "executed",
+      "cases": 4,
+      "ms": 1.697,
+      "metrics": {
+        "accuracy": 1,
+        "wrong_ids": []
+      }
+    },
+    {
+      "suite": "llm_strategy",
+      "dataset": {
+        "id": "llm_strategy",
+        "version": "1.0.0",
+        "synthetic": true
+      },
+      "split": "test",
+      "config": "n/a",
+      "status": "not_executed",
+      "reason": "requires_authorized_model_access",
+      "cases": 2,
+      "ms": 0,
+      "metrics": {}
+    }
+  ],
+  "comparisons": [
+    {
+      "suite": "sector_classification",
+      "split": "test",
+      "primary_metric": "macro_f1",
+      "baseline": {
+        "config": "baseline:catalogo-settori",
+        "value": 0.863
+      },
+      "candidate": {
+        "config": "candidate:sinonimi-da-train",
+        "value": 1
+      },
+      "delta": 0.137,
+      "safety": [
+        {
+          "metric": "correct_abstention_rate",
+          "baseline": 1,
+          "candidate": 1,
+          "regressed": false
+        }
+      ],
+      "gate_passed": true
+    },
+    {
+      "suite": "lead_scoring",
+      "split": "test",
+      "primary_metric": "macro_f1",
+      "baseline": {
+        "config": "baseline:pesi-icp-default",
+        "value": 1
+      },
+      "candidate": {
+        "config": "candidate:pesi 30/25/25/15/5",
+        "value": 1
+      },
+      "delta": 0,
+      "safety": [
+        {
+          "metric": "explained_rate",
+          "baseline": 1,
+          "candidate": 1,
+          "regressed": false
+        }
+      ],
+      "gate_passed": true
+    },
+    {
+      "suite": "output_review",
+      "split": "test",
+      "primary_metric": "f1",
+      "baseline": {
+        "config": "baseline:schema+postcheck (Prompt 9)",
+        "value": 0
+      },
+      "candidate": {
+        "config": "candidate:schema+postcheck+Quality Reviewer",
+        "value": 1
+      },
+      "delta": 1,
+      "safety": [
+        {
+          "metric": "clean_cases_flagged",
+          "baseline": [],
+          "candidate": [],
+          "regressed": false
+        }
+      ],
+      "gate_passed": true
+    }
+  ],
+  "candidates": {
+    "sector": {
+      "label": "candidate:sinonimi-da-train",
+      "extraSynonyms": {
+        "dentist": [
+          "odontoiatrico"
+        ],
+        "guest_house": [
+          "breakfast"
+        ],
+        "hairdresser": [
+          "parrucchiera"
+        ],
+        "car_dealer": [
+          "concessionario"
+        ],
+        "plumber": [
+          "termoidraulico"
+        ],
+        "car_repair": [
+          "autoriparazioni"
+        ]
+      }
+    },
+    "scoring": {
+      "label": "candidate:pesi 30/25/25/15/5",
+      "weights": {
+        "sector": 30,
+        "geography": 25,
+        "icp": 25,
+        "signals": 15,
+        "completeness": 5
+      }
+    },
+    "scoring_grid": [
+      {
+        "weights": {
+          "sector": 30,
+          "geography": 20,
+          "icp": 25,
+          "signals": 15,
+          "completeness": 10
+        },
+        "train_f1": 0.905,
+        "validation_f1": 0.806
+      },
+      {
+        "weights": {
+          "sector": 25,
+          "geography": 25,
+          "icp": 25,
+          "signals": 15,
+          "completeness": 10
+        },
+        "train_f1": 1,
+        "validation_f1": 0.711
+      },
+      {
+        "weights": {
+          "sector": 30,
+          "geography": 25,
+          "icp": 25,
+          "signals": 15,
+          "completeness": 5
+        },
+        "train_f1": 1,
+        "validation_f1": 0.806
+      },
+      {
+        "weights": {
+          "sector": 30,
+          "geography": 20,
+          "icp": 30,
+          "signals": 15,
+          "completeness": 5
+        },
+        "train_f1": 0.905,
+        "validation_f1": 0.806
+      },
+      {
+        "weights": {
+          "sector": 25,
+          "geography": 20,
+          "icp": 30,
+          "signals": 20,
+          "completeness": 5
+        },
+        "train_f1": 0.905,
+        "validation_f1": 0.896
+      }
+    ]
+  }
+}

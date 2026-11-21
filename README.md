@@ -296,6 +296,11 @@ verifica reale delle connessioni nella console agenti, log senza segreti, avvisi
 **Prompt 11**: branch `feature/leadflow-staging-release`, manifest dei file da versionare (`docs/STAGING_RELEASE_MANIFEST.md`),
 smoke test di staging (`npm run staging:smoke`).
 
+**Prompt 12**: Quality Reviewer, framework di valutazione con dataset sintetici versionati e benchmark ripetibili
+(`npm run ai:benchmark`), versioni di configurazione con gate e rollback (`/super-admin/ai-training`), feedback umano
+validato e isolato, memoria con minimizzazione. Nessun modello addestrato. Migrazione 0015 (additiva).
+Dettagli: [`docs/AI_TRAINING.md`](docs/AI_TRAINING.md), [`docs/FEATURE_MATRIX.md`](docs/FEATURE_MATRIX.md).
+
 ## AI Lead Finder
 
 ### Architettura (`netlify/functions/_shared/lead-finder/`)

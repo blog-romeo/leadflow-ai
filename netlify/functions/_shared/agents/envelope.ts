@@ -177,6 +177,8 @@ export const agentRunEnvelopeSchema = z
     errors: z.array(z.object({ code: z.string(), count: z.number().int().min(1) })),
     usage: z.object({ tokens_input: count, tokens_output: count, credits: count, cost_usd: z.number().min(0).nullable() }),
     routing: z.object({ model: z.string().nullable(), tier: z.string().nullable(), fallback: z.boolean() }).nullable(),
+    // Prompt 12: esito del Quality Reviewer (solo conteggi per codice).
+    review: z.object({ checked: count, findings: z.record(z.string(), count), blocking: count }).nullable(),
     items: z.object({ total: count, failed: count }),
     duration_ms: count,
     started_at: z.string(),
@@ -247,6 +249,10 @@ export function buildEnvelope(a: {
     errors,
     usage: { tokens_input: Math.max(0, Math.floor(a.tokensInput)), tokens_output: Math.max(0, Math.floor(a.tokensOutput)), credits: Math.max(0, Math.floor(a.credits)), cost_usd: a.costUsd },
     routing: a.model || a.tier ? { model: a.model, tier: a.tier, fallback: a.fallback } : null,
+    review: (() => {
+      const r = out?.review as { checked?: number; findings?: Record<string, number>; blocking?: number } | undefined
+      return r && typeof r.checked === 'number' ? { checked: r.checked, findings: r.findings ?? {}, blocking: r.blocking ?? 0 } : null
+    })(),
     items: { total: Math.max(0, a.itemsTotal), failed: Math.max(0, a.itemsFailed) },
     duration_ms: Math.max(0, a.completedAt.getTime() - a.startedAt.getTime()),
     started_at: a.startedAt.toISOString(),

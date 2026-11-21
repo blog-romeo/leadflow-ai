@@ -4,7 +4,7 @@ import { BrainCircuit, CircleSlash, PlugZap, Rocket } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useI18n } from '../../i18n'
 import { supabase } from '../../lib/supabase'
-import { AI_AGENT_KEYS, type AiAgentApprovalRow, type AiAgentKey, type AiAgentRow, type AiAgentRunRow, type AiModelTier, type AiWorkflowRow, type Json } from '../../lib/database.types'
+import { AI_AGENT_KEYS, type AiAgentApprovalRow, type AiAgentKey, type AiAgentRow, type AiAgentRunRow, type AiFeedbackRow, type AiModelTier, type AiWorkflowRow, type Json } from '../../lib/database.types'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Panel } from '../../components/ui/Panel'
 import { Badge } from '../../components/ui/Badge'
@@ -15,6 +15,7 @@ import { ConfigNotice } from '../../components/ui/ConfigNotice'
 import { ApprovalCard } from '../../features/ai-agents/ApprovalCard'
 import { MemoryPanel } from '../../features/ai-agents/MemoryPanel'
 import { ConnectionsPanel } from '../../features/ai-agents/ConnectionsPanel'
+import { FeedbackReviewPanel } from '../../features/ai-agents/Feedback'
 import { aiErrorMessage, codeMessage, controlWorkflow, StatusBadge, useAgentsStatus, usePolling, type AgentsStatus } from '../../features/ai-agents/shared'
 
 const AI_AGENTS: AiAgentKey[] = ['research', 'strategy', 'follow_up']
@@ -95,17 +96,20 @@ export default function AiAgents() {
   const [runs, setRuns] = useState<AiAgentRunRow[]>([])
   const [approvals, setApprovals] = useState<AiAgentApprovalRow[]>([])
   const [active, setActive] = useState<AiWorkflowRow[]>([])
+  const [feedback, setFeedback] = useState<AiFeedbackRow[]>([])
   const [openSettings, setOpenSettings] = useState<AiAgentKey | null>(null)
   const [stopErr, setStopErr] = useState<string | null>(null)
 
   const loadData = useCallback(async () => {
     if (!supabase || !orgId) return
-    const [c, r, a, w] = await Promise.all([
+    const [c, r, a, w, f] = await Promise.all([
       supabase.from('ai_agents').select('*').eq('organization_id', orgId),
       supabase.from('ai_agent_runs').select('*').eq('organization_id', orgId).order('started_at', { ascending: false }).limit(60),
       supabase.from('ai_agent_approvals').select('*').eq('organization_id', orgId).eq('status', 'pending').order('requested_at', { ascending: false }),
       supabase.from('ai_workflows').select('*').eq('organization_id', orgId).in('status', ['pending', 'running', 'waiting_approval']).order('created_at', { ascending: false }),
+      supabase.from('ai_feedback').select('*').eq('organization_id', orgId).eq('status', 'pending').order('created_at', { ascending: false }).limit(20),
     ])
+    setFeedback((f.data ?? []) as AiFeedbackRow[])
     setConfigs((c.data ?? []) as AiAgentRow[])
     setRuns((r.data ?? []) as AiAgentRunRow[])
     setApprovals((a.data ?? []) as AiAgentApprovalRow[])
@@ -167,6 +171,12 @@ export default function AiAgents() {
       </div>
 
       {orgId && <ConnectionsPanel status={status} orgId={orgId} onChecked={() => void reload()} />}
+      {isOrgAdmin && (
+        <Panel title={t('aiFeedback.reviewTitle')} className="mb-4">
+          <FeedbackReviewPanel rows={feedback} onDone={() => void loadData()} />
+          <p className="mt-3 text-xs text-muted">{t('aiFeedback.reviewNote')}</p>
+        </Panel>
+      )}
 
       {(!storeProviders.some((p) => p.configured) || !av.ai.configured || av.salesProfileMissing.length > 0) && (
         <Panel title={t('aiAgents.panels.config')} className="mb-4">

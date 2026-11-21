@@ -6,6 +6,9 @@ import { integrationStatus } from './_shared/launch/integrations'
 import { AI_TASKS, routeModel } from './_shared/agents/models'
 import { agentsEnabledFor, agentsFlag } from './_shared/agents/flags'
 import { AGENT_KEYS } from './_shared/agents/types'
+import { BENCHMARK_VERSION, EVALUABLE_CONFIG_KEYS, runBenchmark } from './_shared/agents/training/benchmark'
+import { DATASETS } from './_shared/agents/training/catalog'
+import { supabaseAdmin } from './_shared/supabaseAdmin'
 
 /**
  * /api/super-admin/<azione> — console di piattaforma. Accesso SOLO per profiles.platform_role
@@ -96,6 +99,12 @@ const GET: Record<string, (db: Db, q: URLSearchParams) => Promise<unknown>> = {
     })
     return { ...(data as Record<string, unknown>), providers, routing, engine_enabled: agentsFlag().enabled, pilot_orgs: agentsFlag().pilotOrgs?.length ?? null, engine_enabled_for_filter: org ? agentsEnabledFor(org) : null }
   },
+  // Prompt 12: AI Training (versioni, benchmark, feedback aggregati). Nessun contenuto dei clienti.
+  async 'ai-training'(db) {
+    await rpc(db, 'sa_log_access', { p_section: 'ai_training' })
+    const overview = (await rpc(db, 'sa_ai_training_overview')) as Record<string, unknown>
+    return { ...overview, datasets: DATASETS, benchmark_version: BENCHMARK_VERSION, evaluable_config_keys: EVALUABLE_CONFIG_KEYS, applied_config_keys: ['quality_reviewer.blocking_codes'] }
+  },
   async 'demo-requests'(db, q) {
     await rpc(db, 'sa_log_access', { p_section: 'demo_requests' })
     const status = q.get('status')
@@ -119,7 +128,39 @@ const GET: Record<string, (db: Db, q: URLSearchParams) => Promise<unknown>> = {
   },
 }
 
-const POST: Record<string, (db: Db, b: Record<string, unknown>) => Promise<unknown>> = {
+const POST: Record<string, (db: Db, b: Record<string, unknown>, userId: string) => Promise<unknown>> = {
+  // Prompt 12: benchmark eseguito dal SERVER sui dataset sintetici versionati; il risultato è registrato con
+  // la service role (un utente non può inserire o alterare un esito di benchmark).
+  'ai-benchmark-run': async (db, b, userId) => {
+    let candidate: Parameters<typeof runBenchmark>[1]
+    let candidateId: string | null = null
+    if (b.candidate_version_id !== undefined && b.candidate_version_id !== null) {
+      candidateId = uuid(b.candidate_version_id, 'candidate_version_id')
+      const { data: v, error } = await db.from('ai_agent_config_versions').select('id, config_key, config, status').eq('id', candidateId).maybeSingle()
+      if (error) throw new HttpError(500, 'storage_error')
+      if (!v || v.status !== 'candidate') throw new HttpError(409, 'version_not_candidate')
+      const { data: active } = await db.from('ai_agent_config_versions').select('config').eq('config_key', v.config_key).eq('status', 'active').maybeSingle()
+      candidate = { config_key: v.config_key as string, config: v.config as Record<string, unknown>, baseline_config: (active?.config as Record<string, unknown> | undefined) ?? null }
+    }
+    const report = await runBenchmark(() => new Date(), candidate)
+    const gate = report.candidate_config?.gate_passed ?? false
+    const { data, error } = await supabaseAdmin().from('ai_benchmark_runs').insert({ benchmark_version: report.benchmark_version, data_kind: report.data_kind, candidate_version_id: candidateId, report, gate_passed: gate, executed_by: userId }).select('id').single()
+    if (error) throw new HttpError(500, 'storage_error')
+    return { id: (data as { id: string }).id, gate_passed: gate, candidate_config: report.candidate_config ?? null, comparisons: report.comparisons }
+  },
+  'ai-config-propose': async (db, b) => ({
+    id: await rpc(db, 'sa_ai_config_propose', {
+      p_agent: oneOf(b.agent_key, 'agent_key', [...AGENT_KEYS, 'quality_reviewer'] as const),
+      p_config_key: str(b.config_key, 'config_key', 3, 61),
+      p_kind: oneOf(b.kind, 'kind', ['prompt', 'retrieval', 'few_shot', 'fine_tuned_model', 'rules'] as const),
+      p_version: str(b.version, 'version', 5, 20),
+      p_config: obj(b.config, 'config'),
+      p_notes: optStr(b.notes, 'notes', 2000),
+    }),
+  }),
+  'ai-config-activate': (db, b) => rpc(db, 'sa_ai_config_activate', { p_version: uuid(b.version_id, 'version_id'), p_benchmark: uuid(b.benchmark_id, 'benchmark_id'), p_reason: reason(b.reason) }),
+  'ai-config-reject': (db, b) => rpc(db, 'sa_ai_config_reject', { p_version: uuid(b.version_id, 'version_id'), p_reason: reason(b.reason) }),
+  'ai-config-rollback': (db, b) => rpc(db, 'sa_ai_config_rollback', { p_config_key: str(b.config_key, 'config_key', 3, 61), p_reason: reason(b.reason) }),
   'organization-status': (db, b) =>
     rpc(db, 'sa_set_organization_status', { p_org: uuid(b.organization_id, 'organization_id'), p_action: oneOf(b.action, 'action', ['suspend', 'reactivate'] as const), p_reason: reason(b.reason) }),
   'note-add': (db, b) =>
@@ -187,8 +228,8 @@ export default async (req: Request): Promise<Response> => {
     const handler = Object.hasOwn(table, action) ? table[action] : undefined
     if (!handler) throw new HttpError(404, 'unknown_action')
     // Autorizzazione PRIMA di leggere il body o eseguire qualsiasi azione.
-    const { db } = await requireSuperAdmin(req)
-    const result = req.method === 'GET' ? await (handler as (typeof GET)[string])(db, url.searchParams) : await (handler as (typeof POST)[string])(db, obj(await readJson(req, 32_000), 'body'))
+    const { db, user } = await requireSuperAdmin(req)
+    const result = req.method === 'GET' ? await (handler as (typeof GET)[string])(db, url.searchParams) : await (handler as (typeof POST)[string])(db, obj(await readJson(req, 32_000), 'body'), user.id)
     return json(result ?? { ok: true })
   } catch (err) {
     return handleError(err, '/api/super-admin')

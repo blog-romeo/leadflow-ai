@@ -12,6 +12,7 @@ import { BudgetTracker } from './budget'
 import { AgentError, CancelledSignal, YieldSignal, toAgentError } from './errors'
 import { agentsEnabledFor } from './flags'
 import { buildEnvelope, validateActionOutput } from './envelope'
+import { DEFAULT_BLOCKING, reviewStep, reviewSummary, type ReviewCode } from './reviewer'
 import { buildReport } from './report'
 import type { AgentStore } from './store'
 import { ToolGateway } from './tools'
@@ -101,6 +102,8 @@ export interface EngineDeps {
   leaseSeconds?: number
   /** Avvia un'invocazione successiva per proseguire il workflow. */
   continueLater?: (workflowId: string) => Promise<boolean>
+  /** Prompt 12: codici del Quality Reviewer che bloccano il passo (da una configurazione approvata). */
+  reviewerBlocking?: readonly ReviewCode[]
 }
 
 export const DEFAULT_MAX_WALL_MS = 11 * 60_000
@@ -369,6 +372,21 @@ export async function runWorkflow(deps: EngineDeps, workflowId: string): Promise
           await persistUsage()
           break
         }
+        // Quality Reviewer (Prompt 12): validazione logica deterministica dell'output.
+        const researchOut = steps.find((x) => x.action === 'research' && x.status === 'completed')?.output ?? null
+        const saveOut = steps.find((x) => x.action === 'crm.save_leads' && x.status === 'completed')?.output ?? null
+        const leadToCandidate: Record<string, string> = {}
+        for (const r of (Array.isArray(saveOut?.results) ? saveOut.results : []) as { candidate_id?: string; lead_id?: string }[]) if (r.lead_id && r.candidate_id) leadToCandidate[r.lead_id] = r.candidate_id
+        const review = reviewStep(step.action, result.output, { research: researchOut, leadToCandidate }, deps.reviewerBlocking ?? DEFAULT_BLOCKING)
+        result.output = { ...result.output, review: { ...reviewSummary(review), items: review.findings.slice(0, 30) } }
+        if (review.blocking.length > 0) {
+          log('error', 'ai_workflow.review_blocked', { workflow_id: wf.id, step: step.position, codes: review.blocking.map((b) => b.code) })
+          const envelope = envelopeFor('failed', result.output, true, 'review_blocked', result)
+          await store.finishRun(org, runId, { status: 'failed', output: envelope, errorCode: 'review_blocked', itemsTotal: result.itemsTotal, itemsFailed: result.itemsTotal, creditsUsed: envelope.usage.credits, tokensInput: envelope.usage.tokens_input, tokensOutput: envelope.usage.tokens_output, costUsd: envelope.usage.cost_usd, model: result.model ?? null })
+          await store.updateStep(org, step.id, { status: 'failed', output: { review: result.output.review }, errorCode: 'review_blocked', completedAt: now().toISOString() })
+          await persistUsage()
+          break
+        }
         const partial = !!result.partial || (result.itemsFailed > 0 && result.itemsFailed < result.itemsTotal)
         const allFailed = result.itemsTotal > 0 && result.itemsFailed >= result.itemsTotal
         const runStatus = allFailed ? 'failed' : partial ? 'partial' : 'succeeded'
@@ -468,10 +486,18 @@ export async function runWorkflow(deps: EngineDeps, workflowId: string): Promise
       async checkpoint(progress) {
         if (timer.aborted) throw new AgentError('step_timeout', { retryable: true })
         await store.updateStep(org, step.id, { output: { progress } })
-        await persistUsage()
-        const renewed = await store.renewLease(org, wf.id, token, leaseSeconds)
-        if (!renewed) throw new AgentError('lease_lost', { stopWorkflow: false })
-        if (await store.isCancelRequested(org, wf.id)) throw new CancelledSignal()
+        if (store.heartbeat) {
+          // Prompt 12: 1 operazione invece di 3 per checkpoint (misurato: −82 chiamate su 476 per 30 aziende).
+          wf = { ...wf, creditsUsed: budget.workflowUsed, costUsd }
+          const hb = await store.heartbeat(org, wf.id, token, leaseSeconds, { creditsUsed: budget.workflowUsed, costUsd })
+          if (!hb.renewed) throw new AgentError('lease_lost', { stopWorkflow: false })
+          if (hb.cancelRequested) throw new CancelledSignal()
+        } else {
+          await persistUsage()
+          const renewed = await store.renewLease(org, wf.id, token, leaseSeconds)
+          if (!renewed) throw new AgentError('lease_lost', { stopWorkflow: false })
+          if (await store.isCancelRequested(org, wf.id)) throw new CancelledSignal()
+        }
         if (wf.deadlineAt && now().getTime() > new Date(wf.deadlineAt).getTime()) throw new AgentError('workflow_timeout', { stopWorkflow: true })
         if (Date.now() - invocationStart > maxWallMs) throw new YieldSignal()
       },

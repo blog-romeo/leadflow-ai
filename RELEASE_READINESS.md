@@ -1,6 +1,37 @@
-# Release Readiness Report — LeadFlow AI (Prompt 11)
+# Release Readiness Report — LeadFlow AI (Prompt 12)
 
-Data: 21/11/2026 · Archivio: `leadflow-ai-prompt11-release.zip` · Precedente: Prompt 10
+Data: 21/11/2026 · Archivio: `leadflow-ai-prompt12-release.zip` · Precedente: Prompt 11
+
+## Classificazione: NOT READY
+
+Invariata. I **5 problemi HIGH** restano aperti: build e deploy (REL-1), Stripe Test Mode (REL-2), fiscalità e fatturazione
+(REL-3), documentazione legale (REL-5), integrazioni Supabase e Netlify (REL-6). Le nuove funzionalità AI **non** li risolvono.
+npm, Netlify e GitHub restano non raggiungibili da questa sessione (verificato all'avvio): nessuna build, CI o deploy reale.
+
+## Prompt 12 — sintesi con evidenze
+
+| Voce | Esito |
+| --- | --- |
+| Stato git | branch `feature/leadflow-staging-release` **conservato**; commit locale `4cfe6a6` con lo stato del Prompt 11 (nessuna modifica persa) e commit locale del Prompt 12; **nessun push**, nessun remote |
+| Segreti | `check-secrets` pulito prima di ogni commit; nessun `.env` versionato |
+| Addestramento | **nessun modello addestrato**, nessun fine-tuning avviato; framework di valutazione e miglioramento controllato (`docs/AI_TRAINING.md`) |
+| Quality Reviewer | nuova fase logica dopo ogni passo (8 controlli), blocchi da versione di configurazione approvata |
+| Benchmark realmente eseguiti | 7 dataset sintetici versionati con split train/validation/test, contaminazione verificata (1 caso trovato e corretto); confronti sul test: settori F1 0,863→1,000 (candidato non applicato), scoring 1,000→1,000 (nessun guadagno), controllo output F1 0,000→1,000 (Quality Reviewer); valutazione con modello reale **non eseguita** |
+| Prestazioni | chiamate allo store per 30 aziende **476 → 394** (−17%, misurato in processo); latenza reale da misurare in staging |
+| Vulnerabilità/difetti corretti | la memoria poteva contenere email e telefoni → minimizzazione nel database; `approved_feedback` scrivibile a mano → ora solo dalla validazione; nuovi pattern di strumenti vietati (configurazioni, sicurezza, flag, training); errore di tipo nel benchmark trovato dal typecheck parziale |
+| Test | SQL **765** asserzioni (+31) su PostgreSQL 16; runner di compatibilità (non Vitest) 36 file / 392 test; typecheck parziale delle functions con tipi finti: 0 errori nel codice; 49/49 functions impacchettate |
+| CI/CD | workflow invariati e mai eseguiti; la CI esegue anche `npm run ai:benchmark` tramite `vitest run` |
+
+### Nuovi problemi
+
+| ID | Gravità | Descrizione | Stato |
+| --- | --- | --- | --- |
+| REL-47 | MEDIUM | Nessuna cancellazione self-service di account o organizzazione (diritto all'oblio gestito manualmente) | **APERTO** — da progettare con il legale (REL-5) |
+| REL-48 | LOW | Benchmark con etichette scritte dallo stesso team che ha scritto le regole: risultati ottimistici, non accuratezze reali | **APERTO** — servono dati reali autorizzati e un valutatore indipendente |
+| REL-49 | LOW | Il candidato "sinonimi dei settori" ha superato il gate ma il motore non legge ancora quella chiave di configurazione | **APERTO** — collegare `discovery.sector_synonyms` prima di promuoverlo |
+| REL-37 | LOW | Costo dei checkpoint | **PARZIALE** — −82 chiamate in processo; da confermare in staging |
+
+---
 
 ## Prompt 11 — GitHub, recupero del codice, primo staging
 
@@ -43,7 +74,7 @@ Netlify, OpenAI, Overpass e Stripe non raggiungibili, GitHub raggiungibile ma **
 nessuna credenziale nell'ambiente. Quindi: **nessuna build reale, nessun deploy, nessun workflow reale, nessun costo misurato**.
 Nessun risultato in questo documento è presentato come reale se non lo è.
 
-Problemi aperti: CRITICAL **0** · HIGH **5** · MEDIUM **15** · LOW **17** (Prompt 11: +REL-46). Risolti nel Prompt 10: REL-42, REL-43, REL-44.
+Problemi aperti: CRITICAL **0** · HIGH **5** · MEDIUM **16** · LOW **19** (Prompt 11: +REL-46; Prompt 12: +REL-47, REL-48, REL-49). Risolti nel Prompt 10: REL-42, REL-43, REL-44.
 
 ## 1. Audit: verifica dei risultati del Prompt 9
 

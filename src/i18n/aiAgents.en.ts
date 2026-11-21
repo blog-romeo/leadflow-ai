@@ -85,6 +85,8 @@ export const aiAgentsEn: Widen<typeof aiAgentsIt> = {
         approved_strategies: 'Approved strategies',
         campaign_results: 'Campaign results',
         user_feedback: 'User feedback',
+        target_sectors: 'Target sectors',
+        approved_feedback: 'Approved feedback (examples)',
       },
     },
     missing: {
@@ -260,6 +262,7 @@ export const aiAgentsEn: Widen<typeof aiAgentsIt> = {
       approval_not_pending: 'The approval has already been decided.',
       workflow_not_waiting: 'The workflow is not awaiting approval.',
       forbidden: 'You do not have permission for this operation.',
+      review_blocked: 'The Quality Reviewer stopped the step: inconsistent or duplicate data (no retry, no credits spent twice).',
       invalid_agent_output: 'Non-conforming agent result: step stopped without retrying (no credits spent twice).',
       too_many_active_workflows: 'Too many workflows running for your organization: wait for them to finish or stop one.',
       dependency_deadlock: 'Step dependencies could not be resolved: workflow closed safely.',

@@ -35,6 +35,7 @@ export const controlIt = {
     support: 'Assistenza e demo',
     system: 'Sistema',
     aiMonitoring: 'Monitoraggio AI',
+    aiTraining: 'AI Training',
   },
   saOverview: {
     title: 'Panoramica piattaforma',

@@ -1,7 +1,7 @@
 import { timingSafeInternal } from './_shared/internalAuth'
 import { log } from './_shared/log'
 import { runWorkflow } from './_shared/agents/engine'
-import { agentEngineDeps } from './_shared/agents/deps'
+import { agentEngineDeps, loadReviewerBlocking } from './_shared/agents/deps'
 
 /**
  * Background function: esegue (o riprende) un workflow. Invocabile solo con il segreto interno.
@@ -21,7 +21,7 @@ export default async (req: Request): Promise<void> => {
   }
   if (!id) return
   try {
-    const r = await runWorkflow(agentEngineDeps(req.url), id)
+    const r = await runWorkflow({ ...agentEngineDeps(req.url), reviewerBlocking: await loadReviewerBlocking() }, id)
     log('info', 'ai_workflow.run', { workflow_id: id, status: r.status })
   } catch (err) {
     // Il lease scade e la function pianificata riprende il workflow.

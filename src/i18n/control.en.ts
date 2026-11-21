@@ -39,6 +39,7 @@ export const controlEn: Widen<typeof controlIt> = {
     support: 'Support & demos',
     system: 'System',
     aiMonitoring: 'AI monitoring',
+    aiTraining: 'AI Training',
   },
   saOverview: {
     title: 'Platform overview',

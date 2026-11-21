@@ -736,7 +736,28 @@ export type AiStepStatus = 'pending' | 'running' | 'waiting_approval' | 'complet
 export type AiModelTier = 'economy' | 'standard' | 'advanced'
 export type AiMemoryCategory =
   | 'commercial_profile' | 'products' | 'services' | 'ideal_customer' | 'communication_preferences' | 'approved_strategies' | 'campaign_results' | 'user_feedback'
-export const AI_MEMORY_CATEGORIES: AiMemoryCategory[] = ['commercial_profile', 'products', 'services', 'ideal_customer', 'communication_preferences', 'approved_strategies', 'campaign_results', 'user_feedback']
+  // Prompt 12
+  | 'target_sectors' | 'approved_feedback'
+export const AI_MEMORY_CATEGORIES: AiMemoryCategory[] = ['commercial_profile', 'target_sectors', 'products', 'services', 'ideal_customer', 'communication_preferences', 'approved_strategies', 'approved_feedback', 'campaign_results', 'user_feedback']
+/** Prompt 12: feedback umano sugli output degli agenti (per organizzazione). */
+export interface AiFeedbackRow {
+  id: string
+  organization_id: string
+  workflow_id: string | null
+  run_id: string | null
+  agent_key: AiAgentKey
+  subject_type: 'lead' | 'candidate' | 'workflow'
+  subject_id: string
+  rating: -1 | 0 | 1
+  correction: Json
+  comment: string | null
+  status: 'pending' | 'validated' | 'rejected'
+  use_as_org_example: boolean
+  created_by: string | null
+  created_at: string
+  reviewed_by: string | null
+  reviewed_at: string | null
+}
 export interface AiAgentRow {
   organization_id: string
   agent_key: AiAgentKey
@@ -958,6 +979,7 @@ export type Database = {
       ai_company_memory: Table<AiCompanyMemoryRow>
       ai_research_evidence: Table<AiResearchEvidenceRow>
       ai_agent_costs: Table<AiAgentCostRow>
+      ai_feedback: Table<AiFeedbackRow>
     }
     Views: {
       lead_activities: { Row: LeadActivityRow; Relationships: [] }
@@ -1011,6 +1033,8 @@ export type Database = {
       team_invitation_preview: { Args: { p_token: string }; Returns: Json }
       accept_team_invitation: { Args: { p_token: string }; Returns: string }
       ai_agent_configure: { Args: { p_org: string; p_agent: string; p_patch: Json }; Returns: AiAgentRow }
+      ai_feedback_submit: { Args: { p_org: string; p_agent: string; p_subject_type: string; p_subject: string; p_rating: number; p_correction?: Json; p_comment?: string | null; p_workflow?: string | null }; Returns: string }
+      ai_feedback_review: { Args: { p_feedback: string; p_decision: 'validate' | 'reject'; p_use_as_example?: boolean }; Returns: Json }
       ai_memory_upsert: { Args: { p_org: string; p_category: string; p_entry_key: string; p_content: Json; p_retention_days?: number }; Returns: Json }
       ai_memory_delete: { Args: { p_org: string; p_category: string; p_entry_key: string }; Returns: number }
       ai_agent_spend: { Args: { p_org: string; p_from: string }; Returns: Json }

@@ -127,6 +127,12 @@ export interface AgentStore extends ToolRecorder {
   /** Acquisisce il lease (pending/running con lease scaduto) e porta lo stato a running. */
   claimWorkflow(id: string, token: string, leaseSeconds: number): Promise<WorkflowRecord | null>
   renewLease(org: string, id: string, token: string, leaseSeconds: number): Promise<boolean>
+  /**
+   * Prompt 12: punto di controllo in UNA sola operazione (prima tre: updateWorkflow + renewLease +
+   * isCancelRequested). Rinnova il lease, salva crediti e costo e restituisce lo stato di annullamento,
+   * solo se il lease appartiene al chiamante. Facoltativo: senza, il motore usa le tre chiamate.
+   */
+  heartbeat?(org: string, id: string, token: string, leaseSeconds: number, usage: { creditsUsed: number; costUsd: number }): Promise<{ renewed: boolean; cancelRequested: boolean }>
   /** Aggiorna il workflow solo se il lease appartiene al chiamante. */
   updateWorkflow(org: string, id: string, token: string, patch: WorkflowPatch): Promise<boolean>
   releaseWorkflow(org: string, id: string, token: string, patch: WorkflowPatch): Promise<void>

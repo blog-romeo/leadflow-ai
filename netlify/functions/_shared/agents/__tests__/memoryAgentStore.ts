@@ -145,6 +145,14 @@ export function createMemoryAgentStore(init: Partial<AgentMemState> = {}) {
       w.lockToken = null
       w.lockedUntil = null
     },
+    async heartbeat(org, id, token, leaseSeconds, usage) {
+      const w = wfOf(id)
+      if (!w || w.organizationId !== org || w.lockToken !== token) return { renewed: false, cancelRequested: false }
+      w.lockedUntil = Date.now() + leaseSeconds * 1000
+      w.creditsUsed = usage.creditsUsed
+      w.costUsd = usage.costUsd
+      return { renewed: true, cancelRequested: !!w.cancelRequestedAt || w.status === 'cancelled' }
+    },
     async isCancelRequested(org, id) {
       const w = wfOf(id)
       return !!w && w.organizationId === org && (!!w.cancelRequestedAt || w.status === 'cancelled')

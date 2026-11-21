@@ -13,7 +13,7 @@ import { codeMessage } from './shared'
 export function MemoryPanel({ orgId, isAdmin }: { orgId: string; isAdmin: boolean }) {
   const { t, formatDate } = useI18n()
   const [rows, setRows] = useState<AiCompanyMemoryRow[] | null>(null)
-  const editable = AI_MEMORY_CATEGORIES.filter((c) => c !== 'campaign_results' && (isAdmin || c === 'user_feedback'))
+  const editable = AI_MEMORY_CATEGORIES.filter((c) => c !== 'campaign_results' && c !== 'approved_feedback' && (isAdmin || c === 'user_feedback'))
   const [category, setCategory] = useState<AiMemoryCategory>(editable[0] ?? 'user_feedback')
   const [key, setKey] = useState('')
   const [content, setContent] = useState('')

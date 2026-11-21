@@ -5,6 +5,7 @@ import { controlEn } from './control.en'
 import { launchEn } from './launch.en'
 import { aiAgentsEn } from './aiAgents.en'
 import { aiMonitoringEn } from './aiMonitoring.en'
+import { aiTrainingEn } from './aiTraining.en'
 
 export const en: Dictionary = {
   common: {
@@ -887,4 +888,5 @@ export const en: Dictionary = {
   ...launchEn,
   ...aiAgentsEn,
   ...aiMonitoringEn,
+  ...aiTrainingEn,
 }
