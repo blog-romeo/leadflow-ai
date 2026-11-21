@@ -2,7 +2,6 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useI18n } from '../../i18n'
 import { supabase } from '../../lib/supabase'
-import type { OrgRole, ProfileRow } from '../../lib/database.types'
 import { normalizeVat, validateOrganizationName, validateRetentionDays, validateVatNumber } from '../../lib/validation'
 import { errorKey } from '../../lib/errors'
 import { COUNTRIES } from '../../config/countries'
@@ -10,15 +9,10 @@ import { PageHeader } from '../../components/ui/PageHeader'
 import { Panel } from '../../components/ui/Panel'
 import { Field, Select } from '../../components/ui/Field'
 import { Button } from '../../components/ui/Button'
-import { Badge } from '../../components/ui/Badge'
-import { ErrorState, InlineAlert, LoadingState } from '../../components/ui/States'
+import { InlineAlert } from '../../components/ui/States'
 import { LanguageSwitch, ThemeSegmented } from '../../components/ui/Preferences'
+import { TeamPanel } from '../../features/team/TeamPanel'
 
-interface MemberView {
-  user_id: string
-  role: OrgRole
-  profile: Pick<ProfileRow, 'full_name' | 'email'> | null
-}
 
 function OrganizationForm() {
   const { t, locale } = useI18n()
@@ -104,59 +98,6 @@ function OrganizationForm() {
   )
 }
 
-function Members() {
-  const { t } = useI18n()
-  const { currentOrg, user } = useAuth()
-  const [members, setMembers] = useState<MemberView[] | null>(null)
-  const [error, setError] = useState(false)
-
-  useEffect(() => {
-    const db = supabase
-    if (!db || !currentOrg) return
-    let active = true
-    ;(async () => {
-      const { data: rows, error: e1 } = await db.from('organization_members').select('user_id, role').eq('organization_id', currentOrg.id)
-      if (e1 || !rows) return active && setError(true)
-      const ids = rows.map((r) => r.user_id)
-      const { data: profiles, error: e2 } = await db.from('profiles').select('id, full_name, email').in('id', ids)
-      if (e2) return active && setError(true)
-      if (!active) return
-      setMembers(rows.map((r) => ({ ...r, profile: profiles?.find((p) => p.id === r.user_id) ?? null })))
-    })()
-    return () => {
-      active = false
-    }
-  }, [currentOrg])
-
-  return (
-    <Panel title={t('settings.membersSection')}>
-      {error ? (
-        <ErrorState message={t('errors.generic')} />
-      ) : !members ? (
-        <LoadingState />
-      ) : (
-        <>
-          <ul className="divide-y divide-line">
-            {members.map((m) => (
-              <li key={m.user_id} className="flex items-center justify-between gap-3 py-2.5">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">
-                    {m.profile?.full_name ?? m.profile?.email}
-                    {m.user_id === user?.id && <span className="text-muted"> ({t('settings.you')})</span>}
-                  </p>
-                  {m.profile?.full_name && <p className="truncate text-xs text-muted">{m.profile.email}</p>}
-                </div>
-                <Badge tone={m.role === 'organization_admin' ? 'flow' : 'neutral'}>{t(`roles.${m.role}`)}</Badge>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-3 text-xs text-muted">{t('settings.membersInvite')}</p>
-        </>
-      )}
-    </Panel>
-  )
-}
-
 export default function Settings() {
   const { t } = useI18n()
   return (
@@ -165,7 +106,7 @@ export default function Settings() {
       <div className="space-y-6">
         <OrganizationForm />
         <div className="grid gap-6 lg:grid-cols-2">
-          <Members />
+          <TeamPanel />
           <Panel title={t('settings.preferencesSection')}>
             <div className="space-y-4">
               <div>

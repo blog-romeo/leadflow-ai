@@ -46,6 +46,12 @@ export async function apiFetch<T>(path: string, init: { method?: 'GET' | 'POST';
 export function apiErrorMessage(err: unknown, t: (k: string, v?: Record<string, string | number>) => string): string {
   if (!(err instanceof ApiError)) return t('leadFinder.errors.generic')
   const d = err.details
+  // Rifiuti di piano/quote (402): abbonamento, funzionalità, crediti o lead del periodo.
+  if (err.code.startsWith('billing_')) {
+    const bk = `billing.errors.${err.code}`
+    const bm = t(bk, { used: Number(d.used ?? 0), limit: Number(d.limit ?? 0), remaining: Number(d.remaining ?? 0) })
+    return bm === bk ? t('billing.errors.billing_generic') : bm
+  }
   const key = `leadFinder.errors.${err.code}`
   const msg = t(key, {
     used: Number(d.used ?? 0),

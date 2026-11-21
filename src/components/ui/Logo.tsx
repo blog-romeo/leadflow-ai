@@ -1,4 +1,5 @@
 import { cn } from '../../lib/cn'
+import { safeHttps, useTenant } from '../../contexts/TenantContext'
 
 /** Marchio: una curva di flusso che termina in un punto-segnale. */
 export function LogoMark({ className }: { className?: string }) {
@@ -11,11 +12,15 @@ export function LogoMark({ className }: { className?: string }) {
   )
 }
 
-export function Logo({ className, compact }: { className?: string; compact?: boolean }) {
+/** Marchio della piattaforma o, su un dominio White Label attivo, quello del rivenditore. */
+export function Logo({ className, compact, variant = 'app' }: { className?: string; compact?: boolean; variant?: 'app' | 'login' }) {
+  const tenant = useTenant()
+  const name = tenant?.platform_name ?? 'LeadFlow AI'
+  const src = safeHttps(variant === 'login' ? (tenant?.login_logo_url ?? tenant?.logo_url) : tenant?.logo_url)
   return (
     <span className={cn('inline-flex items-center gap-2.5', className)}>
-      <LogoMark />
-      {!compact && <span className="font-display text-lg font-semibold tracking-tight">LeadFlow AI</span>}
+      {src ? <img src={src} alt="" className="h-8 w-auto max-w-[160px] object-contain" referrerPolicy="no-referrer" /> : <LogoMark />}
+      {!compact && <span className="font-display text-lg font-semibold tracking-tight">{name}</span>}
     </span>
   )
 }

@@ -1,4 +1,6 @@
 import { supabaseAdmin } from '../supabaseAdmin'
+import { HttpError } from '../http'
+import { log } from '../log'
 import { dispatchBackground } from '../dispatch'
 import { createSalesStore } from '../sales-agent/supabaseStore'
 import { requestSalesJob } from '../sales-agent/service'
@@ -19,8 +21,18 @@ export function campaignDeps() {
   // attribuite a una persona (chi ha attivato la campagna/workflow o un admin).
   async function startAi(org: string, userId: string, input: Parameters<typeof requestSalesJob>[2]) {
     if (aiMissingConfig().length) return
-    const { job_id } = await requestSalesJob({ store: sales }, { orgId: org, userId }, input)
-    await dispatchBackground('/api/sales-agent/run', baseUrl(), { job_id })
+    let jobId: string
+    try {
+      ;({ job_id: jobId } = await requestSalesJob({ store: sales }, { orgId: org, userId }, input))
+    } catch (err) {
+      // Piano senza la funzionalità o crediti AI esauriti: l'automazione prosegue senza generazione.
+      if (err instanceof HttpError && err.code.startsWith('billing_')) {
+        log('warn', 'automation.ai_skipped_by_billing', { code: err.code, task: input.task })
+        return
+      }
+      throw err
+    }
+    await dispatchBackground('/api/sales-agent/run', baseUrl(), { job_id: jobId })
   }
   async function anyAdmin(org: string): Promise<string | null> {
     const { data } = await db.from('organization_members').select('user_id').eq('organization_id', org).eq('role', 'organization_admin').order('created_at').limit(1)

@@ -4,6 +4,8 @@ import { parseOr400 } from './_shared/lead-finder/validation'
 import { accountActionSchema } from './_shared/campaigns/validation'
 import { connectAccount, refreshAccount, revokeAccount, setWebhookSecret } from './_shared/campaigns/accounts'
 import { campaignDeps } from './_shared/campaigns/deps'
+import { requireFeature } from './_shared/billing/access'
+import { billingGate } from './_shared/billing/deps'
 
 /**
  * POST /api/communication/accounts — collegamento, verifica dominio, segreto webhook,
@@ -15,6 +17,8 @@ export default async (req: Request): Promise<Response> => {
     requireMethod(req, 'POST')
     const input = parseOr400(accountActionSchema, await readJson(req, 8_000))
     const { user } = await requireOrgMember(req, input.organization_id, { admin: true })
+    // La revoca delle credenziali resta sempre possibile; il resto richiede il Campaign Manager nel piano.
+    if (input.action !== 'revoke') await requireFeature(billingGate(), input.organization_id, 'campaign_manager')
     const deps = campaignDeps()
     const ctx = { orgId: input.organization_id, userId: user.id }
     switch (input.action) {

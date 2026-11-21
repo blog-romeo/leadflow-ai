@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { MailCheck } from 'lucide-react'
 import { AuthLayout } from '../../components/layout/AuthLayout'
 import { Field } from '../../components/ui/Field'
@@ -10,6 +10,10 @@ import { supabase } from '../../lib/supabase'
 import { env } from '../../lib/env'
 import { validateEmail, validateFullName, validatePassword } from '../../lib/validation'
 import { errorKey } from '../../lib/errors'
+import { track } from '../../lib/analytics'
+import { useNoIndex } from '../../lib/seo'
+import { PLANS, SIGNUP_PLAN_KEY } from '../../config/plans'
+
 
 export default function Register() {
   const { t } = useI18n()
@@ -19,6 +23,28 @@ export default function Register() {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [sentTo, setSentTo] = useState<string | null>(null)
+  const [params] = useSearchParams()
+  const started = useRef(false)
+  useNoIndex(t('auth.registerTitle'))
+
+  // Piano scelto nella pagina prezzi: preselezionato nell'onboarding (preferenza tecnica locale).
+  useEffect(() => {
+    const plan = params.get('plan')
+    if (plan && PLANS.some((p) => p.code === plan)) {
+      try {
+        localStorage.setItem(SIGNUP_PLAN_KEY, plan)
+      } catch {
+        /* storage non disponibile */
+      }
+    }
+  }, [params])
+
+  /** Prima interazione con il modulo: evento anonimo "signup_started" (solo con consenso). */
+  const markStarted = () => {
+    if (started.current) return
+    started.current = true
+    track('signup_started', '/register')
+  }
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => setForm((f) => ({ ...f, [k]: e.target.value }))
 
@@ -79,7 +105,7 @@ export default function Register() {
         </>
       }
     >
-      <form onSubmit={onSubmit} noValidate className="space-y-4">
+      <form onSubmit={onSubmit} onFocus={markStarted} noValidate className="space-y-4">
         {error && <InlineAlert>{error}</InlineAlert>}
         <Field label={t('auth.fullName')} autoComplete="name" value={form.fullName} onChange={set('fullName')} error={errors.fullName} maxLength={120} required />
         <Field label={t('auth.email')} type="email" autoComplete="email" value={form.email} onChange={set('email')} error={errors.email} required />

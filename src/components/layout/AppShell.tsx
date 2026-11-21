@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { LogOut, Menu, X } from 'lucide-react'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
+import { LogOut, Menu, Store, X } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useI18n } from '../../i18n'
 import { NAV_GROUPS, navItems } from '../../config/modules'
+import { AssistantWidget } from '../../features/support/Assistant'
 import { cn } from '../../lib/cn'
 import { Logo } from '../ui/Logo'
 import { LanguageSwitch, ThemeToggle } from '../ui/Preferences'
 import { InlineAlert } from '../ui/States'
+import { supabase } from '../../lib/supabase'
 
 function initials(name: string): string {
   return (
@@ -101,6 +103,32 @@ function OrgSwitcher() {
   )
 }
 
+/** Collegamento al portale rivenditori per chi è membro di almeno un rivenditore (lettura RLS). */
+function ResellerLink() {
+  const { t } = useI18n()
+  const { user } = useAuth()
+  const [visible, setVisible] = useState(false)
+  useEffect(() => {
+    if (!supabase || !user) return
+    let active = true
+    void supabase.from('reseller_members').select('reseller_id').eq('user_id', user.id).limit(1).then(({ data }) => {
+      if (active) setVisible(Array.isArray(data) && data.length > 0)
+    })
+    return () => {
+      active = false
+    }
+  }, [user])
+  if (!visible) return null
+  return (
+    <div className="border-t border-line px-4 py-2">
+      <Link to="/reseller" className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-ink/80 hover:bg-surface-2 hover:text-ink">
+        <Store className="size-4" aria-hidden />
+        {t('console.reseller')}
+      </Link>
+    </div>
+  )
+}
+
 function UserFooter() {
   const { profile, user, signOut, isSuperAdmin } = useAuth()
   const { t } = useI18n()
@@ -166,6 +194,7 @@ export function AppShell() {
         </div>
         <OrgSwitcher />
         <SidebarNav />
+        <ResellerLink />
         <UserFooter />
       </aside>
 
@@ -188,7 +217,8 @@ export function AppShell() {
             </div>
             <OrgSwitcher />
             <SidebarNav onNavigate={() => setOpen(false)} />
-            <UserFooter />
+            <ResellerLink />
+        <UserFooter />
           </aside>
         </div>
       )}
@@ -221,6 +251,7 @@ export function AppShell() {
           <Outlet />
         </main>
       </div>
+      <AssistantWidget />
     </div>
   )
 }

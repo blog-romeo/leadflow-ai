@@ -17,6 +17,8 @@ create table if not exists auth.users (
   id uuid primary key default gen_random_uuid(),
   email text,
   raw_user_meta_data jsonb default '{}'::jsonb,
+  -- Come in Supabase: valorizzata alla conferma dell'email (qui confermata di default per i test esistenti).
+  email_confirmed_at timestamptz default now(),
   created_at timestamptz default now()
 );
 

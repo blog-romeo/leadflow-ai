@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { billingDbError } from '../billing/access'
 import { HttpError } from '../http'
 import { log } from '../log'
 import { crmKey, type ExistingCandidate } from './dedup'
@@ -298,7 +299,8 @@ export function createSupabaseStore(db: SupabaseClient): LeadFinderStore {
         .insert({ organization_id: row.org, candidate_id: row.candidateId, type: 'business_analysis', task: 'business_analysis', status: 'queued', input: row.input, created_by: row.createdBy })
         .select('id')
         .single()
-      if (error) fail('create_job', error)
+      // Il trigger di billing rifiuta il job se mancano piano o crediti: errore 402 leggibile.
+      if (error) throw billingDbError(error) ?? fail('create_job', error)
       return data.id as string
     },
     async getAiJob(id) {

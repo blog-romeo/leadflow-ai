@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Check, CircleDashed, Inbox } from 'lucide-react'
+import { Inbox } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useI18n } from '../../i18n'
 import { supabase } from '../../lib/supabase'
@@ -11,6 +11,7 @@ import { Panel } from '../../components/ui/Panel'
 import { Badge } from '../../components/ui/Badge'
 import { EmptyState, ErrorState, LoadingState } from '../../components/ui/States'
 import { cn } from '../../lib/cn'
+import { GettingStartedList, SetupBanner, Tour, useOnboarding } from '../../features/onboarding/GettingStarted'
 
 const PIPELINE: LeadStatus[] = PIPELINE_STAGES
 
@@ -121,17 +122,11 @@ export default function Dashboard() {
   const { t, formatDate } = useI18n()
   const { currentOrg, profile } = useAuth()
   const { data, error, loading, reload } = useDashboardData(currentOrg?.id)
+  const onboarding = useOnboarding(currentOrg?.id)
   const firstName = profile?.full_name?.split(' ')[0]
   const totalLeads = data ? PIPELINE.reduce((a, s) => a + data.byStatus[s], 0) : undefined
   const aiModules = MODULES.filter((m) => m.group === 'ai')
 
-  const steps: { label: string; done: boolean; to?: string; soon?: boolean }[] = [
-    { label: t('dashboard.stepOrg'), done: true },
-    { label: t('dashboard.stepProfile'), done: false, to: '/app/lead-scoring' },
-    { label: t('dashboard.stepFind'), done: (data?.candidates ?? 0) > 0 || (data?.sources ?? 0) > 0, to: '/app/lead-finder' },
-    { label: t('dashboard.stepLeads'), done: (totalLeads ?? 0) > 0, to: '/app/lead-finder' },
-    { label: t('dashboard.stepTeam'), done: false, soon: true },
-  ]
 
   return (
     <>
@@ -139,6 +134,10 @@ export default function Dashboard() {
         title={firstName ? t('dashboard.greeting', { name: firstName }) : t('dashboard.greetingFallback')}
         subtitle={t('dashboard.subtitle', { org: currentOrg?.name ?? '' })}
       />
+      <Tour onDone={() => void onboarding.reload()} />
+      <div className="mb-6 empty:hidden">
+        <SetupBanner state={onboarding.state} checklist={onboarding.checklist} />
+      </div>
 
       {error ? (
         <Panel>
@@ -175,30 +174,8 @@ export default function Dashboard() {
               )}
             </Panel>
 
-            <Panel title={t('dashboard.nextStepsTitle')}>
-              <ol className="space-y-3">
-                {steps.map((s) => (
-                  <li key={s.label} className="flex items-start gap-3 text-sm">
-                    {s.done ? (
-                      <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-flow text-flow-ink">
-                        <Check className="size-3" aria-hidden />
-                      </span>
-                    ) : (
-                      <CircleDashed className="mt-0.5 size-5 shrink-0 text-muted" aria-hidden />
-                    )}
-                    <span>
-                      {s.to && !s.done ? (
-                        <Link to={s.to} className="text-flow hover:underline">
-                          {s.label}
-                        </Link>
-                      ) : (
-                        <span className={cn(s.done && 'text-muted line-through decoration-line')}>{s.label}</span>
-                      )}
-                      {s.soon && <span className="block text-xs text-muted">{t('dashboard.stepSoon')}</span>}
-                    </span>
-                  </li>
-                ))}
-              </ol>
+            <Panel title={t('getStarted.title')}>
+              <GettingStartedList checklist={onboarding.checklist} />
             </Panel>
           </div>
 

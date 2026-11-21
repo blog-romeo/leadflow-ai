@@ -1,0 +1,101 @@
+# LeadFlow AI — verifiche di STAGING (Prompt 10), solo manuali.
+# Le credenziali stanno nei secrets dell'environment GitHub "staging" (mai nel repository).
+# Proteggere l'environment con "Required reviewers". Nessun passo tocca la produzione, Stripe Live o i DNS.
+name: Staging checks
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_smoke:
+        description: 'Esegui lo smoke test HTTP/API dello staging (dopo un deploy riuscito)'
+        type: boolean
+        default: true
+      run_e2e:
+        description: 'Esegui il test reale limitato (5 aziende, 3 proposte)'
+        type: boolean
+        default: false
+      approve_crm_write:
+        description: 'Approva il salvataggio nel CRM di staging dei lead trovati (altrimenti il test si ferma all approvazione)'
+        type: boolean
+        default: false
+      budget_credits:
+        description: 'Budget del workflow in crediti (max 50)'
+        default: '15'
+
+permissions:
+  contents: read
+
+jobs:
+  staging:
+    runs-on: ubuntu-24.04
+    environment: staging
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Preflight delle integrazioni (sola lettura)
+        run: node scripts/integration-preflight.mjs
+        env:
+          PREFLIGHT_NETWORK: '1'
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
+          OPENAI_MODEL_ECONOMY: ${{ vars.OPENAI_MODEL_ECONOMY }}
+          OPENAI_MODEL_ADVANCED: ${{ vars.OPENAI_MODEL_ADVANCED }}
+          OPENAI_PRICE_INPUT_PER_MTOK: ${{ vars.OPENAI_PRICE_INPUT_PER_MTOK }}
+          OPENAI_PRICE_OUTPUT_PER_MTOK: ${{ vars.OPENAI_PRICE_OUTPUT_PER_MTOK }}
+          OVERPASS_API_URL: ${{ vars.OVERPASS_API_URL }}
+          OVERPASS_CONTACT: ${{ vars.OVERPASS_CONTACT }}
+          LEADFLOW_INTERNAL_SECRET: ${{ secrets.LEADFLOW_INTERNAL_SECRET }}
+          APP_URL: ${{ vars.STAGING_APP_URL }}
+      - name: Smoke test di staging
+        if: inputs.run_smoke
+        run: node scripts/staging-smoke.mjs
+        env:
+          SMOKE_APP_URL: ${{ vars.STAGING_APP_URL }}
+          SMOKE_ALLOW_URL: ${{ vars.STAGING_APP_URL }}
+          SMOKE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SMOKE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SMOKE_EMAIL: ${{ secrets.E2E_EMAIL }}
+          SMOKE_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+      - name: Isolamento tra due organizzazioni (RLS reali, sola lettura)
+        if: inputs.run_smoke && vars.ISO_A_ORG != ''
+        run: node scripts/staging-isolation.mjs
+        env:
+          ISO_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          ISO_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          ISO_A_EMAIL: ${{ secrets.ISO_A_EMAIL }}
+          ISO_A_PASSWORD: ${{ secrets.ISO_A_PASSWORD }}
+          ISO_A_ORG: ${{ vars.ISO_A_ORG }}
+          ISO_B_EMAIL: ${{ secrets.ISO_B_EMAIL }}
+          ISO_B_PASSWORD: ${{ secrets.ISO_B_PASSWORD }}
+          ISO_B_ORG: ${{ vars.ISO_B_ORG }}
+      - name: Test reale limitato (fino a 5 aziende, fino a 3 proposte)
+        if: inputs.run_e2e
+        run: node scripts/staging-e2e.mjs
+        env:
+          E2E_APP_URL: ${{ vars.STAGING_APP_URL }}
+          E2E_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          E2E_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
+          E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+          E2E_ORG_ID: ${{ vars.E2E_ORG_ID }}
+          E2E_BUDGET_CREDITS: ${{ inputs.budget_credits }}
+          E2E_APPROVE: ${{ inputs.approve_crm_write && 'yes-approve-crm-write' || '' }}
+          E2E_ALLOW_URL: ${{ vars.STAGING_APP_URL }}
+      - name: Report e2e
+        if: always() && inputs.run_e2e
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: e2e-report.json
+          if-no-files-found: ignore
+          retention-days: 30

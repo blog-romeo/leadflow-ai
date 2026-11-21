@@ -24,6 +24,9 @@ for f in "$ROOT"/supabase/migrations/*.sql; do
   echo "→ migrazione $(basename "$f")"
   "${PSQL[@]}" -f "$f"
 done
+# I test dei moduli precedenti verificano funzioni indipendenti dal billing: li eseguiamo con
+# l'enforcement dei piani disattivato. rls_tests_billing.sql lo riattiva per i propri test.
+"${PSQL[@]}" -c "select private.billing_set_enforcement(false)" >/dev/null
 for t in "$ROOT"/supabase/tests/rls_tests*.sql; do
   echo "→ $(basename "$t")"
   "${PSQL[@]}" -f "$t"

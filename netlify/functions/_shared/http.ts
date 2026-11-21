@@ -1,4 +1,7 @@
 /** Utility HTTP condivise dalle Netlify Functions. */
+import { currentRelease, reportError } from './monitoring'
+import { redactString } from './log'
+
 export function json(body: unknown, status = 200, headers: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -22,13 +25,19 @@ export class HttpError extends Error {
 }
 
 /** Converte qualsiasi errore in una risposta senza esporre dettagli interni. */
-export function handleError(err: unknown): Response {
+export function handleError(err: unknown, requestPath?: string): Response {
   if (err instanceof HttpError) {
     const headers: Record<string, string> = {}
     if (typeof err.details?.retry_after === 'number') headers['retry-after'] = String(err.details.retry_after)
+    // Errori 5xx gestiti (es. storage_error, stripe_unavailable) entrano nel monitoraggio; i 503 di
+    // configurazione mancante no (sono stati noti, visibili in Sistema → integrazioni).
+    if (err.status >= 500 && err.status !== 503) void reportError({ source: 'function', code: err.code, path: requestPath, release: currentRelease() })
     return json({ error: err.code, ...(err.details ?? {}) }, err.status, headers)
   }
-  console.error(JSON.stringify({ level: 'error', event: 'unhandled_function_error', message: (err as Error)?.message?.slice(0, 200) }))
+  console.error(JSON.stringify({ level: 'error', event: 'unhandled_function_error', message: redactString(String((err as Error)?.message ?? '')).slice(0, 200) }))
+  // Errore 500 non previsto: registrato (sanificato) in app_errors. Non attende la risposta oltre 2,5 s
+  // e non lancia mai; su Netlify la promessa resta attiva fino al termine dell'invocazione.
+  void reportError({ source: 'function', code: (err as Error)?.name || 'Error', message: err, path: requestPath, release: currentRelease() })
   return json({ error: 'internal_error' }, 500)
 }
 

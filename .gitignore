@@ -8,3 +8,7 @@ dist
 .DS_Store
 coverage
 supabase/.temp
+# Prompt 10: file di ambiente locali (staging incluso) mai versionati; report e2e locali
+.env.*
+!.env.example
+e2e-report.json

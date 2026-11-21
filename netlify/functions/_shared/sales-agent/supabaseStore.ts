@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { billingDbError } from '../billing/access'
 import { HttpError } from '../http'
 import { log } from '../log'
 import type { LeadRaw, SalesProfile, SalesService } from './context'
@@ -189,7 +190,8 @@ export function createSalesStore(db: SupabaseClient): SalesStore {
         })
         .select('id')
         .single()
-      if (error) fail('create_job', error)
+      // Il trigger di billing rifiuta il job se mancano piano o crediti: errore 402 leggibile.
+      if (error) throw billingDbError(error) ?? fail('create_job', error)
       return data.id as string
     },
     async getJob(id) {

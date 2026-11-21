@@ -8,11 +8,19 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && node scripts/generate-seo.mjs",
     "preview": "vite preview",
     "typecheck": "tsc -b",
     "test": "vitest run",
-    "test:rls": "bash supabase/tests/run_local_rls_tests.sh"
+    "test:rls": "bash supabase/tests/run_local_rls_tests.sh",
+    "test:billing-concurrency": "bash supabase/tests/run_billing_concurrency.sh",
+    "stripe:preflight": "node scripts/stripe-preflight.mjs",
+    "ai:eval": "vitest run netlify/functions/_shared/agents/__tests__/eval.test.ts",
+    "integrations:preflight": "node scripts/integration-preflight.mjs",
+    "staging:e2e": "node scripts/staging-e2e.mjs",
+    "staging:isolation": "node scripts/staging-isolation.mjs",
+    "security:secrets": "node scripts/check-secrets.mjs",
+    "staging:smoke": "node scripts/staging-smoke.mjs"
   },
   "dependencies": {
     "@fontsource-variable/bricolage-grotesque": "^5.3.0",

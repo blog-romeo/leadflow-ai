@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { pendingInvite } from '../../lib/pendingInvite'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { AuthLayout } from '../../components/layout/AuthLayout'
 import { Field } from '../../components/ui/Field'
@@ -32,6 +33,8 @@ export default function Login() {
     setBusy(false)
     if (err) return setError(t(errorKey(err)))
     // Solo percorsi interni: evita open redirect.
+    // Invito collaboratore aperto prima del login: si torna alla pagina di accettazione.
+    if (pendingInvite()) return navigate('/join', { replace: true })
     navigate(from && from.startsWith('/app') ? from : '/app', { replace: true })
   }
 

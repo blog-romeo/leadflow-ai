@@ -1,4 +1,9 @@
 import { campaignsIt } from './campaigns.it'
+import { billingIt } from './billing.it'
+import { controlIt } from './control.it'
+import { launchIt } from './launch.it'
+import { aiAgentsIt } from './aiAgents.it'
+import { aiMonitoringIt } from './aiMonitoring.it'
 
 export const it = {
   common: {
@@ -129,6 +134,9 @@ export const it = {
     billing: 'Abbonamento',
     settings: 'Impostazioni',
     admin: 'Super Admin',
+    support: 'Assistenza',
+    aiAgents: 'AI Agents',
+    aiWorkflows: 'AI Workflows',
     switchOrg: 'Cambia organizzazione',
   },
   roles: {
@@ -233,18 +241,13 @@ export const it = {
     },
     billing: {
       title: 'Abbonamento',
-      body: 'La gestione dei piani con Stripe arriverà in una fase successiva.',
-      points: ['Piani mensili e annuali', 'Fatture scaricabili', 'Limiti di utilizzo trasparenti'],
+      body: 'Piani mensili con Stripe: checkout sicuro, portale cliente, fatture e limiti di utilizzo trasparenti.',
+      points: ['Piani Starter, Business ed Enterprise', 'Fatture e ricevute Stripe', 'Crediti AI e nuovi lead per periodo'],
     },
     plannedTitle: 'Cosa farà',
     featuresTitle: 'Cosa fa',
     openLeadFinder: 'Apri AI Lead Finder',
     notice: 'Questa sezione non è ancora attiva. Non mostriamo dati di esempio per evitare confusione con quelli reali.',
-  },
-  billing: {
-    currentPlan: 'Piano attuale',
-    noSubscription: 'Nessun abbonamento attivo. Durante la fase MVP l’accesso è gratuito.',
-    adminOnly: 'Solo gli amministratori possono vedere i dettagli dell’abbonamento.',
   },
   settings: {
     title: 'Impostazioni',
@@ -253,10 +256,10 @@ export const it = {
     vat: 'Partita IVA',
     country: 'Paese',
     retention: 'Conservazione dei lead inattivi (giorni)',
-    retentionHint: 'Trascorso questo periodo senza attività, i lead vengono eliminati automaticamente.',
+    retentionHint: 'Trascorso questo periodo senza attività, i lead vengono eliminati dalla pulizia periodica della piattaforma.',
     readOnly: 'Solo gli amministratori possono modificare questi dati.',
     membersSection: 'Membri',
-    membersInvite: 'Gli inviti ai colleghi arrivano nella prossima fase.',
+    membersInvite: 'Invita i colleghi dal pannello Collaboratori.',
     you: 'tu',
     preferencesSection: 'Preferenze',
     theme: 'Tema',
@@ -881,6 +884,11 @@ export const it = {
     notConfigured: 'Servizio di autenticazione non configurato.',
   },
   ...campaignsIt,
+  ...billingIt,
+  ...controlIt,
+  ...launchIt,
+  ...aiAgentsIt,
+  ...aiMonitoringIt,
 }
 
 type Widen<T> = T extends string ? string : T extends readonly string[] ? readonly string[] : { [K in keyof T]: Widen<T[K]> }

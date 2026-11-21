@@ -1,5 +1,10 @@
 import type { Dictionary } from './it'
 import { campaignsEn } from './campaigns.en'
+import { billingEn } from './billing.en'
+import { controlEn } from './control.en'
+import { launchEn } from './launch.en'
+import { aiAgentsEn } from './aiAgents.en'
+import { aiMonitoringEn } from './aiMonitoring.en'
 
 export const en: Dictionary = {
   common: {
@@ -127,6 +132,9 @@ export const en: Dictionary = {
     billing: 'Billing',
     settings: 'Settings',
     admin: 'Super Admin',
+    support: 'Support',
+    aiAgents: 'AI Agents',
+    aiWorkflows: 'AI Workflows',
     switchOrg: 'Switch organization',
   },
   roles: {
@@ -231,18 +239,13 @@ export const en: Dictionary = {
     },
     billing: {
       title: 'Billing',
-      body: 'Plan management with Stripe will arrive in a later phase.',
-      points: ['Monthly and yearly plans', 'Downloadable invoices', 'Transparent usage limits'],
+      body: 'Monthly plans with Stripe: secure checkout, customer portal, invoices and transparent usage limits.',
+      points: ['Starter, Business and Enterprise plans', 'Stripe invoices and receipts', 'AI credits and new leads per period'],
     },
     plannedTitle: 'What it will do',
     featuresTitle: 'What it does',
     openLeadFinder: 'Open AI Lead Finder',
     notice: 'This section is not active yet. We show no sample data so it cannot be mistaken for real data.',
-  },
-  billing: {
-    currentPlan: 'Current plan',
-    noSubscription: 'No active subscription. Access is free during the MVP phase.',
-    adminOnly: 'Only administrators can see subscription details.',
   },
   settings: {
     title: 'Settings',
@@ -251,10 +254,10 @@ export const en: Dictionary = {
     vat: 'VAT number',
     country: 'Country',
     retention: 'Retention for inactive leads (days)',
-    retentionHint: 'After this period without activity, leads are deleted automatically.',
+    retentionHint: 'After this period without activity, leads are deleted by the platform’s periodic clean-up.',
     readOnly: 'Only administrators can change these details.',
     membersSection: 'Members',
-    membersInvite: 'Inviting colleagues arrives in the next phase.',
+    membersInvite: 'Invite colleagues from the Team members panel.',
     you: 'you',
     preferencesSection: 'Preferences',
     theme: 'Theme',
@@ -879,4 +882,9 @@ export const en: Dictionary = {
     notConfigured: 'Authentication service not configured.',
   },
   ...campaignsEn,
+  ...billingEn,
+  ...controlEn,
+  ...launchEn,
+  ...aiAgentsEn,
+  ...aiMonitoringEn,
 }

@@ -1,0 +1,36 @@
+{
+  "_comment": "Pagine pubbliche indicizzabili (sitemap.xml). Le pagine legali restano noindex finché sono bozze: aggiungerle qui solo dopo la revisione legale.",
+  "indexable": [
+    {
+      "path": "/",
+      "changefreq": "weekly",
+      "priority": "1.0"
+    },
+    {
+      "path": "/prezzi",
+      "changefreq": "monthly",
+      "priority": "0.8"
+    },
+    {
+      "path": "/demo",
+      "changefreq": "monthly",
+      "priority": "0.6"
+    }
+  ],
+  "disallow": [
+    "/app",
+    "/dashboard",
+    "/super-admin",
+    "/reseller",
+    "/onboarding",
+    "/invite",
+    "/auth",
+    "/login",
+    "/register",
+    "/forgot-password",
+    "/reset-password",
+    "/api",
+    "/.netlify",
+    "/join"
+  ]
+}

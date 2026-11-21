@@ -1,4 +1,5 @@
 import { ApiError } from '../../lib/api'
+import { billingErrorMessage } from '../billing/errors'
 
 type T = (k: string, v?: Record<string, string | number>) => string
 
@@ -6,6 +7,8 @@ const DB_CODES = ['lead_not_contactable', 'proposal_locked', 'draft_locked', 'in
 
 /** Messaggio leggibile per errori delle API del Sales Agent o dei vincoli del database. */
 export function salesErrorMessage(err: unknown, t: T): string {
+  const billing = billingErrorMessage(err, t)
+  if (billing) return billing
   if (err instanceof ApiError) {
     const d = err.details
     const key = `sales.errors.${err.code}`

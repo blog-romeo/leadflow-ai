@@ -1,0 +1,38 @@
+{
+  "dataset": "strategy-outputs.synthetic",
+  "version": 1,
+  "synthetic": true,
+  "notice": "DATI SINTETICI: output di modello scritti a mano per verificare i CONTROLLI del server (schema, email inventate, promesse, fatti non supportati, URL/telefoni/importi non presenti nei dati). Misurano la capacità dei controlli di intercettare i difetti, NON la qualità di un modello reale.",
+  "context": {
+    "text": "Hotel Esempio, Roma. Sito: https://esempio-hotel.example. Telefono +39 06 1234567. Dal sito: Per prenotare scrivete una email alla reception. Listino servizio booking: 49 € al mese.",
+    "allowed": { "urls": ["https://esempio-hotel.example", "https://agenzia-esempio.example"], "phones": ["+39 06 1234567"], "amounts": [49] }
+  },
+  "base": {
+    "opportunity": { "statement": "Le prenotazioni avvengono via email", "basis": "fact", "evidence": "Per prenotare scrivete una email alla reception" },
+    "recommended_service_id": "booking",
+    "service_rationale": "Un booking engine riduce la gestione manuale.",
+    "value_proposition": "Un booking engine potrebbe semplificare le prenotazioni dirette.",
+    "objections": [{ "objection": "Costo", "response": "Il servizio parte da 49 € al mese." }],
+    "approach": { "channel": "email", "steps": ["Email di presentazione", "Proposta di una call"] },
+    "call_to_action": "Fissiamo una call di 20 minuti?",
+    "draft": { "subject": "Prenotazioni dirette", "body": "Buongiorno, ho visto che le prenotazioni avvengono via email." },
+    "assumptions": ["Il volume di richieste non è noto"],
+    "missing_information": ["Numero di camere"]
+  },
+  "cases": [
+    { "id": "V01", "patch": {}, "expect": [] },
+    { "id": "V02", "patch": { "opportunity": null }, "expect": ["schema_invalid"] },
+    { "id": "V03", "patch": { "objections": "nessuna" }, "expect": ["schema_invalid"] },
+    { "id": "V04", "patch": { "approach": { "channel": "fax", "steps": [] } }, "expect": ["schema_invalid"] },
+    { "id": "V05", "patch": { "draft": { "subject": "Ciao", "body": "Scrivete a direttore@esempio-hotel.example per un incontro." } }, "expect": ["email_removed"] },
+    { "id": "V06", "patch": { "value_proposition": "Garantiamo il raddoppio delle prenotazioni dirette." }, "expect": ["unverifiable_promise"] },
+    { "id": "V07", "patch": { "opportunity": { "statement": "L'hotel ha 120 camere e una SPA", "basis": "fact", "evidence": "L'hotel dispone di 120 camere e di una SPA" } }, "expect": ["unverified_fact"] },
+    { "id": "V08", "patch": { "draft": { "subject": "Demo", "body": "Guardate la demo su https://sito-inventato.example/demo" } }, "expect": ["unverified_url"] },
+    { "id": "V09", "patch": { "draft": { "subject": "Chiamateci", "body": "Chiamate il +39 06 9876543 quando volete." } }, "expect": ["unverified_phone"] },
+    { "id": "V10", "patch": { "objections": [{ "objection": "Costo", "response": "Costa solo 19 € al mese." }] }, "expect": ["unverified_amount"] },
+    { "id": "V11", "patch": { "draft": { "subject": "Demo", "body": "Visitate https://agenzia-esempio.example oppure chiamate il +39 06 1234567." } }, "expect": [] },
+    { "id": "V12", "patch": { "value_proposition": "Aumento del 40% di prenotazioni assicurato in sei mesi." }, "expect": ["unverifiable_promise"] },
+    { "id": "V13", "patch": { "opportunity": { "statement": "Prenotazioni gestite via email", "basis": "inference", "evidence": "" } }, "expect": [] },
+    { "id": "V14", "patch": { "value_proposition": "" }, "expect": ["schema_invalid"] }
+  ]
+}

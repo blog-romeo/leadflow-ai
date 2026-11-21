@@ -9,6 +9,7 @@ import { ProviderError, type NormalizedCompany, type ProviderAdapter, type Provi
 import type { CandidateRecord, CandidateWrite, LeadFinderStore } from './store'
 import { createHash } from 'node:crypto'
 import type { AnalysisResult } from './analysis/schema'
+import type { BillingGate } from '../billing/store'
 
 export interface Ctx {
   orgId: string
@@ -57,12 +58,14 @@ export interface SearchResponse {
   counts: { found: number; new: number; already_known: number; duplicates_in_batch: number; excluded: number; in_crm: number }
   usage: { searches: { used: number; limit: number }; results: { used: number; limit: number } }
   license: ProviderAdapter['license']
+  /** Quota commerciale del piano (nuovi lead per periodo di fatturazione), se applicata. */
+  plan_leads?: { counted: number; already_counted: number; over_quota: number; remaining: number | null; limit: number | null; partial: boolean }
   /** Solo per provider che non consentono la memorizzazione: dati mostrati in sessione. */
   ephemeral?: { candidate_id: string; company: NormalizedCompany; score: ScoreResult; in_crm: boolean; excluded: boolean }[]
 }
 
 export async function runSearch(
-  deps: { store: LeadFinderStore; registry: Record<SearchProviderId, ProviderAdapter> },
+  deps: { store: LeadFinderStore; registry: Record<SearchProviderId, ProviderAdapter>; billing?: BillingGate },
   ctx: Ctx,
   input: SearchInput,
 ): Promise<SearchResponse> {
@@ -75,13 +78,22 @@ export async function runSearch(
 
   await guard(store, ctx, 'lead_finder')
 
+  // Quota commerciale del piano: verificata PRIMA di interrogare il provider (nessun costo inutile).
+  const planQuota = deps.billing ? await deps.billing.leadQuota(ctx.orgId) : null
+  if (planQuota?.enforced && !planQuota.allowed) {
+    throw new HttpError(402, `billing_${planQuota.reason ?? 'lead_quota_exceeded'}`, { used: planQuota.used ?? 0, limit: planQuota.limit ?? 0 })
+  }
+
   // Quota risultati: si verifica prima, si consuma sul numero effettivo trovato.
   const resultsQuota = await store.consumeUsage(ctx.orgId, ctx.userId, 'lead_result', 0)
   if (resultsQuota.remaining <= 0) throw new HttpError(429, 'quota_results_exceeded', { used: resultsQuota.used, limit: resultsQuota.limit })
   const searchQuota = await store.consumeUsage(ctx.orgId, ctx.userId, 'lead_search', 1, { provider: input.provider })
   if (!searchQuota.allowed) throw new HttpError(429, 'quota_searches_exceeded', { used: searchQuota.used, limit: searchQuota.limit })
 
-  const maxResults = Math.min(input.max_results, adapter.capabilities.maxResults, resultsQuota.remaining)
+  const planRemaining = planQuota?.enforced ? Math.max(planQuota.remaining ?? 0, 0) : Number.POSITIVE_INFINITY
+  const maxResults = Math.min(input.max_results, adapter.capabilities.maxResults, resultsQuota.remaining, planRemaining)
+  // Ricerca parziale: il piano consente meno risultati di quelli richiesti.
+  const partialByPlan = planRemaining < Math.min(input.max_results, adapter.capabilities.maxResults)
   const keywords = input.keywords.split(',').map((k) => k.trim()).filter(Boolean).slice(0, 10)
   const query = { sector: input.sector, location: input.location, country: input.country, keywords, maxResults, websiteFilter: input.website_filter }
 
@@ -95,6 +107,8 @@ export async function runSearch(
 
   try {
     const started = Date.now()
+    // Costo del provider registrato per chiamata (stima configurabile in billing_settings).
+    await deps.billing?.recordProviderCall(ctx.orgId, ctx.userId, input.provider, `provider:${input.search_id}`)
     const found = await adapter.search(query, { timeoutMs: PROVIDER_TIMEOUT_MS })
     log('info', 'lead_search.provider_ok', { provider: input.provider, count: found.length, ms: Date.now() - started })
 
@@ -133,6 +147,30 @@ export async function runSearch(
     const idMap = await store.writeCandidates(ctx.orgId, writes)
 
     const newCount = dedup.items.filter((i) => !i.existing).length
+    // Nuovi lead del piano: contati per candidate id (un lead rivisto non viene ricontato).
+    const overQuota = new Set<string>()
+    let planLeads: SearchResponse['plan_leads']
+    if (deps.billing) {
+      const newIds = dedup.items.filter((i) => !i.existing).map((i) => idMap.get(i.company.externalId)).filter((v): v is string => !!v)
+      const counted = await deps.billing.countNewLeads(ctx.orgId, ctx.userId, newIds, { search_id: input.search_id, provider: input.provider })
+      if (counted.enforced) {
+        // Oltre quota (ricerche concorrenti): i candidati restano esclusi e non utilizzabili.
+        const now = new Date().toISOString()
+        for (const ref of counted.over_quota_refs) {
+          overQuota.add(ref)
+          await store.updateCandidate(ctx.orgId, ref, { status: 'excluded', excludedReason: 'lead_quota_exceeded', excludedAt: now, excludedBy: null })
+        }
+        planLeads = {
+          counted: counted.counted,
+          already_counted: counted.already_counted,
+          over_quota: counted.over_quota_refs.length,
+          remaining: counted.remaining ?? null,
+          limit: counted.limit ?? null,
+          partial: partialByPlan || counted.over_quota_refs.length > 0,
+        }
+        if (counted.over_quota_refs.length) log('warn', 'lead_search.plan_quota_race', { search_id: input.search_id, over: counted.over_quota_refs.length })
+      }
+    }
     const consumed = await store.consumeUsage(ctx.orgId, ctx.userId, 'lead_result', newCount, { search_id: input.search_id })
     if (!consumed.allowed) log('warn', 'lead_search.result_quota_race', { search_id: input.search_id })
 
@@ -162,6 +200,7 @@ export async function runSearch(
         results: { used: consumed.allowed ? consumed.used : resultsQuota.used, limit: resultsQuota.limit },
       },
       license: adapter.license,
+      ...(planLeads ? { plan_leads: planLeads } : {}),
       ...(store_
         ? {}
         : {
@@ -170,7 +209,7 @@ export async function runSearch(
               company: it.company,
               score: it.score,
               in_crm: it.inCrm,
-              excluded: it.existing?.status === 'excluded',
+              excluded: it.existing?.status === 'excluded' || overQuota.has(idMap.get(it.company.externalId) ?? ''),
             })),
           }),
     }
@@ -212,7 +251,7 @@ export interface ImportInput {
   rows: Record<string, unknown>[]
 }
 
-export async function importCsv(deps: { store: LeadFinderStore }, ctx: Ctx, input: ImportInput) {
+export async function importCsv(deps: { store: LeadFinderStore; billing?: BillingGate }, ctx: Ctx, input: ImportInput) {
   const { store } = deps
   await guard(store, ctx, 'lead_finder')
   const quota = await store.consumeUsage(ctx.orgId, ctx.userId, 'lead_result', 0)
@@ -262,6 +301,11 @@ export async function importCsv(deps: { store: LeadFinderStore }, ctx: Ctx, inpu
   if (newItems.length > quota.remaining) {
     throw new HttpError(429, 'quota_results_exceeded', { used: quota.used, limit: quota.limit, needed: newItems.length })
   }
+  // Quota del piano: l'importazione è tutto-o-niente rispetto ai nuovi lead disponibili.
+  const planQuota = deps.billing ? await deps.billing.leadQuota(ctx.orgId) : null
+  if (planQuota?.enforced && (!planQuota.allowed ? newItems.length > 0 : newItems.length > (planQuota.remaining ?? 0))) {
+    throw new HttpError(402, 'billing_lead_quota_exceeded', { used: planQuota.used ?? 0, limit: planQuota.limit ?? 0, needed: newItems.length })
+  }
 
   const sourceId = await store.createImportSource(ctx.orgId, {
     name: input.source.name,
@@ -278,7 +322,7 @@ export async function importCsv(deps: { store: LeadFinderStore }, ctx: Ctx, inpu
     createdBy: ctx.userId,
   })
   const profile = await store.getProfile(ctx.orgId)
-  await store.writeCandidates(
+  const importedIds = await store.writeCandidates(
     ctx.orgId,
     dedup.items.map((it) => ({
       provider: 'csv_import',
@@ -296,6 +340,14 @@ export async function importCsv(deps: { store: LeadFinderStore }, ctx: Ctx, inpu
       isNew: !it.existing,
     })),
   )
+  if (deps.billing) {
+    const refs = newItems.map((i) => importedIds.get(i.company.externalId)).filter((v): v is string => !!v)
+    const counted = await deps.billing.countNewLeads(ctx.orgId, ctx.userId, refs, { search_id: input.search_id, kind: 'csv' })
+    const now = new Date().toISOString()
+    for (const ref of counted.over_quota_refs) {
+      await store.updateCandidate(ctx.orgId, ref, { status: 'excluded', excludedReason: 'lead_quota_exceeded', excludedAt: now, excludedBy: null })
+    }
+  }
   await store.consumeUsage(ctx.orgId, ctx.userId, 'lead_result', newItems.length, { search_id: input.search_id, kind: 'csv' })
   await store.updateSearch(ctx.orgId, input.search_id, {
     stage: 'done',
@@ -396,13 +448,21 @@ export async function saveToCrm(deps: { store: LeadFinderStore; providerLabels: 
 // ════════════════════════════════════════════════════════════════════════════
 // Esclusione
 // ════════════════════════════════════════════════════════════════════════════
-export async function setExclusion(deps: { store: LeadFinderStore }, ctx: Ctx, ids: string[], excluded: boolean, reason?: string) {
+export async function setExclusion(deps: { store: LeadFinderStore; billing?: BillingGate }, ctx: Ctx, ids: string[], excluded: boolean, reason?: string) {
   const { store } = deps
   await guard(store, ctx, 'lead_finder')
   const candidates = await store.getCandidates(ctx.orgId, ids)
+  // Ripristino: i candidati non ancora conteggiati (es. esclusi per quota) consumano quota del piano.
+  let blocked = new Set<string>()
+  if (!excluded && deps.billing) {
+    const toRestore = candidates.filter((c) => c.status === 'excluded').map((c) => c.id)
+    const counted = await deps.billing.countNewLeads(ctx.orgId, ctx.userId, toRestore, { kind: 'restore' })
+    blocked = new Set(counted.over_quota_refs)
+  }
   let changed = 0
   for (const c of candidates) {
     if (c.status === 'saved') continue // già nel CRM: si gestisce dal CRM (opposizione/soppressione)
+    if (blocked.has(c.id)) continue
     if (excluded && c.status !== 'excluded') {
       await store.updateCandidate(ctx.orgId, c.id, { status: 'excluded', excludedReason: reason ?? null, excludedAt: new Date().toISOString(), excludedBy: ctx.userId })
       changed++
@@ -412,7 +472,7 @@ export async function setExclusion(deps: { store: LeadFinderStore }, ctx: Ctx, i
     }
   }
   if (changed) await store.audit(ctx.orgId, ctx.userId, excluded ? 'lead_finder.excluded' : 'lead_finder.restored', 'lead_candidate', null, { count: changed })
-  return { changed }
+  return blocked.size ? { changed, blocked_by_plan_quota: blocked.size } : { changed }
 }
 
 // ════════════════════════════════════════════════════════════════════════════

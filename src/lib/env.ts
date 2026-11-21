@@ -15,4 +15,9 @@ export const env = {
   supabaseAnonKey: anonKey,
   appUrl: (import.meta.env.VITE_APP_URL ?? '').trim() || (typeof window !== 'undefined' ? window.location.origin : ''),
   isSupabaseConfigured: !isPlaceholder(url) && !isPlaceholder(anonKey),
+  /**
+   * Prompt 8: mostra nel menu le pagine del motore multi-agent (beta privata). Solo visibilità: le API
+   * restano protette lato server da AI_AGENTS_ENABLED / AI_AGENTS_PILOT_ORGS.
+   */
+  featureAiAgents: (import.meta.env.VITE_FEATURE_AI_AGENTS ?? '').trim() === 'true',
 } as const

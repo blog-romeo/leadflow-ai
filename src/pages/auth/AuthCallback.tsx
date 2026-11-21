@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { pendingInvite } from '../../lib/pendingInvite'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useI18n } from '../../i18n'
@@ -13,7 +14,7 @@ export default function AuthCallback() {
   const [timedOut, setTimedOut] = useState(false)
 
   useEffect(() => {
-    if (status === 'ready' && session) navigate('/app', { replace: true })
+    if (status === 'ready' && session) navigate(pendingInvite() ? '/join' : '/app', { replace: true })
   }, [status, session, navigate])
 
   useEffect(() => {

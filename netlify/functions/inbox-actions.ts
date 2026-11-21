@@ -6,6 +6,8 @@ import { campaignDeps, dispatchWorker } from './_shared/campaigns/deps'
 import { dispatchBackground } from './_shared/dispatch'
 import { requestSalesJob } from './_shared/sales-agent/service'
 import { salesDeps } from './_shared/sales-agent/deps'
+import { requireFeature } from './_shared/billing/access'
+import { billingGate } from './_shared/billing/deps'
 
 /**
  * POST /api/inbox/actions
@@ -17,6 +19,8 @@ export default async (req: Request): Promise<Response> => {
     requireMethod(req, 'POST')
     const input = parseOr400(inboxActionSchema, await readJson(req, 16_000))
     const { user, db } = await requireOrgMember(req, input.organization_id)
+    // Controllo di piano lato server (402 se la funzionalità non è inclusa o l'abbonamento non è attivo).
+    await requireFeature(billingGate(), input.organization_id, 'campaign_manager')
     // Lettura con il client dell'utente: RLS garantisce che la risposta sia della sua organizzazione.
     const { data: inbound } = await db.from('inbound_messages').select('id, lead_id, account_id, from_email, subject').eq('organization_id', input.organization_id).eq('id', input.inbound_id).maybeSingle()
     if (!inbound) throw new HttpError(404, 'inbound_not_found')

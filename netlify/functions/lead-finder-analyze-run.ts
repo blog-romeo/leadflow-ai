@@ -1,4 +1,4 @@
-import { timingSafeEqual } from 'node:crypto'
+import { timingSafeInternal } from './_shared/internalAuth'
 import { runAnalysisJob } from './_shared/lead-finder/analysisService'
 import { leadFinderDeps } from './_shared/lead-finder/deps'
 import { log } from './_shared/log'
@@ -8,10 +8,7 @@ import { log } from './_shared/log'
  * Invocabile solo dal server con il segreto interno; nessun input utente diretto.
  */
 function authorized(req: Request): boolean {
-  const expected = process.env.LEADFLOW_INTERNAL_SECRET ?? ''
-  const got = req.headers.get('x-leadflow-internal') ?? ''
-  if (expected.length < 32 || got.length !== expected.length) return false
-  return timingSafeEqual(Buffer.from(got), Buffer.from(expected))
+  return timingSafeInternal(req)
 }
 
 export default async (req: Request): Promise<void> => {

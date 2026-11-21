@@ -5,6 +5,8 @@ import { generateInputSchema } from './_shared/sales-agent/validation'
 import { parseOr400 } from './_shared/lead-finder/validation'
 import { requestSalesJob } from './_shared/sales-agent/service'
 import { salesDeps } from './_shared/sales-agent/deps'
+import { requireFeature } from './_shared/billing/access'
+import { billingGate } from './_shared/billing/deps'
 
 /**
  * POST /api/sales-agent/generate — avvia una generazione AI (intelligence, messaggi,
@@ -15,6 +17,8 @@ export default async (req: Request): Promise<Response> => {
     requireMethod(req, 'POST')
     const input = parseOr400(generateInputSchema, await readJson(req, 16_000))
     const { user } = await requireOrgMember(req, input.organization_id)
+    // Controllo di piano lato server (402 se la funzionalità non è inclusa o l'abbonamento non è attivo).
+    await requireFeature(billingGate(), input.organization_id, 'ai_sales_agent')
     const { store } = salesDeps()
     const ctx = { orgId: input.organization_id, userId: user.id }
     const { job_id } = await requestSalesJob({ store }, ctx, input)

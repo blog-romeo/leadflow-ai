@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
+import { useTenant } from './TenantContext'
 
 export type ThemePreference = 'light' | 'dark' | 'system'
 const STORAGE_KEY = 'lf-theme'
@@ -37,7 +38,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return () => mq.removeEventListener('change', onChange)
   }, [])
 
-  const resolved: 'light' | 'dark' = preference === 'system' ? (sysDark ? 'dark' : 'light') : preference
+  // Tema predefinito del White Label: vale solo se l'utente non ha scelto un tema (non viene salvato).
+  const tenant = useTenant()
+  const effective: ThemePreference = preference === 'system' && tenant?.theme && tenant.theme !== 'system' ? tenant.theme : preference
+  const resolved: 'light' | 'dark' = effective === 'system' ? (sysDark ? 'dark' : 'light') : effective
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', resolved === 'dark')

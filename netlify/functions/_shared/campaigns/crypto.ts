@@ -69,7 +69,10 @@ export function verifyUnsubscribeToken(token: string, env?: NodeJS.ProcessEnv): 
   }
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null
   const expected = createHmac('sha256', subKey('unsubscribe', env)).update(id).digest('base64url').slice(0, 32)
-  return timingSafeEqual(Buffer.from(mac), Buffer.from(expected)) ? id : null
+  // Confronto sui byte: un MAC con caratteri non ASCII ha più byte che caratteri (eccezione → 500).
+  const a = Buffer.from(mac, 'utf8')
+  const b = Buffer.from(expected, 'utf8')
+  return a.length === b.length && timingSafeEqual(a, b) ? id : null
 }
 
 /** Ultime 4 cifre per mostrare quale chiave è configurata, senza esporla. */

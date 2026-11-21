@@ -19,7 +19,7 @@ describe('registro moduli', () => {
     const followUp = MODULES.find((m) => m.key === 'followUp')
     expect(followUp?.status).toBe('available')
     expect(MODULES.filter((m) => ['campaigns', 'analytics'].includes(m.key)).every((m) => m.status === 'available')).toBe(true)
-    expect(MODULES.find((m) => m.key === 'billing')?.status).toBe('preparation')
+    expect(MODULES.find((m) => m.key === 'billing')?.status).toBe('available')
   })
   it('barra laterale: pagine operative incluse, path unici', () => {
     const items = navItems(false)

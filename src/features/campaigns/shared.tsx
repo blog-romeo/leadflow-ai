@@ -5,6 +5,7 @@ import { ApiError } from '../../lib/api'
 import { Badge } from '../../components/ui/Badge'
 import { cn } from '../../lib/cn'
 import type { CommunicationAccountRow, WorkflowStatus } from '../../lib/database.types'
+import { billingErrorMessage } from '../billing/errors'
 
 type T = (k: string, v?: Record<string, string | number>) => string
 
@@ -62,6 +63,8 @@ export function useAccounts(orgId: string) {
 
 /** Messaggio leggibile per errori del database (RPC con prefisso "codice:") o delle API. */
 export function cmError(err: unknown, t: T): string {
+  const billing = billingErrorMessage(err, t)
+  if (billing) return billing
   if (err instanceof ApiError) {
     for (const ns of ['channels.errors', 'cm.errors', 'sales.errors']) {
       const k = `${ns}.${err.code}`

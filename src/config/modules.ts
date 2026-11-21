@@ -1,4 +1,6 @@
 import {
+  BrainCircuit,
+  Network,
   Bot,
   Building2,
   ChartLine,
@@ -14,8 +16,10 @@ import {
   Repeat,
   ScanSearch,
   ShieldCheck,
+  LifeBuoy,
   type LucideIcon,
 } from 'lucide-react'
+import { env } from '../lib/env'
 
 export type ModuleStatus = 'available' | 'preparation'
 export type ModuleAccess = 'member' | 'super_admin'
@@ -49,9 +53,9 @@ export const MODULES: ModuleDef[] = [
   { key: 'campaigns', path: '/app/campaigns', labelKey: 'nav.campaigns', icon: Megaphone, group: 'sales', status: 'available', access: 'member' },
   { key: 'followUp', path: '/app/follow-up', labelKey: 'nav.followUp', icon: Repeat, group: 'sales', status: 'available', access: 'member' },
   { key: 'analytics', path: '/app/analytics', labelKey: 'nav.analytics', icon: ChartLine, group: 'sales', status: 'available', access: 'member' },
-  { key: 'billing', path: '/app/billing', labelKey: 'nav.billing', icon: CreditCard, group: 'account', status: 'preparation', access: 'member', previewKey: 'billing' },
+  { key: 'billing', path: '/app/billing', labelKey: 'nav.billing', icon: CreditCard, group: 'account', status: 'available', access: 'member', previewKey: 'billing' },
   { key: 'settings', path: '/app/settings', labelKey: 'nav.settings', icon: Building2, group: 'account', status: 'available', access: 'member' },
-  { key: 'admin', path: '/app/admin', labelKey: 'nav.admin', icon: ShieldCheck, group: 'account', status: 'available', access: 'super_admin' },
+  { key: 'admin', path: '/super-admin', labelKey: 'nav.admin', icon: ShieldCheck, group: 'account', status: 'available', access: 'super_admin' },
 ]
 
 export const NAV_GROUPS: { id: NavGroup; labelKey: string }[] = [
@@ -73,11 +77,21 @@ export const NAV_EXTRAS: ModuleDef[] = [
   { key: 'inbox', path: '/app/inbox', labelKey: 'nav.inbox', icon: Inbox, group: 'sales', status: 'available', access: 'member' },
   { key: 'automations', path: '/app/automations', labelKey: 'nav.automations', icon: Workflow, group: 'sales', status: 'available', access: 'member' },
   { key: 'channels', path: '/app/settings/channels', labelKey: 'nav.channels', icon: Send, group: 'account', status: 'available', access: 'member' },
+  { key: 'support', path: '/app/support', labelKey: 'nav.support', icon: LifeBuoy, group: 'account', status: 'available', access: 'member' },
 ]
 
-const NAV_ORDER = ['dashboard', 'leadFinder', 'analyzer', 'scoring', 'salesAgent', 'crm', 'campaigns', 'inbox', 'followUp', 'automations', 'analytics', 'billing', 'settings', 'channels', 'admin']
+/**
+ * Prompt 8 — pagine del motore multi-agent, visibili solo con VITE_FEATURE_AI_AGENTS=true (beta privata).
+ * Non sono moduli di prodotto pubblicizzati: il sito pubblico non le menziona finché non sono verificate.
+ */
+export const AI_AGENT_PAGES: ModuleDef[] = [
+  { key: 'aiAgents', path: '/app/ai-agents', labelKey: 'nav.aiAgents', icon: BrainCircuit, group: 'ai', status: 'available', access: 'member' },
+  { key: 'aiWorkflows', path: '/app/ai-workflows', labelKey: 'nav.aiWorkflows', icon: Network, group: 'ai', status: 'available', access: 'member' },
+]
+
+const NAV_ORDER = ['dashboard', 'leadFinder', 'analyzer', 'scoring', 'salesAgent', 'aiAgents', 'aiWorkflows', 'crm', 'campaigns', 'inbox', 'followUp', 'automations', 'analytics', 'billing', 'settings', 'channels', 'support', 'admin']
 
 /** Voci della barra laterale: moduli visibili + pagine operative, in ordine di lavoro. */
-export function navItems(isSuperAdmin: boolean): ModuleDef[] {
-  return [...visibleModules(isSuperAdmin), ...NAV_EXTRAS].sort((a, b) => NAV_ORDER.indexOf(a.key) - NAV_ORDER.indexOf(b.key))
+export function navItems(isSuperAdmin: boolean, aiAgents = env.featureAiAgents): ModuleDef[] {
+  return [...visibleModules(isSuperAdmin), ...NAV_EXTRAS, ...(aiAgents ? AI_AGENT_PAGES : [])].sort((a, b) => NAV_ORDER.indexOf(a.key) - NAV_ORDER.indexOf(b.key))
 }

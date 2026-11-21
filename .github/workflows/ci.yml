@@ -1,0 +1,96 @@
+# LeadFlow AI — CI (Prompt 10)
+# Esegue in un ambiente reale i comandi che la sandbox di sviluppo non ha potuto eseguire (REL-1).
+# Ogni passo obbligatorio fa fallire la pipeline. Nessun segreto: la CI non usa credenziali
+# (build con variabili VITE vuote → l'app mostra "configurazione mancante", come previsto).
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: Typecheck · Vitest · Build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: npm ci
+        run: npm ci
+      - name: Typecheck (tsc -b)
+        run: npx tsc -b
+      - name: Vitest
+        run: npx vitest run
+      - name: Build di produzione
+        run: npm run build
+      - name: Build con il motore multi-agent visibile
+        run: npm run build
+        env:
+          VITE_FEATURE_AI_AGENTS: 'true'
+      - name: Bundle delle Netlify Functions (esbuild, come Netlify)
+        run: |
+          set -euo pipefail
+          for f in netlify/functions/*.ts; do
+            npx --yes esbuild@0.28 "$f" --bundle --platform=node --target=node22 --format=esm --packages=external --outfile="/tmp/fn/$(basename "$f" .ts).mjs" --log-level=error
+          done
+          echo "Functions impacchettate: $(ls /tmp/fn | wc -l)"
+
+  database:
+    name: Migrazioni e RLS (PostgreSQL 16)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: PostgreSQL disponibile
+        run: ls -d /usr/lib/postgresql/*/bin || (sudo apt-get update && sudo apt-get install -y postgresql)
+      - name: Migrazioni 0001–0014 da zero + test RLS e isolamento multi-tenant
+        run: bash supabase/tests/run_local_rls_tests.sh
+      - name: Concorrenza dei crediti
+        run: bash supabase/tests/run_billing_concurrency.sh
+
+  security:
+    name: Sicurezza e dipendenze
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Segreti nei file versionati
+        run: node scripts/check-secrets.mjs
+      - run: npm ci --ignore-scripts
+      - name: Vulnerabilità delle dipendenze di produzione (high/critical bloccanti)
+        run: npm audit --omit=dev --audit-level=high
+      - name: Firme e provenienza dei pacchetti
+        run: npm audit signatures
+      - name: Nessuna chiave Stripe live nella configurazione
+        run: |
+          if grep -RInE "sk_live_[A-Za-z0-9]{8,}" --exclude-dir=node_modules --exclude-dir=.git . ; then echo "Chiave live trovata"; exit 1; fi
+
+  dependency-review:
+    name: Revisione delle dipendenze (pull request)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
