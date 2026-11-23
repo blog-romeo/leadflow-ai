@@ -130,7 +130,10 @@ describe('11. Protezione delle credenziali', () => {
 
   it('l’ambiente passato ai moduli AI contiene solo le variabili necessarie', () => {
     const { env } = envForTier('economy', { OPENAI_API_KEY: 'k', OPENAI_MODEL: 'm', STRIPE_SECRET_KEY: 's', SUPABASE_SERVICE_ROLE_KEY: 'r', OPENAI_MODEL_ECONOMY: 'small' })
-    expect(Object.keys(env).sort()).toEqual(['LEADFLOW_INTERNAL_SECRET', 'OPENAI_API_KEY', 'OPENAI_MODEL', 'OPENAI_PRICE_INPUT_PER_MTOK', 'OPENAI_PRICE_OUTPUT_PER_MTOK'])
+    // OPENAI_BASE_URL (non segreto) serve a Netlify AI Gateway; nessuna chiave Stripe/Supabase viene propagata.
+    expect(Object.keys(env).sort()).toEqual(['LEADFLOW_INTERNAL_SECRET', 'OPENAI_API_KEY', 'OPENAI_BASE_URL', 'OPENAI_MODEL', 'OPENAI_PRICE_INPUT_PER_MTOK', 'OPENAI_PRICE_OUTPUT_PER_MTOK'])
+    expect(env.STRIPE_SECRET_KEY).toBeUndefined()
+    expect(env.SUPABASE_SERVICE_ROLE_KEY).toBeUndefined()
     expect(env.OPENAI_MODEL).toBe('small')
   })
 })

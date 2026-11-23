@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { Link } from 'react-router-dom'
 import { useI18n } from '../../i18n'
 import { supabase } from '../../lib/supabase'
 import { errorKey } from '../../lib/errors'
@@ -93,8 +94,9 @@ export default function LeadScoring() {
     const { error } = await supabase
       .from('organization_profiles')
       .update({
-        services_description: form.services.trim() || null,
-        ideal_customer: form.ideal.trim() || null,
+        // services_description e ideal_customer NON si inviano: il GRANT di UPDATE è stato revocato
+        // (migrazione 0005) perché sono sincronizzati dal Profilo commerciale (sales_profiles).
+        // Inviarli causava "permission denied" (42501) e il salvataggio dell'intero form falliva.
         target_sectors: list(form.sectors).slice(0, 30),
         target_regions: list(form.regions).slice(0, 50),
         target_countries: countries.slice(0, 30),
@@ -120,8 +122,12 @@ export default function LeadScoring() {
         <Panel title={t('scoringSettings.profileTitle')}>
           <div className="space-y-4">
             {!isOrgAdmin && <InlineAlert tone="signal">{t('scoringSettings.readOnly')}</InlineAlert>}
-            <Textarea label={t('scoringSettings.services')} placeholder={t('scoringSettings.servicesPh')} value={form.services} onChange={(v) => setForm((f) => ({ ...f, services: v }))} disabled={!isOrgAdmin} />
-            <Textarea label={t('scoringSettings.idealCustomer')} placeholder={t('scoringSettings.idealCustomerPh')} value={form.ideal} onChange={(v) => setForm((f) => ({ ...f, ideal: v }))} disabled={!isOrgAdmin} />
+            <Textarea label={t('scoringSettings.services')} placeholder={t('scoringSettings.servicesPh')} value={form.services} onChange={() => undefined} disabled />
+            <Textarea label={t('scoringSettings.idealCustomer')} placeholder={t('scoringSettings.idealCustomerPh')} value={form.ideal} onChange={() => undefined} disabled />
+            <p className="text-xs text-muted">
+              {t('scoringSettings.managedInSalesProfile')}{' '}
+              <Link to="/app/sales-agent/profile" className="text-flow underline">{t('scoringSettings.openSalesProfile')}</Link>
+            </p>
             <Field label={t('scoringSettings.targetSectors')} hint={t('scoringSettings.listHint')} value={form.sectors} onChange={(e) => setForm((f) => ({ ...f, sectors: e.target.value }))} disabled={!isOrgAdmin} placeholder="hotel, b&b" />
             <Field label={t('scoringSettings.targetRegions')} hint={t('scoringSettings.listHint')} value={form.regions} onChange={(e) => setForm((f) => ({ ...f, regions: e.target.value }))} disabled={!isOrgAdmin} placeholder="Roma, Firenze" />
             <Field

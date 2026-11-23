@@ -498,6 +498,8 @@ export const it = {
   scoringSettings: {
     title: 'AI Lead Scoring',
     subtitle: 'Descrivi il tuo cliente ideale e decidi quanto pesa ogni criterio. Il punteggio dei nuovi risultati usa queste impostazioni.',
+    managedInSalesProfile: 'Servizi e cliente ideale si modificano nel Profilo commerciale e vengono sincronizzati qui.',
+    openSalesProfile: 'Apri il Profilo commerciale',
     profileTitle: 'Profilo commerciale',
     services: 'Servizi che offri',
     servicesPh: 'Es. siti web e prenotazione diretta per strutture ricettive',

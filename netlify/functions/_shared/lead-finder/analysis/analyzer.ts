@@ -1,4 +1,4 @@
-import { callStructured, type AiCallResult } from './openai'
+import { callStructured, openaiBaseUrl, type AiCallResult } from './openai'
 import { extractPage, quoteFound } from './extract'
 import { isAllowedByRobots } from './robots'
 import { safeFetchText, SsrfError } from './ssrf'
@@ -164,6 +164,7 @@ export async function analyzeCompany(params: {
     schema: modelOutputJsonSchema,
     timeoutMs: 60_000,
     fetchImpl: params.fetchImpl,
+    baseUrl: openaiBaseUrl(env),
   })
   return verifyOutput(res.json, site, params.company, params.providerLabel, { model: res.model, usage: res.usage })
 }

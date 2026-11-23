@@ -1,3 +1,4 @@
+import { openaiBaseUrl } from '../lead-finder/analysis/openai'
 import { fetchWithTimeout, TimeoutError } from '../fetchTimeout'
 import { tierModel } from './models'
 
@@ -56,7 +57,7 @@ export async function checkConnections(env: NodeJS.ProcessEnv = process.env, fet
       out.push({ key: k, state: 'not_configured', code: 'provider_not_configured', latency_ms: null })
       continue
     }
-    const r = await timed(() => fetchWithTimeout(`https://api.openai.com/v1/models/${encodeURIComponent(model)}`, { headers: { authorization: `Bearer ${key}` } }, timeoutMs, fetchImpl))
+    const r = await timed(() => fetchWithTimeout(`${openaiBaseUrl(env)}/models/${encodeURIComponent(model)}`, { headers: { authorization: `Bearer ${key}` } }, timeoutMs, fetchImpl))
     out.push({ key: k, state: r.status === 200 ? 'verified' : 'failed', code: r.error ?? codeFor(r.status), latency_ms: r.ms })
   }
   const overpass = (env.OVERPASS_API_URL ?? '').trim()

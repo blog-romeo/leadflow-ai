@@ -496,6 +496,8 @@ export const en: Dictionary = {
   scoringSettings: {
     title: 'AI Lead Scoring',
     subtitle: 'Describe your ideal customer and decide how much each criterion counts. New results are scored with these settings.',
+    managedInSalesProfile: 'Services and ideal customer are edited in the Sales profile and synced here.',
+    openSalesProfile: 'Open the Sales profile',
     profileTitle: 'Sales profile',
     services: 'Services you offer',
     servicesPh: 'E.g. websites and direct booking for hospitality',

@@ -1,3 +1,4 @@
+import { supabaseUrl } from './_shared/env'
 import { randomBytes } from 'node:crypto'
 import { HttpError, handleError, json, readJson } from './_shared/http'
 import { requireUser } from './_shared/auth'
@@ -29,7 +30,7 @@ const platformHosts = () => [process.env.URL, process.env.APP_URL, process.env.D
 function withAssetUrls(dashboard: Record<string, unknown>) {
   const b = dashboard.branding as Record<string, unknown> | null
   if (!b) return dashboard
-  const base = process.env.SUPABASE_URL
+  const base = supabaseUrl()
   return { ...dashboard, branding: { ...b, logo_url: assetUrl(base, b.logo_path), login_logo_url: assetUrl(base, b.login_logo_path), favicon_url: assetUrl(base, b.favicon_path) } }
 }
 
@@ -59,7 +60,7 @@ async function uploadAsset(resellerId: string, userId: string, body: Record<stri
   }
   await rpc(admin, 'reseller_set_branding_asset', { p_reseller: resellerId, p_kind: kind, p_path: newPath, p_actor: userId })
   if (oldPath) await admin.storage.from('branding').remove([oldPath]).catch(() => undefined)
-  return { kind, url: assetUrl(process.env.SUPABASE_URL, newPath) }
+  return { kind, url: assetUrl(supabaseUrl(), newPath) }
 }
 
 type Ctx = Awaited<ReturnType<typeof requireResellerMember>>

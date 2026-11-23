@@ -1,3 +1,4 @@
+import { supabaseServiceKey } from './_shared/env'
 import { handleError, json, requireMethod, requireUuid } from './_shared/http'
 import { requireOrgMember } from './_shared/auth'
 import { providerRegistry } from './_shared/campaigns/providers/registry'
@@ -22,7 +23,7 @@ export default async (req: Request): Promise<Response> => {
       server: {
         credentials_key: credentialsKeyStatus(),
         worker_secret: (process.env.LEADFLOW_INTERNAL_SECRET ?? '').length >= 32,
-        service_role: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
+        service_role: Boolean(supabaseServiceKey()),
       },
       providers: Object.values(providerRegistry()).map((p) => ({ id: p.id, label: p.label, implemented: p.implemented, auth: p.auth, docs_url: p.docsUrl, notes: p.notes })),
       accounts: (accounts ?? []).map((a) => ({ ...a, webhook_url: `${base}/api/webhooks/resend/${a.id}` })),

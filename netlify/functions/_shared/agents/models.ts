@@ -55,6 +55,7 @@ export function envForTier(tier: ModelTier, env: NodeJS.ProcessEnv = process.env
   const prices = tierPrices(choice.effective, env)
   const out: NodeJS.ProcessEnv = {
     OPENAI_API_KEY: env.OPENAI_API_KEY,
+    OPENAI_BASE_URL: env.OPENAI_BASE_URL,
     OPENAI_MODEL: choice.model ?? '',
     LEADFLOW_INTERNAL_SECRET: env.LEADFLOW_INTERNAL_SECRET,
     OPENAI_PRICE_INPUT_PER_MTOK: prices ? String(prices.input) : '',
@@ -148,6 +149,7 @@ export function envForTask(task: AiTask, orgTier: ModelTier | null | undefined, 
   const prices = tierPrices(route.effective, env)
   const out: NodeJS.ProcessEnv = {
     OPENAI_API_KEY: env.OPENAI_API_KEY,
+    OPENAI_BASE_URL: env.OPENAI_BASE_URL,
     OPENAI_MODEL: route.model ?? '',
     LEADFLOW_INTERNAL_SECRET: env.LEADFLOW_INTERNAL_SECRET,
     OPENAI_PRICE_INPUT_PER_MTOK: prices ? String(prices.input) : '',
