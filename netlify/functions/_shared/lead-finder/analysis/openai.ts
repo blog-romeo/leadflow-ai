@@ -24,6 +24,16 @@ export function retryAfterSeconds(h: string | null, now = Date.now()): number | 
   return Number.isFinite(t) ? Math.min(Math.max(Math.round((t - now) / 1000), 0), 3600) : null
 }
 
+/**
+ * Base URL dell'API OpenAI. Netlify AI Gateway inietta OPENAI_API_KEY e OPENAI_BASE_URL nelle functions:
+ * la chiave del gateway è valida SOLO verso il proprio base URL. Prima l'URL era fisso su api.openai.com
+ * e la chiave del gateway veniva rifiutata (ai_auth_failed). Senza OPENAI_BASE_URL resta api.openai.com.
+ */
+export function openaiBaseUrl(env: NodeJS.ProcessEnv = process.env): string {
+  const raw = (env.OPENAI_BASE_URL ?? '').trim().replace(/\/+$/, '')
+  return /^https:\/\/\S+$/i.test(raw) ? raw : 'https://api.openai.com/v1'
+}
+
 export interface AiCallResult {
   json: unknown
   model: string
@@ -40,12 +50,13 @@ export async function callStructured(params: {
   timeoutMs: number
   maxOutputTokens?: number
   fetchImpl?: typeof fetch
+  baseUrl?: string
 }): Promise<AiCallResult> {
   if (!params.apiKey || !params.model) throw new AiError('ai_not_configured')
   let res: Response
   try {
     res = await fetchWithTimeout(
-      'https://api.openai.com/v1/responses',
+      `${params.baseUrl ?? openaiBaseUrl()}/responses`,
       {
         method: 'POST',
         headers: { 'content-type': 'application/json', authorization: `Bearer ${params.apiKey}` },

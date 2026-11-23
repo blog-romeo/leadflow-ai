@@ -1,3 +1,4 @@
+import { supabaseUrl, supabaseServiceKey } from './env'
 import { createHash } from 'node:crypto'
 
 /**
@@ -63,8 +64,8 @@ export function buildErrorRow(r: ErrorReport) {
 
 /** Registra un errore. Non lancia mai: il monitoraggio non deve rompere la risposta. */
 export async function reportError(r: ErrorReport, fetchImpl: typeof fetch = fetch): Promise<boolean> {
-  const url = process.env.SUPABASE_URL
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const url = supabaseUrl()
+  const key = supabaseServiceKey()
   if (!url || !key) return false
   try {
     const res = await fetchImpl(`${url.replace(/\/+$/, '')}/rest/v1/rpc/record_app_error`, {

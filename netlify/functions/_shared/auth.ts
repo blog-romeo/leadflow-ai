@@ -1,3 +1,4 @@
+import { supabaseUrl, supabaseAnonKey } from './env'
 import { createClient, type SupabaseClient, type User } from '@supabase/supabase-js'
 import { HttpError } from './http'
 
@@ -18,8 +19,8 @@ export interface AuthContext {
 }
 
 function serverEnv() {
-  const url = process.env.SUPABASE_URL
-  const anon = process.env.SUPABASE_ANON_KEY
+  const url = supabaseUrl()
+  const anon = supabaseAnonKey()
   if (!url || !anon) throw new HttpError(503, 'server_not_configured')
   return { url, anon }
 }

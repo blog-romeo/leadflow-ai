@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { HttpError } from '../http'
 import { log } from '../log'
 import { aiMissingConfig } from '../lead-finder/analysisService'
-import { AiError, callStructured, type AiCallResult } from '../lead-finder/analysis/openai'
+import { AiError, callStructured, openaiBaseUrl, type AiCallResult } from '../lead-finder/analysis/openai'
 import { allowedValues, isContactable, leadForModel, profileForModel, profileMissing, type LeadRaw, type SalesProfile } from './context'
 import { campaignChecks, checkText, dedupeWarnings, factSupported, type Warning } from './postcheck'
 import { buildSystemPrompt, buildUserPrompt, TASK_PROMPTS } from './prompts'
@@ -47,7 +47,7 @@ export type AiCaller = (p: { system: string; user: string; schemaName: string; s
 
 export function defaultAiCaller(env: NodeJS.ProcessEnv = process.env, fetchImpl?: typeof fetch): AiCaller {
   return (p) =>
-    callStructured({ apiKey: env.OPENAI_API_KEY ?? '', model: env.OPENAI_MODEL ?? '', timeoutMs: 120_000, fetchImpl, ...p })
+    callStructured({ apiKey: env.OPENAI_API_KEY ?? '', model: env.OPENAI_MODEL ?? '', baseUrl: openaiBaseUrl(env), timeoutMs: 120_000, fetchImpl, ...p })
 }
 
 const CONTACT_TASKS = new Set(['messages', 'proposal', 'follow_up_suggestion'])

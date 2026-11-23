@@ -1,3 +1,4 @@
+import { supabaseUrl, supabaseServiceKey } from './_shared/env'
 import { json } from './_shared/http'
 import { supabaseAdmin } from './_shared/supabaseAdmin'
 
@@ -8,7 +9,7 @@ import { supabaseAdmin } from './_shared/supabaseAdmin'
  */
 export default async (req: Request): Promise<Response> => {
   if (req.method !== 'GET') return json({ error: 'method_not_allowed' }, 405, { allow: 'GET' })
-  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return json({ plans: null }, 200)
+  if (!supabaseUrl() || !supabaseServiceKey()) return json({ plans: null }, 200)
   const { data, error } = await supabaseAdmin()
     .from('billing_plans')
     .select('code, name, price_cents, currency, monthly_leads, monthly_ai_credits, max_users, features')

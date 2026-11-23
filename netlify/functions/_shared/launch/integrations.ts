@@ -1,3 +1,4 @@
+import { SUPABASE_ANON_KEYS, SUPABASE_SERVICE_KEYS, SUPABASE_URL_KEYS } from '../env'
 /**
  * Stato delle integrazioni esterne, ricavato SOLO dalla presenza della configurazione.
  * "configured" non significa "funzionante": la verifica reale avviene con i test di
@@ -16,10 +17,15 @@ const has = (env: Record<string, string | undefined>, k: string) => typeof env[k
 
 export function integrationStatus(env: Record<string, string | undefined> = process.env): IntegrationStatus[] {
   const all = (keys: string[]): IntegrationState => (keys.every((k) => has(env, k)) ? 'configured' : keys.some((k) => has(env, k)) ? 'partial' : 'missing')
+  // Ogni gruppo è soddisfatto da uno qualsiasi dei nomi alternativi (vedi _shared/env.ts).
+  const anyOf = (groups: string[][]): IntegrationState => {
+    const ok = groups.filter((g) => g.some((k) => has(env, k))).length
+    return ok === groups.length ? 'configured' : ok > 0 ? 'partial' : 'missing'
+  }
   const stripeKey = env.STRIPE_SECRET_KEY?.trim() ?? ''
   const stripeMode = stripeKey.startsWith('sk_live_') || stripeKey.startsWith('rk_live_') ? 'live' : stripeKey ? 'test' : 'none'
   return [
-    { key: 'supabase', state: all(['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY']) },
+    { key: 'supabase', state: anyOf([SUPABASE_URL_KEYS, SUPABASE_ANON_KEYS, SUPABASE_SERVICE_KEYS]) },
     {
       key: 'stripe',
       state: all(['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'STRIPE_PRICE_STARTER', 'STRIPE_PRICE_BUSINESS', 'STRIPE_PRICE_ENTERPRISE']),
