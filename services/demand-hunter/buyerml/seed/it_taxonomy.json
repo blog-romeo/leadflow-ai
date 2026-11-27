@@ -1,0 +1,2007 @@
+{
+ "_about": "Tassonomia del mercato IT per la lettura della domanda (demand.py). Albero estensibile: ogni nodo ha un id stabile, un genitore, gli alias con cui le persone lo nominano (it/en) e le tecnologie che lo indicano. Un alias di 4 caratteri o meno che contiene una maiuscola (AI, IT, IoT) si confronta rispettando le maiuscole, per non confondere 'AI' con la preposizione 'ai'. market_id collega il nodo ai mercati M01..M15 della tabella Mercati–Keyword; i figli lo ereditano. Per aggiungere una nicchia basta aggiungere un nodo con il suo parent.",
+ "version": 1,
+ "nodes": [
+  {
+   "id": "it",
+   "parent": null,
+   "name": "IT",
+   "aliases": {
+    "it": [
+     "informatica",
+     "servizi IT",
+     "servizi informatici"
+    ],
+    "en": [
+     "IT services",
+     "tech"
+    ]
+   }
+  },
+  {
+   "id": "software",
+   "parent": "it",
+   "name": "Software Development",
+   "market_id": "M04",
+   "aliases": {
+    "it": [
+     "sviluppo software",
+     "software personalizzato",
+     "software su misura",
+     "programmatore",
+     "programmatori",
+     "sviluppatore",
+     "sviluppatori",
+     "software house",
+     "gestionale su misura",
+     "programma su misura",
+     "un programma"
+    ],
+    "en": [
+     "software development",
+     "custom software",
+     "software developer",
+     "programmer",
+     "coder",
+     "dev team",
+     "developer"
+    ]
+   }
+  },
+  {
+   "id": "software.backend",
+   "parent": "software",
+   "name": "Backend Development",
+   "aliases": {
+    "it": [
+     "backend",
+     "back-end",
+     "sviluppatore backend",
+     "lato server"
+    ],
+    "en": [
+     "backend",
+     "back-end",
+     "backend developer",
+     "server side"
+    ]
+   },
+   "tech": [
+    "Node.js",
+    "NestJS",
+    "Express",
+    "Django",
+    "Flask",
+    "FastAPI",
+    "Laravel",
+    "Symfony",
+    "Spring Boot",
+    ".NET",
+    "ASP.NET",
+    "Ruby on Rails",
+    "Golang",
+    "Rust",
+    "Elixir",
+    "Phoenix"
+   ]
+  },
+  {
+   "id": "software.backend.api",
+   "parent": "software.backend",
+   "name": "API Development",
+   "aliases": {
+    "it": [
+     "sviluppo API",
+     "creare delle API",
+     "API REST"
+    ],
+    "en": [
+     "API development",
+     "REST API",
+     "GraphQL API",
+     "build an API"
+    ]
+   },
+   "tech": [
+    "GraphQL",
+    "OpenAPI",
+    "gRPC",
+    "tRPC"
+   ]
+  },
+  {
+   "id": "software.languages",
+   "parent": "software",
+   "name": "Linguaggi",
+   "aliases": {
+    "it": [],
+    "en": []
+   },
+   "tech": [
+    "Python",
+    "JavaScript",
+    "TypeScript",
+    "Java",
+    "C#",
+    "C++",
+    "PHP",
+    "Kotlin",
+    "Swift",
+    "Dart",
+    "Ruby",
+    "Scala",
+    "Golang",
+    "Rust",
+    "VBA",
+    "COBOL"
+   ]
+  },
+  {
+   "id": "software.desktop",
+   "parent": "software",
+   "name": "Desktop Applications",
+   "aliases": {
+    "it": [
+     "programma per pc",
+     "applicazione desktop",
+     "software desktop",
+     "programma per windows"
+    ],
+    "en": [
+     "desktop app",
+     "desktop application",
+     "windows app"
+    ]
+   },
+   "tech": [
+    "Electron",
+    "Tauri",
+    "WPF",
+    "Qt",
+    "WinForms"
+   ]
+  },
+  {
+   "id": "software.legacy",
+   "parent": "software",
+   "name": "Legacy Modernization",
+   "aliases": {
+    "it": [
+     "vecchio gestionale",
+     "software vecchio",
+     "rifare il gestionale",
+     "migrare il software",
+     "programma vecchio"
+    ],
+    "en": [
+     "legacy system",
+     "legacy code",
+     "modernize",
+     "rewrite our software"
+    ]
+   },
+   "tech": [
+    "COBOL",
+    "Access",
+    "Visual Basic",
+    "FoxPro",
+    "AS400"
+   ]
+  },
+  {
+   "id": "software.mvp",
+   "parent": "software",
+   "name": "MVP e prototipi",
+   "aliases": {
+    "it": [
+     "MVP",
+     "prototipo",
+     "prima versione dell'app",
+     "versione minima"
+    ],
+    "en": [
+     "MVP",
+     "prototype",
+     "proof of concept",
+     "PoC",
+     "first version"
+    ]
+   }
+  },
+  {
+   "id": "web",
+   "parent": "software",
+   "name": "Web Development",
+   "market_id": "M04",
+   "aliases": {
+    "it": [
+     "sito web",
+     "sito internet",
+     "realizzare un sito",
+     "rifare il sito",
+     "piattaforma web",
+     "web app",
+     "applicazione web",
+     "portale",
+     "sviluppatore web",
+     "web developer",
+     "piattaforma",
+     "siti"
+    ],
+    "en": [
+     "website",
+     "web app",
+     "web application",
+     "web platform",
+     "web developer",
+     "landing page",
+     "portal",
+     "platform"
+    ]
+   },
+   "tech": [
+    "WordPress",
+    "Webflow",
+    "Wix",
+    "Shopify",
+    "HTML",
+    "CSS",
+    "Tailwind",
+    "Bootstrap"
+   ]
+  },
+  {
+   "id": "web.frontend",
+   "parent": "web",
+   "name": "Frontend Development",
+   "aliases": {
+    "it": [
+     "frontend",
+     "front-end",
+     "sviluppatore frontend",
+     "interfaccia web"
+    ],
+    "en": [
+     "frontend",
+     "front-end",
+     "frontend developer",
+     "UI developer"
+    ]
+   },
+   "tech": [
+    "React",
+    "Next.js",
+    "Vue",
+    "Nuxt",
+    "Angular",
+    "Svelte",
+    "SvelteKit",
+    "Remix",
+    "Astro"
+   ]
+  },
+  {
+   "id": "web.fullstack",
+   "parent": "web",
+   "name": "Full-stack Development",
+   "aliases": {
+    "it": [
+     "full stack",
+     "full-stack",
+     "sviluppatore full stack"
+    ],
+    "en": [
+     "full stack",
+     "full-stack",
+     "fullstack developer"
+    ]
+   },
+   "tech": [
+    "MERN",
+    "MEAN",
+    "LAMP",
+    "T3 stack"
+   ]
+  },
+  {
+   "id": "web.cms",
+   "parent": "web",
+   "name": "CMS e siti",
+   "aliases": {
+    "it": [
+     "plugin wordpress",
+     "tema wordpress"
+    ],
+    "en": [
+     "wordpress plugin",
+     "headless CMS"
+    ]
+   },
+   "tech": [
+    "WordPress",
+    "Drupal",
+    "Joomla",
+    "Strapi",
+    "Contentful",
+    "Sanity",
+    "Ghost"
+   ]
+  },
+  {
+   "id": "web.nocode",
+   "parent": "web",
+   "name": "No-code / Low-code",
+   "aliases": {
+    "it": [
+     "no code",
+     "no-code",
+     "low code",
+     "low-code",
+     "senza programmare"
+    ],
+    "en": [
+     "no-code",
+     "no code",
+     "low-code",
+     "nocode"
+    ]
+   },
+   "tech": [
+    "Bubble",
+    "FlutterFlow",
+    "Glide",
+    "Softr",
+    "Retool",
+    "AppSheet",
+    "Power Apps",
+    "Airtable"
+   ]
+  },
+  {
+   "id": "mobile",
+   "parent": "software",
+   "name": "Mobile Development",
+   "market_id": "M04",
+   "aliases": {
+    "it": [
+     "app",
+     "un'app",
+     "applicazione",
+     "app mobile",
+     "app per smartphone",
+     "app per telefono",
+     "app per il telefono",
+     "sviluppatore app",
+     "sviluppo app",
+     "app android",
+     "app iphone",
+     "app ios",
+     "sviluppatore mobile",
+     "programmatore mobile"
+    ],
+    "en": [
+     "mobile app",
+     "an app",
+     "app developer",
+     "app development",
+     "android app",
+     "iphone app",
+     "ios app",
+     "mobile developer"
+    ]
+   }
+  },
+  {
+   "id": "mobile.ios",
+   "parent": "mobile",
+   "name": "iOS",
+   "aliases": {
+    "it": [
+     "app per iphone",
+     "app iOS",
+     "programmatore iOS",
+     "sviluppatore iOS"
+    ],
+    "en": [
+     "iOS app",
+     "iPhone app",
+     "iOS developer",
+     "iOS programmer"
+    ]
+   },
+   "tech": [
+    "Swift",
+    "SwiftUI",
+    "Objective-C",
+    "Xcode"
+   ]
+  },
+  {
+   "id": "mobile.android",
+   "parent": "mobile",
+   "name": "Android",
+   "aliases": {
+    "it": [
+     "app android",
+     "programmatore Android",
+     "sviluppatore Android"
+    ],
+    "en": [
+     "android app",
+     "android developer",
+     "Android programmer"
+    ]
+   },
+   "tech": [
+    "Kotlin",
+    "Jetpack Compose",
+    "Android Studio"
+   ]
+  },
+  {
+   "id": "mobile.crossplatform",
+   "parent": "mobile",
+   "name": "Cross-platform",
+   "aliases": {
+    "it": [
+     "app ibrida",
+     "app per android e iphone",
+     "app per ios e android"
+    ],
+    "en": [
+     "cross-platform",
+     "cross platform app",
+     "hybrid app"
+    ]
+   },
+   "tech": [
+    "Flutter",
+    "React Native",
+    "Expo",
+    "Ionic",
+    "Capacitor",
+    "Xamarin",
+    ".NET MAUI"
+   ]
+  },
+  {
+   "id": "saas",
+   "parent": "software",
+   "name": "SaaS",
+   "market_id": "M04",
+   "aliases": {
+    "it": [
+     "SaaS",
+     "software in abbonamento",
+     "piattaforma in abbonamento",
+     "piattaforma online"
+    ],
+    "en": [
+     "SaaS",
+     "software as a service",
+     "subscription platform",
+     "multi-tenant"
+    ]
+   },
+   "tech": [
+    "Stripe",
+    "Supabase",
+    "Firebase",
+    "Clerk",
+    "Auth0"
+   ]
+  },
+  {
+   "id": "ai",
+   "parent": "it",
+   "name": "AI",
+   "market_id": "M07",
+   "aliases": {
+    "it": [
+     "intelligenza artificiale",
+     "IA",
+     "AI",
+     "soluzione AI",
+     "con l'AI",
+     "sviluppatore AI"
+    ],
+    "en": [
+     "artificial intelligence",
+     "AI",
+     "AI developer",
+     "AI engineer",
+     "AI solution"
+    ]
+   }
+  },
+  {
+   "id": "ai.genai",
+   "parent": "ai",
+   "name": "Generative AI",
+   "aliases": {
+    "it": [
+     "AI generativa",
+     "IA generativa"
+    ],
+    "en": [
+     "generative AI",
+     "GenAI",
+     "gen AI"
+    ]
+   },
+   "tech": [
+    "ChatGPT",
+    "OpenAI",
+    "GPT",
+    "Claude",
+    "Gemini",
+    "Midjourney",
+    "Stable Diffusion",
+    "DALL-E"
+   ]
+  },
+  {
+   "id": "ai.genai.llm",
+   "parent": "ai.genai",
+   "name": "LLM",
+   "aliases": {
+    "it": [
+     "modello linguistico",
+     "integrare ChatGPT",
+     "integrazione ChatGPT"
+    ],
+    "en": [
+     "LLM",
+     "large language model",
+     "LLM integration",
+     "fine-tuning",
+     "fine tune"
+    ]
+   },
+   "tech": [
+    "LangChain",
+    "LlamaIndex",
+    "Ollama",
+    "vLLM",
+    "Llama",
+    "Mistral",
+    "Hugging Face"
+   ]
+  },
+  {
+   "id": "ai.genai.llm.rag",
+   "parent": "ai.genai.llm",
+   "name": "RAG",
+   "aliases": {
+    "it": [
+     "chatbot sui nostri documenti",
+     "AI sui documenti aziendali",
+     "rispondere usando i nostri documenti",
+     "interrogare i documenti"
+    ],
+    "en": [
+     "RAG",
+     "retrieval augmented",
+     "chat with documents",
+     "chat with our docs",
+     "knowledge base AI"
+    ]
+   },
+   "tech": [
+    "Pinecone",
+    "Weaviate",
+    "Qdrant",
+    "Chroma",
+    "pgvector",
+    "Milvus"
+   ]
+  },
+  {
+   "id": "ai.agents",
+   "parent": "ai",
+   "name": "AI Agents",
+   "aliases": {
+    "it": [
+     "agente AI",
+     "agenti AI",
+     "agente IA",
+     "agenti IA",
+     "agente intelligente",
+     "assistente AI",
+     "assistente virtuale"
+    ],
+    "en": [
+     "AI agent",
+     "AI agents",
+     "agentic",
+     "autonomous agent",
+     "AI assistant",
+     "virtual assistant"
+    ]
+   },
+   "tech": [
+    "CrewAI",
+    "AutoGen",
+    "LangGraph",
+    "OpenAI Assistants",
+    "MCP",
+    "Agents SDK"
+   ]
+  },
+  {
+   "id": "ai.chatbot",
+   "parent": "ai",
+   "name": "Chatbot",
+   "aliases": {
+    "it": [
+     "chatbot",
+     "chat bot",
+     "bot",
+     "risponditore automatico",
+     "risposte automatiche ai clienti",
+     "bot whatsapp",
+     "bot telegram",
+     "risponda in automatico",
+     "risponde in automatico"
+    ],
+    "en": [
+     "chatbot",
+     "chat bot",
+     "bot",
+     "customer support bot",
+     "whatsapp bot",
+     "telegram bot"
+    ]
+   },
+   "tech": [
+    "Dialogflow",
+    "Botpress",
+    "Rasa",
+    "Voiceflow",
+    "ManyChat",
+    "Chatfuel",
+    "Tidio",
+    "Intercom",
+    "Telegram",
+    "WhatsApp"
+   ]
+  },
+  {
+   "id": "ai.voice",
+   "parent": "ai",
+   "name": "Voice AI",
+   "aliases": {
+    "it": [
+     "centralino AI",
+     "assistente vocale",
+     "chiamate automatiche",
+     "voice bot"
+    ],
+    "en": [
+     "voice agent",
+     "voice AI",
+     "AI receptionist",
+     "voicebot"
+    ]
+   },
+   "tech": [
+    "Vapi",
+    "Retell",
+    "Bland",
+    "ElevenLabs",
+    "Twilio",
+    "Whisper"
+   ]
+  },
+  {
+   "id": "ai.vision",
+   "parent": "ai",
+   "name": "Computer Vision e OCR",
+   "aliases": {
+    "it": [
+     "riconoscimento immagini",
+     "leggere le fatture",
+     "lettura automatica documenti",
+     "OCR",
+     "visione artificiale"
+    ],
+    "en": [
+     "computer vision",
+     "image recognition",
+     "OCR",
+     "document extraction",
+     "object detection"
+    ]
+   },
+   "tech": [
+    "OpenCV",
+    "YOLO",
+    "Tesseract",
+    "Textract",
+    "Document AI"
+   ]
+  },
+  {
+   "id": "ml",
+   "parent": "ai",
+   "name": "Machine Learning",
+   "aliases": {
+    "it": [
+     "machine learning",
+     "apprendimento automatico",
+     "modello predittivo",
+     "previsioni di vendita",
+     "modello di previsione"
+    ],
+    "en": [
+     "machine learning",
+     "ML engineer",
+     "predictive model",
+     "forecasting model",
+     "recommendation system"
+    ]
+   },
+   "tech": [
+    "scikit-learn",
+    "TensorFlow",
+    "PyTorch",
+    "XGBoost",
+    "Keras",
+    "MLflow"
+   ]
+  },
+  {
+   "id": "data",
+   "parent": "it",
+   "name": "Data",
+   "market_id": "M10",
+   "aliases": {
+    "it": [
+     "dati",
+     "analisi dei dati"
+    ],
+    "en": [
+     "data"
+    ]
+   }
+  },
+  {
+   "id": "data.science",
+   "parent": "data",
+   "name": "Data Science",
+   "aliases": {
+    "it": [
+     "data scientist",
+     "analisi statistica",
+     "analisi dati"
+    ],
+    "en": [
+     "data science",
+     "data scientist",
+     "data analysis",
+     "data analyst"
+    ]
+   },
+   "tech": [
+    "pandas",
+    "Jupyter",
+    "R",
+    "NumPy"
+   ]
+  },
+  {
+   "id": "data.engineering",
+   "parent": "data",
+   "name": "Data Engineering",
+   "aliases": {
+    "it": [
+     "data engineer",
+     "pipeline di dati",
+     "ETL",
+     "data warehouse"
+    ],
+    "en": [
+     "data engineering",
+     "data engineer",
+     "data pipeline",
+     "ETL",
+     "ELT",
+     "data warehouse",
+     "data lake"
+    ]
+   },
+   "tech": [
+    "Airflow",
+    "dbt",
+    "Spark",
+    "Kafka",
+    "Snowflake",
+    "BigQuery",
+    "Databricks",
+    "Fivetran"
+   ]
+  },
+  {
+   "id": "data.bi",
+   "parent": "data",
+   "name": "Business Intelligence",
+   "aliases": {
+    "it": [
+     "dashboard",
+     "cruscotto",
+     "report automatici",
+     "reportistica",
+     "business intelligence"
+    ],
+    "en": [
+     "dashboard",
+     "reporting",
+     "business intelligence",
+     "BI",
+     "KPI dashboard"
+    ]
+   },
+   "tech": [
+    "Power BI",
+    "Tableau",
+    "Looker",
+    "Looker Studio",
+    "Metabase",
+    "Qlik",
+    "Grafana"
+   ]
+  },
+  {
+   "id": "data.scraping",
+   "parent": "data",
+   "name": "Web scraping",
+   "aliases": {
+    "it": [
+     "scraping",
+     "estrarre dati dai siti",
+     "raccogliere dati da siti"
+    ],
+    "en": [
+     "web scraping",
+     "scraper",
+     "crawler",
+     "data extraction"
+    ]
+   },
+   "tech": [
+    "Scrapy",
+    "Playwright",
+    "Puppeteer",
+    "Selenium",
+    "Apify",
+    "BeautifulSoup"
+   ]
+  },
+  {
+   "id": "database",
+   "parent": "data",
+   "name": "Database",
+   "aliases": {
+    "it": [
+     "database",
+     "banca dati",
+     "archivio digitale"
+    ],
+    "en": [
+     "database",
+     "DBA",
+     "database design",
+     "query optimization"
+    ]
+   },
+   "tech": [
+    "PostgreSQL",
+    "MySQL",
+    "SQL Server",
+    "Oracle",
+    "MongoDB",
+    "Redis",
+    "SQLite",
+    "MariaDB",
+    "Elasticsearch",
+    "Access",
+    "FileMaker"
+   ]
+  },
+  {
+   "id": "automation",
+   "parent": "it",
+   "name": "Automation",
+   "market_id": "M09",
+   "aliases": {
+    "it": [
+     "automazione",
+     "automazioni",
+     "automatizzare",
+     "automatizzazione",
+     "lavoro manuale",
+     "a mano",
+     "copia e incolla",
+     "fare tutto a mano",
+     "flusso automatico",
+     "in automatico"
+    ],
+    "en": [
+     "automation",
+     "automate",
+     "automating",
+     "manual work",
+     "manual process",
+     "automatically"
+    ]
+   }
+  },
+  {
+   "id": "automation.workflow",
+   "parent": "automation",
+   "name": "Workflow Automation",
+   "aliases": {
+    "it": [
+     "automazione dei processi",
+     "workflow",
+     "flussi di lavoro",
+     "automatizzare i processi"
+    ],
+    "en": [
+     "workflow automation",
+     "process automation",
+     "business process automation"
+    ]
+   },
+   "tech": [
+    "n8n",
+    "Zapier",
+    "Make",
+    "Make.com",
+    "Integromat",
+    "Power Automate",
+    "Pipedream",
+    "Activepieces",
+    "IFTTT"
+   ]
+  },
+  {
+   "id": "automation.rpa",
+   "parent": "automation",
+   "name": "RPA",
+   "aliases": {
+    "it": [
+     "RPA",
+     "robot software",
+     "automazione robotica"
+    ],
+    "en": [
+     "RPA",
+     "robotic process automation",
+     "software robot"
+    ]
+   },
+   "tech": [
+    "UiPath",
+    "Automation Anywhere",
+    "Blue Prism",
+    "Power Automate Desktop"
+   ]
+  },
+  {
+   "id": "automation.ai",
+   "parent": "automation",
+   "name": "AI Automation",
+   "aliases": {
+    "it": [
+     "automazione AI",
+     "automazione con AI",
+     "automazioni con intelligenza artificiale"
+    ],
+    "en": [
+     "AI automation",
+     "AI workflow",
+     "AI-powered automation"
+    ]
+   }
+  },
+  {
+   "id": "automation.office",
+   "parent": "automation",
+   "name": "Office e fogli di calcolo",
+   "aliases": {
+    "it": [
+     "macro excel",
+     "file excel",
+     "fogli excel",
+     "google sheets",
+     "fogli di calcolo",
+     "foglio di calcolo",
+     "foglio excel"
+    ],
+    "en": [
+     "excel macro",
+     "spreadsheet",
+     "google sheets"
+    ]
+   },
+   "tech": [
+    "Excel",
+    "VBA",
+    "Google Apps Script",
+    "Google Sheets",
+    "Power Query"
+   ]
+  },
+  {
+   "id": "integration",
+   "parent": "it",
+   "name": "API Integration",
+   "market_id": "M09",
+   "aliases": {
+    "it": [
+     "integrazione",
+     "integrare",
+     "collegare",
+     "far parlare",
+     "sincronizzare",
+     "integrazione API",
+     "integrazione software",
+     "collegare i sistemi",
+     "comunicare tra loro"
+    ],
+    "en": [
+     "integration",
+     "integrate",
+     "connect",
+     "sync",
+     "API integration",
+     "system integration",
+     "talk to each other"
+    ]
+   },
+   "tech": [
+    "Webhook",
+    "Zapier",
+    "MuleSoft",
+    "Boomi",
+    "Workato",
+    "Postman"
+   ]
+  },
+  {
+   "id": "integration.payments",
+   "parent": "integration",
+   "name": "Pagamenti",
+   "aliases": {
+    "it": [
+     "pagamenti online",
+     "integrare i pagamenti",
+     "gateway di pagamento"
+    ],
+    "en": [
+     "payment integration",
+     "payment gateway",
+     "checkout"
+    ]
+   },
+   "tech": [
+    "Stripe",
+    "PayPal",
+    "Satispay",
+    "Nexi",
+    "Adyen",
+    "SumUp"
+   ]
+  },
+  {
+   "id": "integration.einvoice",
+   "parent": "integration",
+   "name": "Fatturazione elettronica",
+   "aliases": {
+    "it": [
+     "fatturazione elettronica",
+     "fatture elettroniche",
+     "SDI",
+     "fattura elettronica"
+    ],
+    "en": [
+     "e-invoicing",
+     "electronic invoicing"
+    ]
+   },
+   "tech": [
+    "Fatture in Cloud",
+    "Aruba",
+    "TeamSystem",
+    "Danea",
+    "Zucchetti"
+   ]
+  },
+  {
+   "id": "blockchain",
+   "parent": "it",
+   "name": "Blockchain",
+   "market_id": "M06",
+   "aliases": {
+    "it": [
+     "blockchain",
+     "sviluppatore blockchain",
+     "tecnologia blockchain",
+     "token",
+     "tokenizzazione",
+     "criptovaluta",
+     "crypto"
+    ],
+    "en": [
+     "blockchain",
+     "blockchain developer",
+     "token",
+     "tokenization",
+     "crypto",
+     "cryptocurrency"
+    ]
+   },
+   "tech": [
+    "Ethereum",
+    "Bitcoin",
+    "Hyperledger",
+    "Polygon",
+    "Solana",
+    "Avalanche",
+    "BNB Chain",
+    "Cardano",
+    "Tron",
+    "TON"
+   ]
+  },
+  {
+   "id": "blockchain.web3",
+   "parent": "blockchain",
+   "name": "Web3",
+   "aliases": {
+    "it": [
+     "web3",
+     "web 3",
+     "dApp",
+     "app decentralizzata"
+    ],
+    "en": [
+     "web3",
+     "web 3",
+     "dApp",
+     "decentralized app",
+     "wallet integration"
+    ]
+   },
+   "tech": [
+    "MetaMask",
+    "WalletConnect",
+    "ethers.js",
+    "web3.js",
+    "wagmi",
+    "IPFS",
+    "The Graph"
+   ]
+  },
+  {
+   "id": "blockchain.web3.defi",
+   "parent": "blockchain.web3",
+   "name": "DeFi",
+   "aliases": {
+    "it": [
+     "DeFi",
+     "finanza decentralizzata",
+     "staking",
+     "liquidity pool"
+    ],
+    "en": [
+     "DeFi",
+     "decentralized finance",
+     "DEX",
+     "staking",
+     "yield farming",
+     "liquidity pool",
+     "lending protocol"
+    ]
+   },
+   "tech": [
+    "Uniswap",
+    "Aave",
+    "Chainlink",
+    "Curve"
+   ]
+  },
+  {
+   "id": "blockchain.smartcontracts",
+   "parent": "blockchain",
+   "name": "Smart Contracts",
+   "aliases": {
+    "it": [
+     "smart contract",
+     "contratto intelligente",
+     "audit smart contract"
+    ],
+    "en": [
+     "smart contract",
+     "smart contracts",
+     "smart contract audit",
+     "smart contract developer"
+    ]
+   },
+   "tech": [
+    "Solidity",
+    "Vyper",
+    "Hardhat",
+    "Foundry",
+    "Truffle",
+    "OpenZeppelin",
+    "Anchor",
+    "Move"
+   ]
+  },
+  {
+   "id": "blockchain.nft",
+   "parent": "blockchain",
+   "name": "NFT",
+   "aliases": {
+    "it": [
+     "NFT",
+     "collezione NFT",
+     "marketplace NFT"
+    ],
+    "en": [
+     "NFT",
+     "NFT collection",
+     "NFT marketplace",
+     "mint"
+    ]
+   },
+   "tech": [
+    "ERC-721",
+    "ERC-1155",
+    "OpenSea"
+   ]
+  },
+  {
+   "id": "blockchain.tokens",
+   "parent": "blockchain",
+   "name": "Token e ICO",
+   "aliases": {
+    "it": [
+     "creare un token",
+     "lanciare un token",
+     "presale"
+    ],
+    "en": [
+     "create a token",
+     "launch a token",
+     "ICO",
+     "presale",
+     "memecoin"
+    ]
+   },
+   "tech": [
+    "ERC-20",
+    "BEP-20",
+    "SPL"
+   ]
+  },
+  {
+   "id": "cybersecurity",
+   "parent": "it",
+   "name": "Cybersecurity",
+   "market_id": "M05",
+   "aliases": {
+    "it": [
+     "sicurezza informatica",
+     "cybersecurity",
+     "cyber security",
+     "attacco hacker",
+     "hackerato",
+     "hackerata",
+     "ransomware",
+     "virus",
+     "phishing",
+     "violazione dei dati",
+     "dati rubati",
+     "sito bucato"
+    ],
+    "en": [
+     "cybersecurity",
+     "cyber security",
+     "security audit",
+     "hacked",
+     "ransomware",
+     "phishing",
+     "data breach",
+     "malware"
+    ]
+   },
+   "tech": [
+    "Kali Linux",
+    "Burp Suite",
+    "Wazuh",
+    "CrowdStrike",
+    "Fortinet",
+    "SentinelOne"
+   ]
+  },
+  {
+   "id": "cybersecurity.pentest",
+   "parent": "cybersecurity",
+   "name": "Penetration Testing",
+   "aliases": {
+    "it": [
+     "penetration test",
+     "pentest",
+     "vulnerability assessment",
+     "test di sicurezza",
+     "penetration tester",
+     "ethical hacker",
+     "hacker etico"
+    ],
+    "en": [
+     "penetration test",
+     "pentest",
+     "vulnerability assessment",
+     "VAPT",
+     "penetration tester",
+     "pen tester",
+     "ethical hacker"
+    ]
+   }
+  },
+  {
+   "id": "cybersecurity.compliance",
+   "parent": "cybersecurity",
+   "name": "Compliance",
+   "aliases": {
+    "it": [
+     "NIS2",
+     "GDPR",
+     "ISO 27001",
+     "adeguamento GDPR",
+     "conformità"
+    ],
+    "en": [
+     "NIS2",
+     "GDPR",
+     "ISO 27001",
+     "SOC 2",
+     "compliance"
+    ]
+   }
+  },
+  {
+   "id": "cybersecurity.soc",
+   "parent": "cybersecurity",
+   "name": "SOC e monitoraggio",
+   "aliases": {
+    "it": [
+     "SOC",
+     "SIEM",
+     "monitoraggio sicurezza"
+    ],
+    "en": [
+     "SOC",
+     "SIEM",
+     "MDR",
+     "EDR",
+     "XDR",
+     "security monitoring"
+    ]
+   }
+  },
+  {
+   "id": "cloud",
+   "parent": "it",
+   "name": "Cloud",
+   "market_id": "M08",
+   "aliases": {
+    "it": [
+     "cloud",
+     "migrazione in cloud",
+     "portare in cloud",
+     "server in cloud",
+     "hosting"
+    ],
+    "en": [
+     "cloud",
+     "cloud migration",
+     "move to the cloud",
+     "hosting",
+     "serverless"
+    ]
+   },
+   "tech": [
+    "AWS",
+    "Azure",
+    "Google Cloud",
+    "GCP",
+    "DigitalOcean",
+    "Hetzner",
+    "Vercel",
+    "Netlify",
+    "Cloudflare",
+    "Aruba Cloud",
+    "OVH"
+   ]
+  },
+  {
+   "id": "devops",
+   "parent": "cloud",
+   "name": "DevOps",
+   "aliases": {
+    "it": [
+     "DevOps",
+     "deploy",
+     "messa in produzione",
+     "CI/CD",
+     "pipeline di rilascio"
+    ],
+    "en": [
+     "DevOps",
+     "deployment",
+     "CI/CD",
+     "SRE",
+     "release pipeline"
+    ]
+   },
+   "tech": [
+    "Docker",
+    "Kubernetes",
+    "Terraform",
+    "Ansible",
+    "GitHub Actions",
+    "GitLab CI",
+    "Jenkins",
+    "Helm",
+    "ArgoCD"
+   ]
+  },
+  {
+   "id": "infrastructure",
+   "parent": "cloud",
+   "name": "Infrastructure e reti",
+   "market_id": "M11",
+   "aliases": {
+    "it": [
+     "rete aziendale",
+     "server aziendale",
+     "rete wifi",
+     "infrastruttura IT",
+     "sistemista",
+     "backup",
+     "NAS",
+     "VPN",
+     "centralino VoIP"
+    ],
+    "en": [
+     "network setup",
+     "IT infrastructure",
+     "sysadmin",
+     "system administrator",
+     "backup",
+     "NAS",
+     "VPN",
+     "VoIP"
+    ]
+   },
+   "tech": [
+    "Linux",
+    "Windows Server",
+    "VMware",
+    "Proxmox",
+    "Synology",
+    "pfSense",
+    "Active Directory",
+    "Microsoft 365",
+    "Windows"
+   ]
+  },
+  {
+   "id": "it_support",
+   "parent": "it",
+   "name": "IT Support e servizi gestiti",
+   "market_id": "M11",
+   "aliases": {
+    "it": [
+     "assistenza informatica",
+     "assistenza IT",
+     "tecnico informatico",
+     "help desk",
+     "il computer non funziona",
+     "pc lento",
+     "manutenzione informatica"
+    ],
+    "en": [
+     "IT support",
+     "managed IT",
+     "MSP",
+     "help desk",
+     "tech support",
+     "computer not working"
+    ]
+   }
+  },
+  {
+   "id": "it_consulting",
+   "parent": "it",
+   "name": "IT Consulting",
+   "aliases": {
+    "it": [
+     "consulenza informatica",
+     "consulente IT",
+     "consulente informatico",
+     "CTO",
+     "CTO a tempo",
+     "fractional CTO",
+     "consulenza tecnica",
+     "trasformazione digitale",
+     "digitalizzazione"
+    ],
+    "en": [
+     "IT consulting",
+     "IT consultant",
+     "tech consultant",
+     "fractional CTO",
+     "CTO as a service",
+     "digital transformation",
+     "technical advisor"
+    ]
+   }
+  },
+  {
+   "id": "crm",
+   "parent": "it",
+   "name": "CRM",
+   "market_id": "M01",
+   "aliases": {
+    "it": [
+     "CRM",
+     "gestione clienti",
+     "gestire i clienti",
+     "anagrafica clienti",
+     "gestione contatti",
+     "gestione lead"
+    ],
+    "en": [
+     "CRM",
+     "customer management",
+     "lead management",
+     "sales pipeline"
+    ]
+   },
+   "tech": [
+    "Salesforce",
+    "HubSpot",
+    "Pipedrive",
+    "Zoho",
+    "Odoo CRM",
+    "Monday",
+    "Dynamics 365",
+    "Bitrix24",
+    "Kommo"
+   ]
+  },
+  {
+   "id": "erp",
+   "parent": "it",
+   "name": "ERP",
+   "market_id": "M02",
+   "aliases": {
+    "it": [
+     "ERP",
+     "gestionale aziendale",
+     "gestionale",
+     "magazzino",
+     "gestione magazzino",
+     "contabilità",
+     "gestione commesse",
+     "gestione ordini"
+    ],
+    "en": [
+     "ERP",
+     "inventory management",
+     "warehouse management",
+     "accounting software",
+     "order management"
+    ]
+   },
+   "tech": [
+    "SAP",
+    "SAP Business One",
+    "Odoo",
+    "NetSuite",
+    "Dynamics 365",
+    "Zucchetti",
+    "TeamSystem",
+    "Mago",
+    "Sage",
+    "QuickBooks",
+    "Xero"
+   ]
+  },
+  {
+   "id": "enterprise",
+   "parent": "it",
+   "name": "Enterprise Software",
+   "market_id": "M03",
+   "aliases": {
+    "it": [
+     "software gestionale",
+     "software aziendale",
+     "intranet",
+     "gestione documentale",
+     "gestione presenze",
+     "gestione turni",
+     "gestione prenotazioni",
+     "prenotazioni online",
+     "gestione appuntamenti"
+    ],
+    "en": [
+     "enterprise software",
+     "business software",
+     "intranet",
+     "document management",
+     "booking system",
+     "scheduling system",
+     "HR software"
+    ]
+   },
+   "tech": [
+    "SharePoint",
+    "Microsoft 365",
+    "Google Workspace",
+    "Notion",
+    "Jira",
+    "Confluence",
+    "Google Calendar",
+    "Calendly"
+   ]
+  },
+  {
+   "id": "ecommerce",
+   "parent": "it",
+   "name": "E-commerce",
+   "market_id": "M13",
+   "aliases": {
+    "it": [
+     "e-commerce",
+     "ecommerce",
+     "negozio online",
+     "shop online",
+     "vendere online",
+     "marketplace",
+     "vendere anche online",
+     "vendere su internet"
+    ],
+    "en": [
+     "e-commerce",
+     "ecommerce",
+     "online store",
+     "online shop",
+     "sell online",
+     "marketplace"
+    ]
+   },
+   "tech": [
+    "Shopify",
+    "WooCommerce",
+    "Magento",
+    "PrestaShop",
+    "BigCommerce",
+    "Amazon",
+    "eBay",
+    "Etsy"
+   ]
+  },
+  {
+   "id": "fintech",
+   "parent": "it",
+   "name": "Fintech",
+   "aliases": {
+    "it": [
+     "fintech",
+     "app di pagamento",
+     "conto digitale",
+     "open banking",
+     "trading automatico",
+     "bot di trading"
+    ],
+    "en": [
+     "fintech",
+     "payment app",
+     "open banking",
+     "trading bot",
+     "algorithmic trading",
+     "neobank"
+    ]
+   },
+   "tech": [
+    "Plaid",
+    "Stripe",
+    "MetaTrader",
+    "TradingView",
+    "Pine Script",
+    "Interactive Brokers"
+   ]
+  },
+  {
+   "id": "iot",
+   "parent": "it",
+   "name": "IoT",
+   "aliases": {
+    "it": [
+     "IoT",
+     "sensori",
+     "domotica",
+     "dispositivi connessi",
+     "monitoraggio remoto",
+     "telemetria",
+     "sensore"
+    ],
+    "en": [
+     "IoT",
+     "internet of things",
+     "sensors",
+     "smart home",
+     "connected devices",
+     "telemetry",
+     "sensor"
+    ]
+   },
+   "tech": [
+    "MQTT",
+    "LoRaWAN",
+    "Zigbee",
+    "Home Assistant",
+    "Node-RED",
+    "AWS IoT",
+    "ThingsBoard"
+   ]
+  },
+  {
+   "id": "embedded",
+   "parent": "iot",
+   "name": "Embedded e Firmware",
+   "aliases": {
+    "it": [
+     "firmware",
+     "embedded",
+     "elettronica",
+     "scheda elettronica",
+     "microcontrollore",
+     "PLC"
+    ],
+    "en": [
+     "firmware",
+     "embedded",
+     "embedded systems",
+     "microcontroller",
+     "PCB",
+     "PLC"
+    ]
+   },
+   "tech": [
+    "Arduino",
+    "ESP32",
+    "STM32",
+    "Raspberry Pi",
+    "FreeRTOS",
+    "Zephyr",
+    "Siemens",
+    "Codesys"
+   ]
+  },
+  {
+   "id": "gaming",
+   "parent": "it",
+   "name": "Gaming",
+   "aliases": {
+    "it": [
+     "videogioco",
+     "videogiochi",
+     "gioco per smartphone",
+     "game developer",
+     "sviluppatore di giochi"
+    ],
+    "en": [
+     "video game",
+     "game developer",
+     "game dev",
+     "mobile game",
+     "indie game"
+    ]
+   },
+   "tech": [
+    "Unity",
+    "Unreal Engine",
+    "Godot",
+    "GameMaker",
+    "Roblox"
+   ]
+  },
+  {
+   "id": "xr",
+   "parent": "it",
+   "name": "AR/VR",
+   "aliases": {
+    "it": [
+     "realtà aumentata",
+     "realtà virtuale",
+     "visore",
+     "tour virtuale"
+    ],
+    "en": [
+     "augmented reality",
+     "virtual reality",
+     "AR",
+     "VR",
+     "XR",
+     "mixed reality",
+     "metaverse"
+    ]
+   },
+   "tech": [
+    "Unity",
+    "ARKit",
+    "ARCore",
+    "WebXR",
+    "Vision Pro",
+    "Meta Quest",
+    "8th Wall"
+   ]
+  },
+  {
+   "id": "robotics",
+   "parent": "it",
+   "name": "Robotics",
+   "aliases": {
+    "it": [
+     "robotica",
+     "robot",
+     "braccio robotico",
+     "automazione industriale",
+     "cobot"
+    ],
+    "en": [
+     "robotics",
+     "robot",
+     "robotic arm",
+     "industrial automation",
+     "cobot"
+    ]
+   },
+   "tech": [
+    "ROS",
+    "ROS2",
+    "Gazebo",
+    "ABB",
+    "KUKA",
+    "Universal Robots"
+   ]
+  },
+  {
+   "id": "devtools",
+   "parent": "software",
+   "name": "Developer Tools",
+   "aliases": {
+    "it": [
+     "estensione per il browser",
+     "estensione chrome",
+     "plugin",
+     "libreria",
+     "CLI"
+    ],
+    "en": [
+     "developer tools",
+     "browser extension",
+     "chrome extension",
+     "plugin",
+     "SDK",
+     "library",
+     "VS Code extension"
+    ]
+   },
+   "tech": [
+    "Chrome Extension",
+    "VS Code",
+    "GitHub",
+    "npm"
+   ]
+  },
+  {
+   "id": "marketing_tech",
+   "parent": "it",
+   "name": "Marketing Tech",
+   "market_id": "M12",
+   "aliases": {
+    "it": [
+     "marketing automation",
+     "email automatiche",
+     "newsletter automatica",
+     "funnel"
+    ],
+    "en": [
+     "marketing automation",
+     "email automation",
+     "funnel",
+     "lead generation tool"
+    ]
+   },
+   "tech": [
+    "Mailchimp",
+    "ActiveCampaign",
+    "Brevo",
+    "Klaviyo",
+    "GoHighLevel",
+    "ClickFunnels",
+    "Facebook Ads",
+    "Google Ads"
+   ]
+  },
+  {
+   "id": "proptech",
+   "parent": "it",
+   "name": "Property technology",
+   "market_id": "M14",
+   "aliases": {
+    "it": [
+     "channel manager",
+     "gestione affitti brevi",
+     "gestionale per b&b",
+     "gestionale per hotel"
+    ],
+    "en": [
+     "property management software",
+     "channel manager",
+     "PMS"
+    ]
+   },
+   "tech": [
+    "Airbnb",
+    "Booking.com",
+    "Smoobu",
+    "Lodgify",
+    "Beds24",
+    "Booking"
+   ]
+  },
+  {
+   "id": "design",
+   "parent": "it",
+   "name": "UX/UI Design",
+   "market_id": "M15",
+   "aliases": {
+    "it": [
+     "UX",
+     "UI",
+     "UX/UI",
+     "designer di app",
+     "grafica dell'app",
+     "interfaccia utente",
+     "mockup",
+     "prototipo grafico"
+    ],
+    "en": [
+     "UX",
+     "UI",
+     "UX/UI",
+     "UI designer",
+     "UX designer",
+     "app design",
+     "mockup",
+     "wireframe"
+    ]
+   },
+   "tech": [
+    "Figma",
+    "Sketch",
+    "Adobe XD",
+    "Framer"
+   ]
+  }
+ ]
+}

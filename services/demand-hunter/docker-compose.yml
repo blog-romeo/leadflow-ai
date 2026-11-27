@@ -1,0 +1,34 @@
+# Example deployment on a dedicated server: the service behind Caddy (automatic HTTPS).
+# Set DH_DOMAIN and fill .env (see .env.example) before `docker compose up -d`.
+services:
+  demand-hunter:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - dh-data:/data
+    expose:
+      - "8080"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - DH_DOMAIN=${DH_DOMAIN:?set DH_DOMAIN}
+    command: caddy reverse-proxy --from ${DH_DOMAIN} --to demand-hunter:8080
+    volumes:
+      - caddy-data:/data
+    depends_on:
+      - demand-hunter
+
+volumes:
+  dh-data:
+  caddy-data:

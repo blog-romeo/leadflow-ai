@@ -6,6 +6,7 @@ import { launchEn } from './launch.en'
 import { aiAgentsEn } from './aiAgents.en'
 import { aiMonitoringEn } from './aiMonitoring.en'
 import { aiTrainingEn } from './aiTraining.en'
+import { demandHunterEn } from './demandHunter.en'
 
 export const en: Dictionary = {
   common: {
@@ -120,6 +121,7 @@ export const en: Dictionary = {
     groupAccount: 'Account',
     dashboard: 'Dashboard',
     leadFinder: 'AI Lead Finder',
+    demandHunter: 'Demand Hunter',
     analyzer: 'AI Business Analyzer',
     scoring: 'AI Lead Scoring',
     salesAgent: 'AI Sales Agent',
@@ -891,4 +893,5 @@ export const en: Dictionary = {
   ...aiAgentsEn,
   ...aiMonitoringEn,
   ...aiTrainingEn,
+  ...demandHunterEn,
 }

@@ -13,3 +13,8 @@ supabase/.temp
 !.env.example
 e2e-report.json
 benchmark-report.json
+# Demand Hunter (servizio Python): cache e dati locali mai versionati
+__pycache__/
+*.pyc
+services/demand-hunter/data/
+services/demand-hunter/.env

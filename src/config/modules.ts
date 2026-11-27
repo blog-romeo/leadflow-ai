@@ -4,6 +4,7 @@ import {
   Bot,
   Building2,
   ChartLine,
+  Crosshair,
   CreditCard,
   Gauge,
   Inbox,
@@ -74,6 +75,8 @@ export function visibleModules(isSuperAdmin: boolean): ModuleDef[] {
  * Comunicazioni e Automazioni del Campaign Manager, Canali email nelle impostazioni.
  */
 export const NAV_EXTRAS: ModuleDef[] = [
+  // Demand Hunter (integrazione BuyerML): fonte di lead del Lead Finder, stesso piano. Operativo solo con il servizio collegato.
+  { key: 'demandHunter', path: '/app/demand-hunter', labelKey: 'nav.demandHunter', icon: Crosshair, group: 'ai', status: 'available', access: 'member' },
   { key: 'inbox', path: '/app/inbox', labelKey: 'nav.inbox', icon: Inbox, group: 'sales', status: 'available', access: 'member' },
   { key: 'automations', path: '/app/automations', labelKey: 'nav.automations', icon: Workflow, group: 'sales', status: 'available', access: 'member' },
   { key: 'channels', path: '/app/settings/channels', labelKey: 'nav.channels', icon: Send, group: 'account', status: 'available', access: 'member' },
@@ -89,7 +92,7 @@ export const AI_AGENT_PAGES: ModuleDef[] = [
   { key: 'aiWorkflows', path: '/app/ai-workflows', labelKey: 'nav.aiWorkflows', icon: Network, group: 'ai', status: 'available', access: 'member' },
 ]
 
-const NAV_ORDER = ['dashboard', 'leadFinder', 'analyzer', 'scoring', 'salesAgent', 'aiAgents', 'aiWorkflows', 'crm', 'campaigns', 'inbox', 'followUp', 'automations', 'analytics', 'billing', 'settings', 'channels', 'support', 'admin']
+const NAV_ORDER = ['dashboard', 'leadFinder', 'demandHunter', 'analyzer', 'scoring', 'salesAgent', 'aiAgents', 'aiWorkflows', 'crm', 'campaigns', 'inbox', 'followUp', 'automations', 'analytics', 'billing', 'settings', 'channels', 'support', 'admin']
 
 /** Voci della barra laterale: moduli visibili + pagine operative, in ordine di lavoro. */
 export function navItems(isSuperAdmin: boolean, aiAgents = env.featureAiAgents): ModuleDef[] {
