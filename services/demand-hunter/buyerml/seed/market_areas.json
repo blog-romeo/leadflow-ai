@@ -1,0 +1,1314 @@
+{
+ "_about": "Le aree di mercato da esplorare, per obiettivo. Vocabolario iniziale (22-23/11/2026, dalle richieste del progetto): NON è un elenco chiuso. Ogni nodo può essere espanso dalla pagina Caccia (suggerimenti di Google, a pagamento con conferma) e i termini scoperti si salvano in buyerml.db (tabella concepts). rel = tipo di legame con il nodo padre.",
+ "relations": [
+  "area",
+  "settore",
+  "sottoargomento",
+  "sinonimo",
+  "tecnologia",
+  "prodotto",
+  "servizio",
+  "caso d'uso",
+  "problema",
+  "ruolo",
+  "mercato vicino",
+  "variante",
+  "correlato"
+ ],
+ "goals": {
+  "clienti": {
+   "label": "Clienti per la mia software house",
+   "children": [
+    {
+     "label": "Sviluppo software",
+     "rel": "area",
+     "children": [
+      {
+       "label": "Software development",
+       "rel": "sinonimo"
+      },
+      {
+       "label": "Software house",
+       "rel": "servizio"
+      },
+      {
+       "label": "Sviluppatore",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Programmatore",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Web developer",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Backend developer",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Frontend developer",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Full-stack developer",
+       "rel": "ruolo"
+      },
+      {
+       "label": "App developer",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Sviluppo applicazioni",
+       "rel": "servizio",
+       "children": [
+        {
+         "label": "App mobile",
+         "rel": "prodotto"
+        },
+        {
+         "label": "App iOS",
+         "rel": "prodotto"
+        },
+        {
+         "label": "App Android",
+         "rel": "prodotto"
+        }
+       ]
+      },
+      {
+       "label": "Sviluppo piattaforme",
+       "rel": "servizio"
+      },
+      {
+       "label": "Software personalizzato",
+       "rel": "servizio"
+      },
+      {
+       "label": "Custom software",
+       "rel": "sinonimo"
+      },
+      {
+       "label": "Consulenza informatica",
+       "rel": "servizio"
+      },
+      {
+       "label": "Outsourcing IT",
+       "rel": "servizio"
+      }
+     ]
+    },
+    {
+     "label": "Linguaggi e framework",
+     "rel": "area",
+     "children": [
+      {
+       "label": "Python",
+       "rel": "tecnologia",
+       "children": [
+        {
+         "label": "Django",
+         "rel": "tecnologia"
+        },
+        {
+         "label": "FastAPI",
+         "rel": "tecnologia"
+        }
+       ]
+      },
+      {
+       "label": "JavaScript",
+       "rel": "tecnologia"
+      },
+      {
+       "label": "TypeScript",
+       "rel": "tecnologia"
+      },
+      {
+       "label": "PHP",
+       "rel": "tecnologia",
+       "children": [
+        {
+         "label": "Laravel",
+         "rel": "tecnologia"
+        },
+        {
+         "label": "WordPress",
+         "rel": "tecnologia"
+        }
+       ]
+      },
+      {
+       "label": "Java",
+       "rel": "tecnologia"
+      },
+      {
+       "label": "C#",
+       "rel": "tecnologia"
+      },
+      {
+       "label": "C++",
+       "rel": "tecnologia"
+      },
+      {
+       "label": "React",
+       "rel": "tecnologia"
+      },
+      {
+       "label": "Angular",
+       "rel": "tecnologia"
+      },
+      {
+       "label": "Vue",
+       "rel": "tecnologia"
+      },
+      {
+       "label": "Node.js",
+       "rel": "tecnologia"
+      },
+      {
+       "label": "Flutter",
+       "rel": "tecnologia"
+      },
+      {
+       "label": "React Native",
+       "rel": "tecnologia"
+      },
+      {
+       "label": "SQL",
+       "rel": "tecnologia"
+      }
+     ]
+    },
+    {
+     "label": "Software aziendali",
+     "rel": "area",
+     "children": [
+      {
+       "label": "Gestionale aziendale",
+       "rel": "prodotto",
+       "children": [
+        {
+         "label": "Gestionale magazzino",
+         "rel": "prodotto"
+        },
+        {
+         "label": "Gestionale produzione",
+         "rel": "prodotto"
+        },
+        {
+         "label": "Gestionale amministrativo",
+         "rel": "prodotto"
+        },
+        {
+         "label": "Gestionale logistico",
+         "rel": "prodotto"
+        },
+        {
+         "label": "Gestionale personalizzato",
+         "rel": "prodotto"
+        }
+       ]
+      },
+      {
+       "label": "ERP",
+       "rel": "prodotto",
+       "children": [
+        {
+         "label": "Odoo",
+         "rel": "prodotto"
+        },
+        {
+         "label": "SAP",
+         "rel": "prodotto"
+        },
+        {
+         "label": "SAP Business One",
+         "rel": "prodotto"
+        }
+       ]
+      },
+      {
+       "label": "CRM",
+       "rel": "prodotto",
+       "children": [
+        {
+         "label": "Customer management",
+         "rel": "sinonimo"
+        },
+        {
+         "label": "Sales automation",
+         "rel": "caso d'uso"
+        },
+        {
+         "label": "Lead management",
+         "rel": "caso d'uso"
+        },
+        {
+         "label": "Pipeline commerciale",
+         "rel": "caso d'uso"
+        }
+       ]
+      },
+      {
+       "label": "MES",
+       "rel": "prodotto",
+       "children": [
+        {
+         "label": "Manufacturing Execution System",
+         "rel": "sinonimo"
+        },
+        {
+         "label": "Monitoraggio produzione",
+         "rel": "caso d'uso"
+        },
+        {
+         "label": "Controllo qualità",
+         "rel": "caso d'uso"
+        },
+        {
+         "label": "Pianificazione produzione",
+         "rel": "caso d'uso"
+        },
+        {
+         "label": "Integrazione macchinari",
+         "rel": "caso d'uso"
+        }
+       ]
+      },
+      {
+       "label": "WMS",
+       "rel": "prodotto",
+       "children": [
+        {
+         "label": "Warehouse management",
+         "rel": "sinonimo"
+        },
+        {
+         "label": "Gestione inventario",
+         "rel": "caso d'uso"
+        },
+        {
+         "label": "Picking",
+         "rel": "caso d'uso"
+        },
+        {
+         "label": "Packing",
+         "rel": "caso d'uso"
+        },
+        {
+         "label": "Tracciabilità",
+         "rel": "caso d'uso"
+        },
+        {
+         "label": "Gestione spedizioni",
+         "rel": "caso d'uso"
+        }
+       ]
+      },
+      {
+       "label": "Software amministrativo",
+       "rel": "prodotto"
+      },
+      {
+       "label": "Software logistico",
+       "rel": "prodotto"
+      },
+      {
+       "label": "Software produzione",
+       "rel": "prodotto"
+      },
+      {
+       "label": "Software magazzino",
+       "rel": "prodotto"
+      },
+      {
+       "label": "Software contabilità",
+       "rel": "prodotto"
+      },
+      {
+       "label": "Gestione documentale",
+       "rel": "prodotto"
+      },
+      {
+       "label": "Workflow management",
+       "rel": "prodotto"
+      },
+      {
+       "label": "Business intelligence",
+       "rel": "prodotto",
+       "children": [
+        {
+         "label": "Power BI",
+         "rel": "prodotto"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "label": "Automazione e intelligenza artificiale",
+     "rel": "area",
+     "children": [
+      {
+       "label": "Automazione processi",
+       "rel": "servizio",
+       "children": [
+        {
+         "label": "RPA",
+         "rel": "tecnologia"
+        },
+        {
+         "label": "Workflow automation",
+         "rel": "sinonimo"
+        },
+        {
+         "label": "n8n",
+         "rel": "tecnologia"
+        },
+        {
+         "label": "Zapier",
+         "rel": "tecnologia"
+        }
+       ]
+      },
+      {
+       "label": "AI automation",
+       "rel": "servizio"
+      },
+      {
+       "label": "Agenti AI",
+       "rel": "prodotto",
+       "children": [
+        {
+         "label": "Agenti autonomi",
+         "rel": "sinonimo"
+        },
+        {
+         "label": "AI agent",
+         "rel": "sinonimo"
+        }
+       ]
+      },
+      {
+       "label": "Chatbot",
+       "rel": "prodotto",
+       "children": [
+        {
+         "label": "Chatbot WhatsApp",
+         "rel": "prodotto"
+        },
+        {
+         "label": "Assistenti virtuali",
+         "rel": "sinonimo"
+        }
+       ]
+      },
+      {
+       "label": "Voicebot",
+       "rel": "prodotto"
+      },
+      {
+       "label": "LLM",
+       "rel": "tecnologia",
+       "children": [
+        {
+         "label": "RAG",
+         "rel": "tecnologia"
+        }
+       ]
+      },
+      {
+       "label": "Machine Learning",
+       "rel": "tecnologia"
+      },
+      {
+       "label": "Computer Vision",
+       "rel": "tecnologia"
+      },
+      {
+       "label": "Natural Language Processing",
+       "rel": "tecnologia"
+      },
+      {
+       "label": "OCR",
+       "rel": "tecnologia",
+       "children": [
+        {
+         "label": "Intelligent Document Processing",
+         "rel": "servizio"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "label": "Cybersecurity",
+     "rel": "area",
+     "children": [
+      {
+       "label": "Sicurezza informatica",
+       "rel": "sinonimo"
+      },
+      {
+       "label": "Network security",
+       "rel": "sottoargomento",
+       "children": [
+        {
+         "label": "Firewall",
+         "rel": "prodotto"
+        },
+        {
+         "label": "IDS",
+         "rel": "tecnologia"
+        },
+        {
+         "label": "IPS",
+         "rel": "tecnologia"
+        },
+        {
+         "label": "VPN",
+         "rel": "tecnologia"
+        },
+        {
+         "label": "Network monitoring",
+         "rel": "servizio"
+        },
+        {
+         "label": "Network access control",
+         "rel": "tecnologia"
+        }
+       ]
+      },
+      {
+       "label": "Endpoint security",
+       "rel": "sottoargomento",
+       "children": [
+        {
+         "label": "Antivirus",
+         "rel": "prodotto"
+        },
+        {
+         "label": "EDR",
+         "rel": "prodotto",
+         "children": [
+          {
+           "label": "Endpoint detection",
+           "rel": "sinonimo"
+          },
+          {
+           "label": "Endpoint response",
+           "rel": "sinonimo"
+          },
+          {
+           "label": "Managed Detection and Response",
+           "rel": "servizio"
+          }
+         ]
+        },
+        {
+         "label": "XDR",
+         "rel": "prodotto"
+        },
+        {
+         "label": "Endpoint protection",
+         "rel": "sinonimo"
+        },
+        {
+         "label": "Device management",
+         "rel": "servizio"
+        }
+       ]
+      },
+      {
+       "label": "Cloud security",
+       "rel": "sottoargomento"
+      },
+      {
+       "label": "Application security",
+       "rel": "sottoargomento"
+      },
+      {
+       "label": "Data security",
+       "rel": "sottoargomento",
+       "children": [
+        {
+         "label": "Data protection",
+         "rel": "sinonimo"
+        },
+        {
+         "label": "Backup",
+         "rel": "servizio"
+        },
+        {
+         "label": "Disaster recovery",
+         "rel": "servizio"
+        }
+       ]
+      },
+      {
+       "label": "Security operations",
+       "rel": "sottoargomento",
+       "children": [
+        {
+         "label": "SOC",
+         "rel": "servizio"
+        },
+        {
+         "label": "SIEM",
+         "rel": "prodotto",
+         "children": [
+          {
+           "label": "Log collection",
+           "rel": "caso d'uso"
+          },
+          {
+           "label": "Security event correlation",
+           "rel": "caso d'uso"
+          },
+          {
+           "label": "Threat detection",
+           "rel": "caso d'uso"
+          },
+          {
+           "label": "Security monitoring",
+           "rel": "caso d'uso"
+          }
+         ]
+        },
+        {
+         "label": "Threat intelligence",
+         "rel": "servizio"
+        },
+        {
+         "label": "Incident response",
+         "rel": "servizio"
+        },
+        {
+         "label": "Log management",
+         "rel": "servizio"
+        }
+       ]
+      },
+      {
+       "label": "Penetration testing",
+       "rel": "servizio"
+      },
+      {
+       "label": "Vulnerability assessment",
+       "rel": "servizio"
+      },
+      {
+       "label": "Security audit",
+       "rel": "servizio"
+      },
+      {
+       "label": "Identity management",
+       "rel": "sottoargomento",
+       "children": [
+        {
+         "label": "Access control",
+         "rel": "tecnologia"
+        }
+       ]
+      },
+      {
+       "label": "Sicurezza infrastrutture",
+       "rel": "sottoargomento"
+      },
+      {
+       "label": "Sicurezza sistemi",
+       "rel": "sottoargomento"
+      },
+      {
+       "label": "Sicurezza fisica",
+       "rel": "mercato vicino",
+       "children": [
+        {
+         "label": "Videosorveglianza",
+         "rel": "servizio"
+        },
+        {
+         "label": "Sistemi d'allarme",
+         "rel": "prodotto",
+         "children": [
+          {
+           "label": "Allarmi antintrusione",
+           "rel": "prodotto"
+          },
+          {
+           "label": "Sensori movimento",
+           "rel": "prodotto"
+          },
+          {
+           "label": "Centrali di allarme",
+           "rel": "prodotto"
+          },
+          {
+           "label": "Installazione impianti sicurezza",
+           "rel": "servizio"
+          }
+         ]
+        },
+        {
+         "label": "Controllo accessi",
+         "rel": "prodotto"
+        },
+        {
+         "label": "Sensori perimetrali",
+         "rel": "prodotto"
+        },
+        {
+         "label": "Protezione edifici",
+         "rel": "caso d'uso"
+        },
+        {
+         "label": "Sistemi antintrusione",
+         "rel": "prodotto"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "label": "Cloud e infrastruttura",
+     "rel": "area",
+     "children": [
+      {
+       "label": "Cloud computing",
+       "rel": "sinonimo"
+      },
+      {
+       "label": "AWS",
+       "rel": "prodotto"
+      },
+      {
+       "label": "Azure",
+       "rel": "prodotto"
+      },
+      {
+       "label": "Google Cloud",
+       "rel": "prodotto"
+      },
+      {
+       "label": "DevOps",
+       "rel": "servizio",
+       "children": [
+        {
+         "label": "Docker",
+         "rel": "tecnologia"
+        },
+        {
+         "label": "Kubernetes",
+         "rel": "tecnologia"
+        },
+        {
+         "label": "CI/CD",
+         "rel": "tecnologia"
+        }
+       ]
+      },
+      {
+       "label": "Server",
+       "rel": "prodotto"
+      },
+      {
+       "label": "Hosting",
+       "rel": "servizio"
+      },
+      {
+       "label": "Database",
+       "rel": "tecnologia"
+      },
+      {
+       "label": "API",
+       "rel": "tecnologia",
+       "children": [
+        {
+         "label": "Integrazione API",
+         "rel": "servizio"
+        },
+        {
+         "label": "Microservizi",
+         "rel": "tecnologia"
+        }
+       ]
+      },
+      {
+       "label": "Integrazioni",
+       "rel": "servizio"
+      },
+      {
+       "label": "Infrastructure management",
+       "rel": "servizio"
+      }
+     ]
+    },
+    {
+     "label": "Blockchain e Web3",
+     "rel": "area",
+     "children": [
+      {
+       "label": "Blockchain development",
+       "rel": "servizio"
+      },
+      {
+       "label": "Web3",
+       "rel": "sottoargomento",
+       "children": [
+        {
+         "label": "DeFi",
+         "rel": "sottoargomento"
+        },
+        {
+         "label": "NFT",
+         "rel": "sottoargomento"
+        },
+        {
+         "label": "DAO",
+         "rel": "sottoargomento"
+        },
+        {
+         "label": "DApp",
+         "rel": "prodotto"
+        },
+        {
+         "label": "Wallet",
+         "rel": "prodotto"
+        },
+        {
+         "label": "Tokenization",
+         "rel": "caso d'uso"
+        }
+       ]
+      },
+      {
+       "label": "Smart contract",
+       "rel": "prodotto",
+       "children": [
+        {
+         "label": "Solidity",
+         "rel": "tecnologia"
+        },
+        {
+         "label": "Smart contract development",
+         "rel": "servizio"
+        },
+        {
+         "label": "Smart contract audit",
+         "rel": "servizio",
+         "children": [
+          {
+           "label": "Reentrancy",
+           "rel": "problema"
+          },
+          {
+           "label": "Access control",
+           "rel": "problema"
+          },
+          {
+           "label": "Integer overflow",
+           "rel": "problema"
+          },
+          {
+           "label": "Contract verification",
+           "rel": "servizio"
+          },
+          {
+           "label": "Security testing",
+           "rel": "servizio"
+          }
+         ]
+        },
+        {
+         "label": "Ethereum",
+         "rel": "tecnologia"
+        },
+        {
+         "label": "Contract testing",
+         "rel": "servizio"
+        }
+       ]
+      },
+      {
+       "label": "Blockchain security",
+       "rel": "sottoargomento",
+       "children": [
+        {
+         "label": "Wallet security",
+         "rel": "servizio"
+        },
+        {
+         "label": "Smart contract vulnerabilities",
+         "rel": "problema"
+        },
+        {
+         "label": "Blockchain audit",
+         "rel": "servizio"
+        },
+        {
+         "label": "Private key management",
+         "rel": "caso d'uso"
+        }
+       ]
+      },
+      {
+       "label": "Decentralized applications",
+       "rel": "sinonimo"
+      },
+      {
+       "label": "Distributed Ledger Technology",
+       "rel": "sinonimo"
+      },
+      {
+       "label": "Hyperledger",
+       "rel": "tecnologia"
+      }
+     ]
+    },
+    {
+     "label": "Altre aree",
+     "rel": "area",
+     "children": [
+      {
+       "label": "IoT",
+       "rel": "tecnologia"
+      },
+      {
+       "label": "Industria 4.0",
+       "rel": "settore"
+      },
+      {
+       "label": "Industria 5.0",
+       "rel": "settore"
+      },
+      {
+       "label": "Digitalizzazione aziendale",
+       "rel": "servizio"
+      },
+      {
+       "label": "Sistemi embedded",
+       "rel": "tecnologia",
+       "children": [
+        {
+         "label": "Firmware",
+         "rel": "prodotto"
+        }
+       ]
+      },
+      {
+       "label": "Integrazione hardware/software",
+       "rel": "servizio"
+      },
+      {
+       "label": "Robotica",
+       "rel": "settore"
+      },
+      {
+       "label": "Data engineering",
+       "rel": "servizio"
+      },
+      {
+       "label": "Data analytics",
+       "rel": "servizio"
+      },
+      {
+       "label": "E-commerce",
+       "rel": "prodotto",
+       "children": [
+        {
+         "label": "Shopify",
+         "rel": "prodotto"
+        },
+        {
+         "label": "Sito e-commerce",
+         "rel": "prodotto"
+        }
+       ]
+      },
+      {
+       "label": "Sito web",
+       "rel": "prodotto"
+      },
+      {
+       "label": "Piattaforme digitali",
+       "rel": "prodotto"
+      },
+      {
+       "label": "SaaS",
+       "rel": "prodotto"
+      },
+      {
+       "label": "Marketplace",
+       "rel": "prodotto"
+      },
+      {
+       "label": "System integration",
+       "rel": "servizio"
+      },
+      {
+       "label": "Consulenza tecnologica",
+       "rel": "servizio"
+      }
+     ]
+    }
+   ]
+  },
+  "lavoro": {
+   "label": "Lavoro",
+   "children": [
+    {
+     "label": "Lavoro IT",
+     "rel": "settore",
+     "children": [
+      {
+       "label": "Sviluppatore",
+       "rel": "ruolo",
+       "children": [
+        {
+         "label": "Sviluppatore Python",
+         "rel": "ruolo"
+        },
+        {
+         "label": "Sviluppatore Java",
+         "rel": "ruolo"
+        },
+        {
+         "label": "Sviluppatore PHP",
+         "rel": "ruolo"
+        },
+        {
+         "label": "Sviluppatore Laravel",
+         "rel": "ruolo"
+        },
+        {
+         "label": "Sviluppatore React",
+         "rel": "ruolo"
+        },
+        {
+         "label": "Sviluppatore full stack",
+         "rel": "ruolo"
+        },
+        {
+         "label": "Sviluppatore mobile",
+         "rel": "ruolo"
+        }
+       ]
+      },
+      {
+       "label": "Programmatore",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Sistemista",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Tecnico informatico",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Help desk",
+       "rel": "ruolo"
+      },
+      {
+       "label": "DevOps engineer",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Data analyst",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Data scientist",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Esperto cybersecurity",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Project manager IT",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Web designer",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Consulente SAP",
+       "rel": "ruolo"
+      }
+     ]
+    },
+    {
+     "label": "Ristorazione e turismo",
+     "rel": "settore",
+     "children": [
+      {
+       "label": "Cuoco",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Cameriere",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Barista",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Pizzaiolo",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Lavapiatti",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Receptionist",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Animatore",
+       "rel": "ruolo"
+      }
+     ]
+    },
+    {
+     "label": "Commercio e vendita",
+     "rel": "settore",
+     "children": [
+      {
+       "label": "Commesso",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Addetto vendite",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Cassiere",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Agente di commercio",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Venditore",
+       "rel": "ruolo"
+      }
+     ]
+    },
+    {
+     "label": "Amministrazione e ufficio",
+     "rel": "settore",
+     "children": [
+      {
+       "label": "Impiegato amministrativo",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Segretaria",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Contabile",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Addetto paghe",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Data entry",
+       "rel": "ruolo"
+      }
+     ]
+    },
+    {
+     "label": "Logistica e trasporti",
+     "rel": "settore",
+     "children": [
+      {
+       "label": "Magazziniere",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Mulettista",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Autista",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Corriere",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Addetto spedizioni",
+       "rel": "ruolo"
+      }
+     ]
+    },
+    {
+     "label": "Edilizia e impianti",
+     "rel": "settore",
+     "children": [
+      {
+       "label": "Muratore",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Elettricista",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Idraulico",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Imbianchino",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Carpentiere",
+       "rel": "ruolo"
+      }
+     ]
+    },
+    {
+     "label": "Industria e produzione",
+     "rel": "settore",
+     "children": [
+      {
+       "label": "Operaio",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Saldatore",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Manutentore",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Addetto produzione",
+       "rel": "ruolo"
+      }
+     ]
+    },
+    {
+     "label": "Sanità e assistenza",
+     "rel": "settore",
+     "children": [
+      {
+       "label": "Infermiere",
+       "rel": "ruolo"
+      },
+      {
+       "label": "OSS",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Badante",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Fisioterapista",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Assistente alla poltrona",
+       "rel": "ruolo"
+      }
+     ]
+    },
+    {
+     "label": "Cura della persona",
+     "rel": "settore",
+     "children": [
+      {
+       "label": "Parrucchiere",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Estetista",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Barbiere",
+       "rel": "ruolo"
+      }
+     ]
+    },
+    {
+     "label": "Pulizie e servizi",
+     "rel": "settore",
+     "children": [
+      {
+       "label": "Addetto pulizie",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Colf",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Giardiniere",
+       "rel": "ruolo"
+      }
+     ]
+    },
+    {
+     "label": "Istruzione",
+     "rel": "settore",
+     "children": [
+      {
+       "label": "Insegnante",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Educatore",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Baby sitter",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Tutor ripetizioni",
+       "rel": "ruolo"
+      }
+     ]
+    },
+    {
+     "label": "Marketing e comunicazione",
+     "rel": "settore",
+     "children": [
+      {
+       "label": "Social media manager",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Grafico",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Copywriter",
+       "rel": "ruolo"
+      },
+      {
+       "label": "Video maker",
+       "rel": "ruolo"
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

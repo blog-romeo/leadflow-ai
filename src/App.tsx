@@ -18,6 +18,7 @@ const Dashboard = lazy(() => import('./pages/app/Dashboard'))
 const Crm = lazy(() => import('./pages/app/Crm'))
 const ModulePreview = lazy(() => import('./pages/app/ModulePreview'))
 const LeadFinder = lazy(() => import('./pages/app/LeadFinder'))
+const DemandHunter = lazy(() => import('./pages/app/DemandHunter'))
 const LeadScoring = lazy(() => import('./pages/app/LeadScoring'))
 const SalesDashboard = lazy(() => import('./pages/app/SalesDashboard'))
 const SalesProfile = lazy(() => import('./pages/app/SalesProfile'))
@@ -125,6 +126,7 @@ export function AppRoutes() {
             />
             <Route path="crm" element={<Suspense fallback={<LoadingState />}><Crm /></Suspense>} />
             <Route path="lead-finder" element={<Suspense fallback={<LoadingState />}><LeadFinder /></Suspense>} />
+            <Route path="demand-hunter" element={<Suspense fallback={<LoadingState />}><DemandHunter /></Suspense>} />
             <Route path="lead-scoring" element={<Suspense fallback={<LoadingState />}><LeadScoring /></Suspense>} />
             <Route path="crm/pipeline" element={<Suspense fallback={<LoadingState />}><Pipeline /></Suspense>} />
             <Route path="sales-agent" element={<Suspense fallback={<LoadingState />}><SalesDashboard /></Suspense>} />

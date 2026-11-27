@@ -5,6 +5,7 @@ import { launchIt } from './launch.it'
 import { aiAgentsIt } from './aiAgents.it'
 import { aiMonitoringIt } from './aiMonitoring.it'
 import { aiTrainingIt } from './aiTraining.it'
+import { demandHunterIt } from './demandHunter.it'
 
 export const it = {
   common: {
@@ -122,6 +123,7 @@ export const it = {
     groupAccount: 'Account',
     dashboard: 'Dashboard',
     leadFinder: 'AI Lead Finder',
+    demandHunter: 'Demand Hunter',
     analyzer: 'AI Business Analyzer',
     scoring: 'AI Lead Scoring',
     salesAgent: 'AI Sales Agent',
@@ -893,6 +895,7 @@ export const it = {
   ...aiAgentsIt,
   ...aiMonitoringIt,
   ...aiTrainingIt,
+  ...demandHunterIt,
 }
 
 type Widen<T> = T extends string ? string : T extends readonly string[] ? readonly string[] : { [K in keyof T]: Widen<T[K]> }

@@ -1,0 +1,342 @@
+{
+ "_about": "Casi aggiunti il 22/11/2026 dalle analisi esterne (i quattro post A-D, frasi di frustrazione, trappole 'ho già comprato', hobby, studio) e dalla lista query_combinazioni.txt. Etichettati PRIMA di misurare le regole e non usati per correggerle.",
+ "examples": [
+  {
+   "id": 201,
+   "text": "Qualcuno conosce un software per gestire i clienti?",
+   "lang": "it",
+   "demand": "yes",
+   "author_role": "buyer",
+   "intents": [
+    "purchase"
+   ],
+   "stage": "need",
+   "market": "crm",
+   "tech": [],
+   "budget": false,
+   "urgent": false,
+   "case": "implicit",
+   "source": "sintetico"
+  },
+  {
+   "id": 202,
+   "text": "Sto perdendo tantissimo tempo a inserire manualmente i clienti nel gestionale.",
+   "lang": "it",
+   "demand": "yes",
+   "author_role": "buyer",
+   "intents": [
+    "automation"
+   ],
+   "stage": "need",
+   "market": "automation",
+   "tech": [],
+   "budget": false,
+   "urgent": false,
+   "case": "implicit",
+   "source": "sintetico"
+  },
+  {
+   "id": 203,
+   "text": "La mia agenzia è cresciuta e il sistema che utilizziamo non è più sufficiente. Vorrei automatizzare tutto.",
+   "lang": "it",
+   "demand": "yes",
+   "author_role": "buyer",
+   "intents": [
+    "automation",
+    "project"
+   ],
+   "stage": "need",
+   "market": "automation",
+   "tech": [],
+   "budget": false,
+   "urgent": false,
+   "case": "implicit",
+   "source": "sintetico"
+  },
+  {
+   "id": 204,
+   "text": "CRM, CRM, CRM. Qual è il migliore?",
+   "lang": "it",
+   "demand": "weak",
+   "author_role": "buyer",
+   "intents": [
+    "purchase"
+   ],
+   "stage": "potential_interest",
+   "market": "crm",
+   "tech": [],
+   "budget": false,
+   "urgent": false,
+   "case": "info_request",
+   "source": "sintetico"
+  },
+  {
+   "id": 205,
+   "text": "Il mio e-commerce sta crescendo e non riesco più a gestire manualmente gli ordini",
+   "lang": "it",
+   "demand": "yes",
+   "author_role": "buyer",
+   "intents": [
+    "automation"
+   ],
+   "stage": "need",
+   "market": "ecommerce",
+   "tech": [],
+   "budget": false,
+   "urgent": false,
+   "case": "implicit",
+   "source": "sintetico"
+  },
+  {
+   "id": 206,
+   "text": "Perdo ore ogni giorno a copiare i dati delle fatture su Excel, ci sarà un modo per farlo in automatico?",
+   "lang": "it",
+   "demand": "yes",
+   "author_role": "buyer",
+   "intents": [
+    "automation"
+   ],
+   "stage": "need",
+   "market": "automation.office",
+   "tech": [
+    "Excel"
+   ],
+   "budget": false,
+   "urgent": false,
+   "case": "implicit",
+   "source": "sintetico"
+  },
+  {
+   "id": 207,
+   "text": "Sto impazzendo con questo gestionale, si blocca ogni giorno e mi sta facendo perdere clienti",
+   "lang": "it",
+   "demand": "yes",
+   "author_role": "buyer",
+   "intents": [
+    "technical_problem"
+   ],
+   "stage": "need",
+   "market": "erp",
+   "tech": [],
+   "budget": false,
+   "urgent": false,
+   "case": "implicit",
+   "source": "sintetico"
+  },
+  {
+   "id": 208,
+   "text": "Vorrei un preventivo per un sito con prenotazioni online per il mio B&B, entro questa settimana",
+   "lang": "it",
+   "demand": "yes",
+   "author_role": "buyer",
+   "intents": [
+    "service_demand",
+    "purchase"
+   ],
+   "stage": "high_intent",
+   "market": "web",
+   "tech": [],
+   "budget": false,
+   "urgent": true,
+   "case": "urgent",
+   "source": "sintetico"
+  },
+  {
+   "id": 209,
+   "text": "Cerchiamo un Penetration Tester per verificare la sicurezza del nostro portale clienti prima del lancio",
+   "lang": "it",
+   "demand": "yes",
+   "author_role": "buyer",
+   "intents": [
+    "service_demand",
+    "hiring"
+   ],
+   "stage": "concrete_request",
+   "market": "cybersecurity.pentest",
+   "tech": [],
+   "budget": false,
+   "urgent": false,
+   "case": "concrete",
+   "source": "sintetico"
+  },
+  {
+   "id": 210,
+   "text": "Lavoro remoto: cerchiamo Programmatore iOS con esperienza in SwiftUI, inviare CV",
+   "lang": "it",
+   "demand": "yes",
+   "author_role": "buyer",
+   "intents": [
+    "hiring"
+   ],
+   "stage": "concrete_request",
+   "market": "mobile.ios",
+   "tech": [
+    "SwiftUI"
+   ],
+   "budget": false,
+   "urgent": false,
+   "case": "concrete",
+   "source": "sintetico"
+  },
+  {
+   "id": 211,
+   "text": "Ho appena comprato un nuovo CRM, finalmente! Ora vediamo come va",
+   "lang": "it",
+   "demand": "no",
+   "author_role": "neutral",
+   "intents": [],
+   "stage": "conversation",
+   "market": null,
+   "tech": [],
+   "budget": false,
+   "urgent": false,
+   "case": "generic_discussion",
+   "source": "sintetico"
+  },
+  {
+   "id": 212,
+   "text": "Mi piace sviluppare software per hobby nel weekend, ecco il mio ultimo progetto",
+   "lang": "it",
+   "demand": "no",
+   "author_role": "learner",
+   "intents": [],
+   "stage": "conversation",
+   "market": null,
+   "tech": [],
+   "budget": false,
+   "urgent": false,
+   "case": "learner",
+   "source": "sintetico"
+  },
+  {
+   "id": 213,
+   "text": "Sto studiando come creare un'app con Flutter, qualche tutorial da consigliare?",
+   "lang": "it",
+   "demand": "no",
+   "author_role": "learner",
+   "intents": [],
+   "stage": "conversation",
+   "market": null,
+   "tech": [
+    "Flutter"
+   ],
+   "budget": false,
+   "urgent": false,
+   "case": "learner",
+   "source": "sintetico"
+  },
+  {
+   "id": 214,
+   "text": "Vorrei imparare Python per fare progetti personali, da dove parto?",
+   "lang": "it",
+   "demand": "no",
+   "author_role": "learner",
+   "intents": [],
+   "stage": "conversation",
+   "market": null,
+   "tech": [
+    "Python"
+   ],
+   "budget": false,
+   "urgent": false,
+   "case": "learner",
+   "source": "sintetico"
+  },
+  {
+   "id": 215,
+   "text": "Cerco lavoro come sviluppatore software, anche da remoto, disponibile da subito",
+   "lang": "it",
+   "demand": "no",
+   "author_role": "job_seeker",
+   "intents": [],
+   "stage": "conversation",
+   "market": null,
+   "tech": [],
+   "budget": false,
+   "urgent": false,
+   "case": "job_seeker",
+   "source": "sintetico"
+  },
+  {
+   "id": 216,
+   "text": "Offriamo collaborazione: realizziamo siti, app e automazioni per la tua attività, contattaci in privato",
+   "lang": "it",
+   "demand": "no",
+   "author_role": "seller",
+   "intents": [],
+   "stage": "conversation",
+   "market": null,
+   "tech": [],
+   "budget": false,
+   "urgent": false,
+   "case": "seller",
+   "source": "sintetico"
+  },
+  {
+   "id": 217,
+   "text": "Freelance Python developer available for automation and AI projects, DM me",
+   "lang": "en",
+   "demand": "no",
+   "author_role": "seller",
+   "intents": [],
+   "stage": "conversation",
+   "market": null,
+   "tech": [
+    "Python"
+   ],
+   "budget": false,
+   "urgent": false,
+   "case": "seller",
+   "source": "sintetico"
+  },
+  {
+   "id": 218,
+   "text": "Qualcuno conosce questo strumento? L'ho visto in un video su YouTube, sembra interessante",
+   "lang": "it",
+   "demand": "no",
+   "author_role": "neutral",
+   "intents": [],
+   "stage": "conversation",
+   "market": null,
+   "tech": [],
+   "budget": false,
+   "urgent": false,
+   "case": "generic_discussion",
+   "source": "sintetico"
+  },
+  {
+   "id": 219,
+   "text": "Si ricerca addetto museale per il fine settimana",
+   "lang": "it",
+   "demand": "no",
+   "author_role": "neutral",
+   "intents": [
+    "hiring"
+   ],
+   "stage": "conversation",
+   "market": null,
+   "tech": [],
+   "budget": false,
+   "urgent": false,
+   "case": "non_tech",
+   "source": "sintetico"
+  },
+  {
+   "id": 220,
+   "text": "My current setup is no longer keeping up with demand, we need to automate order processing",
+   "lang": "en",
+   "demand": "yes",
+   "author_role": "buyer",
+   "intents": [
+    "automation"
+   ],
+   "stage": "need",
+   "market": "automation",
+   "tech": [],
+   "budget": false,
+   "urgent": false,
+   "case": "implicit",
+   "source": "sintetico"
+  }
+ ]
+}

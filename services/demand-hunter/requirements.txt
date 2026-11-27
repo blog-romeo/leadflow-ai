@@ -1,0 +1,5 @@
+# Demand Hunter service (versions of BuyerML requirements.txt for the API; anthropic is not needed here)
+fastapi==0.115.6
+uvicorn==0.32.1
+httpx==0.28.1
+requests>=2.31,<3
